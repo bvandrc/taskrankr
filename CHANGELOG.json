@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.2.4",
+    "date": "2026-05-04",
+    "title": "Faster Load Times",
+    "changes": [
+      "Bugfix: Removed ~25 unused font families that were slowing down initial page load",
+      "Added loading spinner that appears instantly before the app finishes loading",
+      "Secondary pages now load on-demand for a smaller initial download"
+    ]
+  },
+  {
     "version": "0.2.3",
     "date": "2026-04-25",
     "title": "Performance Improvements & Subtask Bugfixes",

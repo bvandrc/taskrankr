@@ -3,9 +3,7 @@
     "version": "0.2.4",
     "date": "2026-05-04",
     "title": "Faster Load Times",
-    "changes": [
-      "Performance improvements"
-    ]
+    "changes": ["Performance improvements"]
   },
   {
     "version": "0.2.3",

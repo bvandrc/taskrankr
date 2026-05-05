@@ -60,39 +60,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
-    rollupOptions: {
-      treeshake: {
-        moduleSideEffects: (id) =>
-          id.includes('/node_modules/tw-animate-css/') || id.endsWith('.css'),
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-      },
-      output: {
-        manualChunks: (id) => {
-          if (!id.includes('/node_modules/')) return undefined
-          if (id.includes('/node_modules/@radix-ui/')) return 'vendor-radix'
-          if (id.includes('/node_modules/framer-motion/'))
-            return 'vendor-motion'
-          if (id.includes('/node_modules/@dnd-kit/')) return 'vendor-dnd'
-          if (id.includes('/node_modules/@tanstack/')) return 'vendor-query'
-          if (id.includes('/node_modules/lucide-react/')) return 'vendor-icons'
-          if (
-            id.includes('/node_modules/@ts-rest/') ||
-            id.includes('/node_modules/zod/')
-          ) {
-            return 'vendor-api'
-          }
-          if (
-            id.includes('/node_modules/react/') ||
-            id.includes('/node_modules/react-dom/') ||
-            id.includes('/node_modules/scheduler/')
-          ) {
-            return 'vendor-react'
-          }
-          return 'vendor'
-        },
-      },
-    },
   },
   server: {
     fs: {

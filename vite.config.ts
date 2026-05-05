@@ -62,7 +62,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       treeshake: {
-        moduleSideEffects: (id) => id.includes('/node_modules/tw-animate-css/') || id.endsWith('.css'),
+        moduleSideEffects: (id) =>
+          id.includes('/node_modules/tw-animate-css/') || id.endsWith('.css'),
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
       },

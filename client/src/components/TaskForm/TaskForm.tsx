@@ -104,7 +104,7 @@ const DateCreatedInput = ({ value, onChange }: DateCreatedInputProps) => (
           mode="single"
           selected={value}
           onSelect={onChange}
-          initialFocus
+          autoFocus
           className="rounded-md border-0"
         />
       </PopoverContent>

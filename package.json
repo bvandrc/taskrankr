@@ -16,7 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "__c2": "====================[ Linting & Type Checking ]==================",
-    "check": "npm run lint && npm run ts:check && npm run cy:ts:check",
+    "check": "npm run ts:check && npm run cy:ts:check && npm run lint",
     "format": "npx biome check . --fix",
     "lint": "npx biome check .",
     "lint:fix": "npm run format",
@@ -113,7 +113,7 @@
     "esbuild": "^0.28",
     "tsx": "^4",
     "type-fest": "^5",
-    "typescript": "5",
+    "typescript": "^6",
     "vite": "^8"
   },
   "overrides": {

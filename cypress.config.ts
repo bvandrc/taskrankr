@@ -4,9 +4,9 @@ import { defineConfig } from 'cypress'
 import installTerminalReporter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getVitePrebuilder } from 'cypress-vite'
 
-const { vitePrebuild, vitePreprocessor } = getVitePrebuilder()
-
 import { checkUserMode } from './cypress/support/utils/test-runner'
+
+const { vitePrebuild, vitePreprocessor } = getVitePrebuilder({})
 
 const processResultsDir = (resultsDir: string) =>
   process.cwd().endsWith('cypress') && resultsDir.startsWith('cypress')

@@ -23,6 +23,21 @@ import {
 import type { UserSession } from './replit_integrations/auth/replitAuth'
 import { storage } from './storage'
 
+const ERRORS = {
+  TASK_NOT_FOUND: {
+    status: 404 as const,
+    body: { message: 'Task not found' },
+  },
+  PARENT_NOT_FOUND: {
+    status: 404 as const,
+    body: { message: 'Parent task not found' },
+  },
+  TIME_SPENT_REQUIRED: {
+    status: 400 as const,
+    body: { message: 'Time spent must be recorded to complete this task' },
+  },
+} as const
+
 const s = initServer()
 
 /** Returns a 400 response if timeSpent is required and effectiveTimeMs ≤ 0, otherwise null. */
@@ -33,10 +48,7 @@ const checkTimeSpentRequired = async (
   const userSettings = await storage.getSettings(userId)
   if (!userSettings.fieldConfig.timeSpent.required) return null
   if (effectiveTimeMs <= 0) {
-    return {
-      status: 400,
-      body: { message: 'Time spent must be recorded to complete this task' },
-    }
+    return ERRORS.TIME_SPENT_REQUIRED
   }
   return null
 }
@@ -62,7 +74,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const task = await storage.getTask(params.id, userId)
         if (!task) {
-          return { status: 404, body: { message: 'Task not found' } }
+          return ERRORS.TASK_NOT_FOUND
         }
         return { status: 200, body: task }
       },
@@ -81,7 +93,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const existing = await storage.getTask(params.id, userId)
         if (!existing) {
-          return { status: 404, body: { message: 'Task not found' } }
+          return ERRORS.TASK_NOT_FOUND
         }
         if (body.status === TaskStatus.COMPLETED) {
           const accumulatedTime =
@@ -102,7 +114,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const existing = await storage.getTask(params.id, userId)
         if (!existing) {
-          return { status: 404, body: { message: 'Task not found' } }
+          return ERRORS.TASK_NOT_FOUND
         }
         await storage.deleteTask(params.id, userId)
         return { status: 204, body: undefined }
@@ -179,7 +191,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const parentTask = await storage.getTask(params.id, userId)
         if (!parentTask) {
-          return { status: 404, body: { message: 'Parent task not found' } }
+          return ERRORS.PARENT_NOT_FOUND
         }
 
         await storage.reorderSubtasks(params.id, userId, body.orderedIds)

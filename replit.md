@@ -82,6 +82,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `cypress/support/constants/selectors.ts` before using them in Cypress tests.
 - **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
+- **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
 
 ## Pointers
 

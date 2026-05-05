@@ -21,7 +21,6 @@ import type {
 import {
   allRankFieldsNull,
   insertTaskSchemaRefined,
-  type MutateTask,
   type Task,
   TaskStatus,
   taskSchema,
@@ -65,6 +64,8 @@ const taskFormDefaultsSchema = taskSchema.omit({
 })
 
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>
+
+type TaskFormValues = z.infer<ReturnType<typeof insertTaskSchemaRefined>>
 
 interface DateCreatedInputProps {
   value: Date | undefined
@@ -177,7 +178,7 @@ export const TaskForm = ({
     [parentId, defaultFormData],
   )
 
-  const form = useForm<MutateTask>({
+  const form = useForm<TaskFormValues>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: getFormDefaults(initialData),

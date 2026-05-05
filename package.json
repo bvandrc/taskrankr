@@ -64,7 +64,7 @@
     "clsx": "^2",
     "connect-pg-simple": "^10",
     "date-fns": "^4",
-    "drizzle-orm": "^0.39",
+    "drizzle-orm": "^0.45",
     "drizzle-zod": "^0.7",
     "es-toolkit": "^1",
     "express": "^4",

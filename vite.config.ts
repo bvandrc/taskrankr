@@ -4,7 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365
 const FONT_CACHE_OPTIONS = {
@@ -29,7 +28,6 @@ export default defineConfig({
     tailwindcss(),
     react(),
     runtimeErrorOverlay(),
-    tsconfigPaths({ ignoreConfigErrors: true }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
@@ -57,6 +55,9 @@ export default defineConfig({
       : []),
   ],
   root: path.resolve(import.meta.dirname, 'client'),
+  resolve: {
+    tsconfigPaths: true,
+  },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,

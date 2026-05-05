@@ -87,7 +87,6 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1",
     "vite-plugin-pwa": "^1",
-    "vite-tsconfig-paths": "^6",
     "wouter": "^3",
     "ws": "^8",
     "zod": "^3",
@@ -105,17 +104,17 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/ws": "^8",
-    "@vitejs/plugin-react": "^4",
+    "@vitejs/plugin-react": "^6.0.1",
     "cross-env": "^10",
     "cypress": "^15",
     "cypress-terminal-report": "^7",
     "cypress-vite": "^1",
     "drizzle-kit": "^0.31",
-    "esbuild": "^0.25",
+    "esbuild": "^0.28.0",
     "tsx": "^4",
     "type-fest": "^5",
     "typescript": "5",
-    "vite": "^7"
+    "vite": "^8.0.10"
   },
   "overrides": {
     "drizzle-kit": {

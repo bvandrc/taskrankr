@@ -67,7 +67,35 @@ export default defineConfig({
           groups: [
             {
               name: 'react-vendor',
-              test: /\/(react|react-dom|react-router)\//g,
+              test: /\/(react|react-dom|scheduler|wouter)\//g,
+            },
+            {
+              name: 'radix-ui',
+              test: /\/@radix-ui\//g,
+            },
+            {
+              name: 'dnd-kit',
+              test: /\/@dnd-kit\//g,
+            },
+            {
+              name: 'framer-motion',
+              test: /\/framer-motion\//g,
+            },
+            {
+              name: 'react-query',
+              test: /\/@tanstack\/react-query\//g,
+            },
+            {
+              name: 'forms',
+              test: /\/(react-hook-form|@hookform\/resolvers|zod|zod-validation-error)\//g,
+            },
+            {
+              name: 'icons',
+              test: /\/(lucide-react|react-icons)\//g,
+            },
+            {
+              name: 'ts-rest',
+              test: /\/@ts-rest\//g,
             },
           ],
         },

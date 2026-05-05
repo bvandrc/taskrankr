@@ -82,8 +82,8 @@ export default defineConfig({
               test: /\/framer-motion\//g,
             },
             {
-              name: 'react-query',
-              test: /\/@tanstack\/react-query\//g,
+              name: 'api',
+              test: /\/(@tanstack\/react-query|@ts-rest)\//g,
             },
             {
               name: 'forms',
@@ -92,10 +92,6 @@ export default defineConfig({
             {
               name: 'icons',
               test: /\/(lucide-react|react-icons)\//g,
-            },
-            {
-              name: 'ts-rest',
-              test: /\/@ts-rest\//g,
             },
           ],
         },

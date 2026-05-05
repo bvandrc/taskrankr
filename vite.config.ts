@@ -61,6 +61,11 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
     rollupOptions: {
+      treeshake: {
+        moduleSideEffects: (id) => id.includes('/node_modules/tw-animate-css/') || id.endsWith('.css'),
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
       output: {
         manualChunks: (id) => {
           if (!id.includes('/node_modules/')) return undefined

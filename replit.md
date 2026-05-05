@@ -5,10 +5,12 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 ## Run & Operate
 
 - **Run Dev Server**: `npm run dev`
-- **Build**: `npm run build`
-- **Typecheck**: `npm run typecheck`
-- **Codegen**: `npm run codegen`
-- **DB Push**: `npm run db:push`
+- **Build**: `npm run build` (runs `script/build.ts`)
+- **Start (production)**: `npm run start`
+- **Typecheck**: `npm run ts:check` (or `npm run check` for ts + cypress ts + lint)
+- **Lint / Format**: `npm run lint` / `npm run format` (Biome)
+- **DB Push / Generate / Migrate**: `npm run db:push` / `npm run db:generate` / `npm run db:migrate`
+- **E2E**: `npm run cy:run:user`, `npm run cy:run:guest`, `npm run cy:open:user`, `npm run cy:open:guest`
 - **Required Env Vars**: Replit Auth environment variables are managed by Replit.
 
 ## Stack
@@ -20,6 +22,8 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Runtime**: Node.js (latest LTS)
 - **Validation**: Zod
 - **Build Tool**: Vite
+- **Lint / Format**: Biome (`biome.jsonc`)
+- **Drag & Drop**: `@dnd-kit`
 - **State Management**: Custom React Context providers (offline-first, background sync)
 - **API**: `ts-rest` (client and server)
 - **Testing**: Cypress (E2E)
@@ -29,8 +33,10 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **React Frontend**: `client/`
 - **Node.js Backend**: `server/`
 - **Shared Code (Schema, Utils, API Contract)**: `shared/`
-- **Database Schema & Zod Schemas**: `shared/schema/`
+- **Database Schema & Zod Schemas**: `shared/schema/` (`tasks.zod.ts`, `settings.zod.ts`, `common.ts`, `drizzle-utils.ts`)
+- **Shared Domain Models**: `shared/models/` (e.g., `auth.ts`)
 - **API Contract**: `shared/contract.ts`
+- **Build Scripts**: `script/` (e.g., `build.ts`)
 - **UI Components**: `client/src/components/`
 - **React Hooks**: `client/src/hooks/`
 - **React Providers**: `client/src/providers/` (See State Management section)

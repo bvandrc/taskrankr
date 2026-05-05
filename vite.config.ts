@@ -61,6 +61,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react-vendor',
+              test: /\/(react|react-dom|react-router)\//g,
+            },
+          ],
+        },
+      },
+    },
   },
   server: {
     fs: {

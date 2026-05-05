@@ -69,7 +69,7 @@
     "es-toolkit": "^1",
     "express": "^4",
     "express-session": "^1",
-    "framer-motion": "^11",
+    "framer-motion": "^12",
     "is-standalone-pwa": "^0.1",
     "lucide-react": "^1",
     "memoizee": "^0.4",

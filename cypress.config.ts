@@ -2,7 +2,9 @@ import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'cypress'
 import installTerminalReporter from 'cypress-terminal-report/src/installLogsPrinter'
-import vitePreprocessor from 'cypress-vite'
+import { getVitePrebuilder } from 'cypress-vite'
+
+const { vitePrebuild, vitePreprocessor } = getVitePrebuilder()
 
 import { checkUserMode } from './cypress/support/utils/test-runner'
 
@@ -41,7 +43,8 @@ export default defineConfig({
         mkdirSync(resultsDir, { recursive: true })
       }
 
-      on('file:preprocessor', vitePreprocessor())
+      on('before:run', (details) => vitePrebuild(details, config))
+      on('file:preprocessor', vitePreprocessor)
 
       installTerminalReporter(on, {
         outputVerbose: false,

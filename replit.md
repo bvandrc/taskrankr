@@ -1,57 +1,57 @@
 # TaskRankr
-
-A multi-user, offline-first task manager featuring hierarchical tasks, a status workflow (open/in_progress/pinned/completed), and per-user rank fields (priority, ease, enjoyment, time), with Replit Auth and a guest mode.
+TaskRankr is a multi-user, offline-first task manager featuring hierarchical tasks, a status workflow, and customizable rank fields for priority, ease, enjoyment, and time.
 
 ## Run & Operate
-
-- **Run:** `npm run dev`
-- **Build:** `npm run build`
-- **Typecheck:** `npm run typecheck`
-- **Codegen:** `npm run generate-drizzle` (for Drizzle ORM)
-- **DB Push:** `npm run db:push` (applies schema changes to the database)
-- **Env Vars:** Replit Auth is configured via platform integrations.
+- **Run Dev Server**: `npm run dev`
+- **Build**: `npm run build`
+- **Typecheck**: `npm run typecheck`
+- **Codegen (Drizzle Kit)**: `npm run generate`
+- **DB Push (Drizzle Kit)**: `npm run db:push`
+- **Required Env Vars**:
+    - `VITE_REPLIT_APP_URL`
+    - `VITE_REPLIT_AUTH_REDIRECT_URL`
 
 ## Stack
-
-- **Frontend:** React, Shadcn/ui, Tailwind CSS
-- **Backend:** Node.js, Express
-- **Runtime:** Node.js (latest LTS)
-- **ORM:** Drizzle ORM
-- **Validation:** Zod
-- **Build Tool:** Vite
-- **API:** `ts-rest` (for type-safe API contracts)
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express
+- **Runtime**: Node.js (latest LTS)
+- **ORM**: Drizzle ORM
+- **Validation**: Zod
+- **Build Tool**: Vite
+- **API**: `ts-rest`
+- **State Management**: Custom React Context Providers (offline-first with background sync)
 
 ## Where things live
-
-- **Client Source:** `client/src/`
-- **Server Source:** `server/`
-- **Database Schema:** `shared/schema/`
-- **API Contracts:** `shared/contract.ts`
-- **UI Components:** `client/src/components/`
-- **State Management Providers:** `client/src/providers/`
-- **Shared Utilities (client/server):** `shared/utils/`
-- **Cypress E2E Tests:** `cypress/e2e/`
-- **Changelog:** `CHANGELOG.json`
+- **Client Source**: `client/src/`
+- **Server Source**: `server/`
+- **Shared Utilities/Schema**: `shared/`
+- **DB Schema**: `shared/schema/`
+- **API Contracts**: `shared/contract.ts`
+- **Database Migrations**: `migrations/`
+- **User Settings Provider**: `client/src/providers/SettingsProvider.tsx`
+- **Task Sync Queue Provider**: `client/src/providers/TaskSyncQueueProvider.tsx`
+- **Tasks Provider (Local-first state)**: `client/src/providers/TasksProvider.tsx`
+- **Background Sync Orchestrator**: `client/src/providers/SyncProvider.tsx`
+- **Cypress E2E Tests**: `cypress/e2e/`
+- **Cypress Selectors**: `cypress/support/constants/selectors.ts`
 
 ## Architecture decisions
-
-- **Local-first writes with background sync:** Task mutations are applied optimistically client-side and then queued for background synchronization with the server, ensuring a responsive UI.
-- **Two-context provider pattern:** Data providers expose separate contexts for reactive views and stable mutators, optimizing re-renders by preventing components that only trigger actions from reacting to data changes.
-- **Dialog-scoped draft sessions:** Task form dialogs manage in-memory draft states (`DraftSessionProvider`) isolated from the main task list, ensuring draft changes don't cause widespread UI churn until explicitly saved.
-- **Stable React identity for tasks:** Client tasks use a `clientKey` UUID for stable React `key` props, preserving component identity across sync operations (e.g., local temp-ID to server-ID swap) and preventing unnecessary re-mounts.
-- **Namespaced localStorage:** All persistent client-side state is managed through `client/src/lib/storage.ts` to enforce namespacing and provide a centralized interface, preventing direct `localStorage` access.
+- **Local-first writes + background sync**: All task mutations write synchronously to the local state and are then queued for background synchronization, ensuring immediate UI feedback without `isPending` states.
+- **Two-context provider pattern**: Key providers (e.g., `TasksProvider`) expose separate contexts for reactive data views and stable mutator functions, optimizing re-renders by allowing components to subscribe only to necessary state.
+- **Dialog-scoped draft sessions**: Task form draft state is isolated to the dialog's lifecycle, preventing incomplete changes from affecting the main task list until explicitly saved or discarded.
+- **Stable React identity for tasks**: Client-side tasks (`LocalTask`) include a `clientKey` UUID for stable React component identity across sync operations and reloads, preventing UI churn during temporary ID resolution or re-fetches.
+- **`localStorage` namespacing**: All persistent client-side state uses a centralized `client/src/lib/storage.ts` utility for consistent namespacing and serialization, disallowing direct `localStorage` access elsewhere.
 
 ## Product
-
-- **Hierarchical Tasks:** Users can create tasks and subtasks to organize work.
-- **Offline-first Capability:** Allows users to manage tasks without an active internet connection, syncing changes when online.
-- **Guest Mode:** Provides a local storage-based experience with demo data for unauthenticated users.
-- **Personalized Task Ranking:** Users can assign custom priority, ease, enjoyment, and time values to tasks, influencing sorting.
-- **Status Workflow:** Tasks progress through defined statuses: open, in progress, pinned, and completed.
-- **PWA Support:** Installable Progressive Web App for an app-like experience.
+- Hierarchical task organization (subtasks).
+- Four-state task workflow: open, in_progress, pinned, completed.
+- Per-user customizable rank fields: priority, ease, enjoyment, time.
+- Guest mode with local storage and demo data.
+- User authentication via Replit Auth.
+- PWA support for offline access and installability.
+- "What's New" changelog dialog on version updates.
 
 ## User preferences
-
 - Preferred communication style: Simple, everyday language.
 - File naming: kebab-case for utility/helper files (e.g., `auth-utils.ts`), PascalCase for component primitives (e.g., `DropdownMenu.tsx`, `AlertDialog.tsx`), camelCase for hooks (e.g., `useAuth.ts`, `useSettings.ts`)
 - Icon helper: Use `Icon` component from `LucideIcon.tsx` only for conditional/dynamic icons (ternary cases), not for single static icons
@@ -64,16 +64,15 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - Documentation: Keep `replit.md` focused on cross-cutting architecture and conventions. File-level mechanics, function signatures, and internal helpers belong in the relevant file's docstring, not here.
 
 ## Gotchas
-
-- **Cypress Test File Registration:** New Cypress test files must be manually added to `cypress.config.ts`.
-- **Selector Usage in Cypress:** Always define new `data-testid` (and other) selectors in `cypress/support/constants/selectors.ts` before use in test files.
-- **Font Loading:** Avoid adding additional font families beyond Inter and Outfit, as this can negatively impact load performance.
-- **Changelog Updates:** Remember to add a new changelog entry in `CHANGELOG.json` and bump the version before every publish.
+- **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
+- **Cypress Selectors**: Always define `data-testid` selectors in `cypress/support/constants/selectors.ts` and import them; never use raw selector strings in test files.
+- **Font Loading**: Only Inter and Outfit fonts are permitted; avoid re-adding large multi-font `<link>` tags.
 
 ## Pointers
-
-- **Replit Auth Docs:** _Populate as you build_
-- **Drizzle ORM Docs:** _Populate as you build_
-- **ts-rest Docs:** _Populate as you build_
-- **Cypress Best Practices:** _Populate as you build_
-- **Vite PWA Plugin Docs:** _Populate as you build_
+- **Cypress E2E Tests**: Refer to `cypress/e2e/` for test implementations and `cypress/support/` for utilities.
+- **Task Utilities**: Consult `shared/utils/task-utils.ts` and `client/src/lib/task-tree-utils.ts` for common task manipulation helpers.
+- **PWA Configuration**: See `vite.config.ts` for Workbox service worker setup and `client/src/main.tsx` for registration.
+- **Replit Auth Integration**: `server/replit_integrations/auth/` contains the Replit Auth (OIDC) setup.
+- **shadcn/ui Documentation**: _Populate as you build_
+- **ts-rest Documentation**: _Populate as you build_
+- **Drizzle ORM Documentation**: _Populate as you build_

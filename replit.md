@@ -126,6 +126,11 @@ Load-bearing facts that span multiple files. Anything more specific lives in the
 ## PWA / Service Worker
 `vite-plugin-pwa` generates a Workbox-powered service worker that precaches the app shell and provides runtime caching for Google Fonts. Configured in `vite.config.ts` with `generateSW` strategy. Registration happens in `client/src/main.tsx` via `virtual:pwa-register`. The service worker checks for updates hourly. Type declarations for the virtual module are in `client/src/vite-env.d.ts`.
 
+## Load-Time Optimizations
+- **Inline pre-React spinner**: `client/index.html` includes a pure-CSS spinner inside `#root` that renders immediately (before any JS loads). It's removed by `App.tsx` on mount via `document.getElementById('app-loader').remove()`.
+- **Route-level code splitting**: Secondary pages (`Completed`, `Settings`, `HowToUse`, `HowToInstall`, `NotFound`) use `React.lazy` + `Suspense` in `App.tsx`. Primary routes (`Home`, `Landing`) are eagerly imported to avoid cold-start chunk latency.
+- **Font loading**: Only Inter and Outfit are loaded (via CSS `@import` in `index.css`). The HTML has `preconnect` hints for Google Fonts domains. All other font families were removed — do not re-add the massive multi-font `<link>` tag.
+
 
 ## Coding Conventions
 

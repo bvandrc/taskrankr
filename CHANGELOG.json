@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.2.4",
+    "date": "2026-05-04",
+    "title": "Faster Load Times",
+    "changes": ["Performance improvements"]
+  },
+  {
     "version": "0.2.3",
     "date": "2026-04-25",
     "title": "Performance Improvements & Subtask Bugfixes",

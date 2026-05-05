@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { type Resolver, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
@@ -21,7 +21,6 @@ import type {
 import {
   allRankFieldsNull,
   insertTaskSchemaRefined,
-  type MutateTask,
   type Task,
   TaskStatus,
   taskSchema,
@@ -65,6 +64,8 @@ const taskFormDefaultsSchema = taskSchema.omit({
 })
 
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>
+
+type TaskFormValues = z.infer<ReturnType<typeof insertTaskSchemaRefined>>
 
 interface DateCreatedInputProps {
   value: Date | undefined
@@ -177,12 +178,8 @@ export const TaskForm = ({
     [parentId, defaultFormData],
   )
 
-  const form = useForm<MutateTask, unknown, MutateTask>({
-    resolver: zodResolver(formSchema) as unknown as Resolver<
-      MutateTask,
-      unknown,
-      MutateTask
-    >,
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: getFormDefaults(initialData),
   })

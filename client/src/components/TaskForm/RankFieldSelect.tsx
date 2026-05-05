@@ -2,12 +2,10 @@
  * @fileoverview Select component for a single rank field in the task form
  */
 
-import type { ControllerRenderProps } from 'react-hook-form'
-
 import type { RankFieldValueMap } from '@/lib/constants'
 import { getRankFieldStyle } from '@/lib/rank-field-styles'
 import { cn } from '@/lib/utils'
-import type { MutateTask, RankField } from '~/shared/schema'
+import type { RankField } from '~/shared/schema'
 import { FormControl, FormItem, FormLabel } from '../primitives/forms/Form'
 import {
   Select,
@@ -20,7 +18,10 @@ import {
 interface RankFieldSelectProps {
   name: RankField
   label: string
-  field: ControllerRenderProps<MutateTask, RankField>
+  field: {
+    value: RankFieldValueMap[RankField] | null | undefined
+    onChange: (value: RankFieldValueMap[RankField] | null) => void
+  }
   isRequired: boolean
   levels: string[]
 }

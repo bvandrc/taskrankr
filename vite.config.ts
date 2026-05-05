@@ -70,27 +70,27 @@ export default defineConfig({
               test: /\/(react|react-dom|scheduler|wouter)\//g,
             },
             {
-              name: 'radix-ui',
+              name: 'radix-ui-vendor',
               test: /\/@radix-ui\//g,
             },
             {
-              name: 'dnd-kit',
+              name: 'dnd-kit-vendor',
               test: /\/@dnd-kit\//g,
             },
             {
-              name: 'framer-motion',
+              name: 'framer-motion-vendor',
               test: /\/framer-motion\//g,
             },
             {
-              name: 'api',
+              name: 'api-vendor',
               test: /\/(@tanstack\/react-query|@ts-rest)\//g,
             },
             {
-              name: 'forms',
+              name: 'forms-vendor',
               test: /\/(react-hook-form|@hookform\/resolvers|zod|zod-validation-error)\//g,
             },
             {
-              name: 'icons',
+              name: 'icons-vendor',
               test: /\/(lucide-react|react-icons)\//g,
             },
           ],

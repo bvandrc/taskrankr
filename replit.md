@@ -1,8 +1,65 @@
 # TaskRankr
 
-Multi-user, offline-first task manager with hierarchical tasks, a status workflow (open/in_progress/pinned/completed), and per-user rank fields (priority, ease, enjoyment, time). Auth via Replit Auth, with a guest mode that uses local storage + demo data.
+A multi-user, offline-first task manager featuring hierarchical tasks, a status workflow, and customizable per-user rank fields.
 
-## User Preferences
+## Run & Operate
+
+- **Run Dev Server**: `npm run dev`
+- **Build**: `npm run build`
+- **Typecheck**: `npm run typecheck`
+- **Codegen**: `npm run codegen`
+- **DB Push**: `npm run db:push`
+- **Required Env Vars**: Replit Auth environment variables are managed by Replit.
+
+## Stack
+
+- **Frontend**: React
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Backend**: Node.js, Express (via `ts-rest`)
+- **Database**: PostgreSQL (via Drizzle ORM)
+- **Runtime**: Node.js (latest LTS)
+- **Validation**: Zod
+- **Build Tool**: Vite
+- **State Management**: Custom React Context providers (offline-first, background sync)
+- **API**: `ts-rest` (client and server)
+- **Testing**: Cypress (E2E)
+
+## Where things live
+
+- **React Frontend**: `client/`
+- **Node.js Backend**: `server/`
+- **Shared Code (Schema, Utils, API Contract)**: `shared/`
+- **Database Schema & Zod Schemas**: `shared/schema/`
+- **API Contract**: `shared/contract.ts`
+- **UI Components**: `client/src/components/`
+- **React Hooks**: `client/src/hooks/`
+- **React Providers**: `client/src/providers/` (See State Management section)
+- **Global Constants**: `client/src/lib/constants.ts`
+- **Local Storage Utilities**: `client/src/lib/storage.ts`
+- **E2E Tests**: `cypress/`
+- **DB Migrations**: `migrations/`
+- **Changelog**: `CHANGELOG.json`
+
+## Architecture decisions
+
+- **Local-first writes with background sync**: All task mutations are applied locally first for immediate UI feedback, then queued for background synchronization with the server. No `useMutation` hooks are used.
+- **Two-context provider pattern**: Key providers (e.g., `TasksProvider`) expose separate contexts for reactive data views and stable mutator functions, optimizing re-renders.
+- **Dialog-scoped draft sessions**: Task form draft state is isolated to the dialog's subtree using `DraftSessionProvider` to prevent unnecessary re-renders of the main task list during editing.
+- **Stable React identity for tasks**: `clientKey` (UUID) is used as the React `key` for tasks, ensuring stable component identity across sync operations and reloads, even when temporary IDs are swapped for real ones.
+- **Coalesced settings sync**: Settings updates are batched and synchronized as a single, idempotent partial merge rather than via the task queue, optimizing network calls.
+
+## Product
+
+- **Hierarchical Tasks**: Organize tasks with parent-child relationships.
+- **Status Workflow**: Tasks can be `open`, `in_progress`, `pinned`, or `completed`.
+- **User-Specific Rank Fields**: Tasks have `priority`, `ease`, `enjoyment`, and `time` fields, customizable per user.
+- **Offline-First**: Users can continue working without an internet connection; changes sync when online.
+- **Guest Mode**: Local storage-based guest mode with demo data for unauthenticated users.
+- **Replit Auth Integration**: Secure user authentication via Replit's authentication service.
+- **PWA Support**: Installable as a Progressive Web App for an app-like experience.
+
+## User preferences
+
 - Preferred communication style: Simple, everyday language.
 - File naming: kebab-case for utility/helper files (e.g., `auth-utils.ts`), PascalCase for component primitives (e.g., `DropdownMenu.tsx`, `AlertDialog.tsx`), camelCase for hooks (e.g., `useAuth.ts`, `useSettings.ts`)
 - Icon helper: Use `Icon` component from `LucideIcon.tsx` only for conditional/dynamic icons (ternary cases), not for single static icons
@@ -14,161 +71,19 @@ Multi-user, offline-first task manager with hierarchical tasks, a status workflo
 - Formatting: Run `npm run format` (biome) before every commit/checkpoint so the code in checkpoints is always formatted.
 - Documentation: Keep `replit.md` focused on cross-cutting architecture and conventions. File-level mechanics, function signatures, and internal helpers belong in the relevant file's docstring, not here.
 
-## State Management
-Offline-first architecture split across focused providers, each owning one slice so consumers re-render only when their slice changes. Provider order in `App.tsx` (outer → inner): `BannersProvider > GuestModeProvider > SettingsProvider > TaskSyncQueueProvider > TasksProvider > SyncProvider > ExpandedTasksProvider > TaskFormDialogProvider`. `TaskFormDialogProvider` internally mounts `DraftSessionProvider` so draft state is scoped to the dialog subtree. See each provider's file docstring for its contract.
+## Gotchas
 
-### Cross-Cutting Architecture Notes
-Load-bearing facts that span multiple files. Anything more specific lives in the file docstring of the named module.
-- **Local-first writes + background sync**: Task mutations write to `TasksProvider` synchronously and push an op onto the append-only queue in `TaskSyncQueueProvider`. `SyncProvider` drains the queue in the background. There is no `useMutation` / `isPending` anywhere in app code.
-- **Coalesced settings sync**: Settings updates use a single coalesced `pendingSettingsSync` pointer (not the queue) since they're idempotent partial merges. `SyncProvider` drains it alongside the task queue. Both the queue and the pending pointer are persisted to localStorage so unsynced changes survive a tab close.
-- **Two-context provider pattern**: `TasksProvider` and `DraftSessionProvider` each expose two contexts — a reactive view (`useTasks` / `useDraftSession`) and stable mutators (`useTaskMutations` / `useDraftSessionMutations`). Components that only fire mutations subscribe to the mutators context and never re-render on data changes.
-- **Draft sessions are dialog-scoped**: The TaskForm dialog runs an in-memory draft session (drafts, parent reassignments, order overrides) in `DraftSessionProvider`, which is mounted inside `TaskFormDialogProvider` so draft churn never re-renders top-level task-list consumers. On Save, drafts are promoted in dependency order through real `TasksProvider` mutators; on Cancel, all draft layers are dropped. `TasksProvider` itself is strictly real-only.
-- **localStorage namespacing**: All per-user persistent state goes through `client/src/lib/storage.ts`. Providers should never call `localStorage.*` directly.
-- **Stable React identity for tasks (`LocalTask`)**: Client task state uses `LocalTask = Task & { clientKey: string }` (`client/src/types/index.ts`). The `clientKey` UUID is the React `key` for every task card / subtask row, so a card's identity survives the temp-id → real-id swap performed by `replaceTaskId` after a sync round-trip (no remount, no entrance animation re-fire). Keys are minted at every entry boundary into client state — fresh local mints, demo seed, server fetch, storage load — via `buildLocalTask` / `withClientKeys` in `client/src/lib/task-provider-utils.ts`. `setTasksFromServer` reuses existing keys by id so re-fetches don't churn identity. `clientKey` is never persisted to the DB or sent over the wire; it lives only in client state and is mirrored to localStorage for a stable identity across reloads.
-- **package.json deps**: Prefer to just list major version in package.json, unless major version is 0, in which case list minor version. This allows simpler updating for package-lock.json.
+- **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `cypress/support/constants/selectors.ts` before using them in Cypress tests.
+- **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
+- **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
 
-## Changelog
-"What's New" dialog appears when users open the app after an update with new entries (new users without a last-seen version skip the dialog). Entries live in `CHANGELOG.json` at the project root. **Before every publish, add a new changelog entry**: bump the version, set today's date, give it a title, and list the changes. The entry at index 0 is always treated as the current version.
+## Pointers
 
-## Project Structure
-```
-├── client/               # React frontend
-│   └── src/
-│       ├── components/   # UI components
-│       │   ├── primitives/       # Base UI components (shadcn/ui)
-│       │   │   ├── forms/        # Form controls (Calendar, Checkbox, Form, Input, Label, Select, Switch, Textarea, TimeInput)
-│       │   │   ├── overlays/     # AlertDialog, Dialog, Popover, Toast, Toaster, Tooltip
-│       │   │   ├── Badge.tsx, Button.tsx, Card.tsx, CollapsibleCard.tsx, Toggle.tsx
-│       │   │   ├── DropdownMenu.tsx, TagChain.tsx
-│       │   │   ├── ScrollablePage.tsx
-│       │   │   └── LucideIcon.tsx  # Dynamic icon helper
-│       │   ├── appInfo/            # Informational/status components
-│       │   │   ├── ContactCard.tsx       # Contact/email card with optional debug download
-│       │   │   ├── HowToUseBanner.tsx    # Dismissible banner linking to How To Use page
-│       │   │   ├── InstallBanner.tsx     # PWA install prompt banner
-│       │   │   ├── SortInfo.tsx          # Reusable sort explanation component
-│       │   │   ├── StatusBanner.tsx      # Auth/guest status banner
-│       │   │   └── WhatsNewDialog.tsx    # Changelog dialog (auto-shows on new version) + settings button
-│       │   ├── TaskForm/           # Task form and related components
-│       │   │   ├── RankFieldSelect.tsx       # Select component for rank fields in task form
-│       │   │   ├── TaskForm.tsx              # Full-screen task create/edit form
-│       │   │   ├── TaskFormDialogProvider.tsx # Dialog state + nav stack; owns draft-session lifecycle
-│       │   │   ├── useTaskFormParentChain.ts  # Breadcrumb-style parent chain walker (dialog-scoped)
-│       │   │   └── SubtasksCard/
-│       │   │       ├── index.ts              # Barrel export
-│       │   │       ├── SubtasksCard.tsx      # Main subtask list with DnD and hierarchy
-│       │   │       ├── SubtasksSettings.tsx  # Subtask settings panel (sort, hide, etc.)
-│       │   │       ├── SubtaskRowItem.tsx    # Individual subtask row with actions
-│       │   │       ├── AssignSubtaskDialog.tsx  # Dialog to assign existing task as subtask
-│       │   │       └── SubtaskActionDialog.tsx  # Cancel/Delete/Remove as Subtask dialog
-│       │   ├── BackButton.tsx        # Back navigation button to home
-│       │   ├── ErrorBoundary.tsx     # Global error boundary with red crash dialog
-│       │   ├── DropdownMenuHeader.tsx # Page header with hamburger menu, title + search
-│       │   ├── PageStates.tsx        # Shared PageLoading, PageError, EmptyState
-│       │   ├── SortButton.tsx        # Sort option toggle button
-│       │   ├── TaskCard.tsx          # Task display with status indicators
-│       │   ├── TaskListPage.tsx      # TaskListPageWrapper, TaskListPageHeader, TaskListTreeLayout
-│       │   ├── ChangeStatusDialog.tsx # Task status change modal
-│       │   ├── ConfirmDeleteDialog.tsx # Permanent delete confirmation dialog
-│       │   └── SearchInput.tsx       # Reusable search input with icon
-│       ├── hooks/
-│       │   ├── useAuth.ts            # Authentication state hook
-│       │   ├── useExpandedTasks.ts   # Task expansion state (persists in localStorage)
-│       │   ├── useMobile.tsx         # Mobile detection hook
-│       │   └── useToast.ts           # Toast notifications
-│       ├── pages/
-│       │   ├── Home.tsx              # Main task list with sorting
-│       │   ├── Settings.tsx          # User preferences & attribute visibility
-│       │   ├── Completed.tsx         # Completed tasks view
-│       │   ├── HowToUse.tsx          # Instructional page (tap-to-edit, hold-for-status)
-│       │   ├── HowToInstall.tsx      # PWA install instructions (iOS, Android, Desktop)
-│       │   ├── Landing.tsx           # Unauthenticated landing page
-│       │   └── NotFound.tsx
-│       ├── providers/              # See "State Management" above
-│       │   ├── SettingsProvider.tsx       # User settings + coalesced pending settings sync
-│       │   ├── TaskSyncQueueProvider.tsx  # Task sync queue (owns SyncOperation types)
-│       │   ├── TasksProvider.tsx          # Local-first task state; enqueues onto TaskSyncQueueProvider
-│       │   ├── SyncProvider.tsx           # Background sync orchestrator (drains task queue + settings pending)
-│       │   ├── GuestModeProvider.tsx      # Guest mode flag (isGuestMode)
-│       │   ├── BannersProvider.tsx        # Cross-cutting banner-suppression set
-│       │   └── ExpandedTasksProvider.tsx  # Task expansion state persistence
-│       ├── lib/
-│       │   ├── task-tree-utils.ts  # Tree-walking, sort/filter; re-exports shared/utils/task-utils
-│       │   ├── columns.ts          # Rank-column UI metadata
-│       │   ├── rank-field-styles.ts # Rank field color mappings
-│       │   ├── ts-rest.ts          # ts-rest client + QueryKeys
-│       │   ├── query-client.ts     # @tanstack/react-query client
-│       │   ├── utils.ts            # cn, time conversions, etc.
-│       │   ├── auth-utils.ts       # Authentication helpers
-│       │   ├── changelog.ts        # Changelog entries, version tracking, unseen detection
-│       │   ├── constants.ts        # App-wide constants (Routes, date formats, rank-field enums)
-│       │   ├── storage.ts          # localStorage namespacing + JSON helper
-│       │   ├── demo-tasks.ts       # Demo task data for guest mode
-│       │   └── migrate-guest-tasks.ts  # Guest→auth task migration
-│       ├── App.tsx               # Main app with routing and providers
-│       └── main.tsx              # React entry point
-├── server/
-│   ├── index.ts          # Server entry point
-│   ├── routes.ts         # API route handlers (ts-rest)
-│   ├── storage.ts        # Database access layer
-│   ├── db.ts             # Database connection
-│   ├── static.ts         # Static file serving
-│   ├── vite.ts           # Vite dev server integration
-│   └── replit_integrations/auth/  # Replit Auth (OIDC)
-├── shared/
-│   ├── schema/           # Drizzle tables + Zod schemas (tasks, settings, auth) — source of truth for the data model
-│   ├── utils/            # Shared task utilities (used by client + server)
-│   ├── contract.ts       # ts-rest API contract
-│   ├── constants.ts      # Auth path constants
-│   └── models/auth.ts    # Auth model utilities
-└── migrations/           # Database migrations
-```
-
-## PWA / Service Worker
-`vite-plugin-pwa` generates a Workbox-powered service worker that precaches the app shell and provides runtime caching for Google Fonts. Configured in `vite.config.ts` with `generateSW` strategy. Registration happens in `client/src/main.tsx` via `virtual:pwa-register`. The service worker checks for updates hourly. Type declarations for the virtual module are in `client/src/vite-env.d.ts`.
-
-## Load-Time Optimizations
-- **Inline pre-React spinner**: `client/index.html` includes a pure-CSS spinner inside `#root` that renders immediately (before any JS loads). It's removed by `App.tsx` on mount via `document.getElementById('app-loader').remove()`.
-- **Route-level code splitting**: Secondary pages (`Completed`, `Settings`, `HowToUse`, `HowToInstall`, `NotFound`) use `React.lazy` + `Suspense` in `App.tsx`. Primary routes (`Home`, `Landing`) are eagerly imported to avoid cold-start chunk latency.
-- **Font loading**: Only Inter and Outfit are loaded (via CSS `@import` in `index.css`). The HTML has `preconnect` hints for Google Fonts domains. All other font families were removed — do not re-add the massive multi-font `<link>` tag.
-
-
-## Coding Conventions
-
-### Shared task utilities
-Tree-walking, sort/filter, and id-list helpers live in `shared/utils/task-utils.ts` (re-exported from `client/src/lib/task-tree-utils.ts`). Always prefer these over inline implementations. Read the file directly for the available helpers and their JSDoc.
-
-### Path aliases
-Resolved via `vite-tsconfig-paths` from `tsconfig.json`. `@/` → `client/src/`, `~/shared/` → `shared/`.
-
-## Cypress E2E Tests
-
-- Tests live in `cypress/e2e/`. Support code is in `cypress/support/`:
-
-```
-cypress/
-├── e2e/                        # Test files (*.cy.ts)
-└── support/
-    ├── constants/
-    │   ├── index.ts            # DefaultTask, FieldConfig presets, re-exports selectors
-    │   └── selectors.ts        # All CSS selector strings — always add new ones here
-    ├── utils/
-    │   ├── api.ts              # checks local state and backend
-    │   ├── intercepts.ts       # intercept helpers (cy.intercept)
-    │   ├── navigation.ts       # page navigation helpers
-    │   ├── task-form.ts        # UI actions on the Task Form
-    │   ├── task-tree.ts        # UI actions on the Task Tree
-    │   ├── settings.ts         # helpers for setting settings
-    │   └── test-runner.ts      # isLoggedIn
-    └── commands.ts             # Custom Cypress commands (cy.selectOption, cy.escapeWithin, etc.)
-```
-
-- Must manually add new test files to `cypress.config.ts`.
-- When asked to run E2E tests, run `cy:run:user` by default unless asked to do `cy:run:guest`.
-
-### Selectors
-All `data-testid` (and other) selectors live in `cypress/support/constants/selectors.ts` under the `Selectors` object. Never use raw `[data-testid="..."]` or other selector strings in test files — always add to `Selectors` first and import from there. Groups mirror the component that owns the testids (e.g. `Selectors.Menu`, `Selectors.TaskForm`, `Selectors.ChangeStatusDialog`).
-
-### DRY pattern for New vs. Edit variants
-When a feature works the same way from both a create form and an edit form, use a `for...of` loop over an array of `{ contextName, ...hooks }` objects and call `context(contextName, () => { ... })` inside. See `cancel-task-form.cy.ts` and `completed-tasks.cy.ts` for examples.
-
+- **Replit Auth**: [Replit Auth documentation](https://docs.replit.com/repls/replit-auth)
+- **Drizzle ORM**: [Drizzle ORM documentation](https://orm.drizzle.team/docs/overview)
+- **Tailwind CSS**: [Tailwind CSS documentation](https://tailwindcss.com/docs)
+- **shadcn/ui**: [shadcn/ui documentation](https://ui.shadcn.com/)
+- **ts-rest**: [ts-rest documentation](https://ts-rest.com/docs/introduction)
+- **Vite PWA Plugin**: [vite-plugin-pwa documentation](https://vite-pwa-org.netlify.app/guide/)
+- **Cypress**: [Cypress documentation](https://docs.cypress.io/)
+- **Shared Task Utilities**: `shared/utils/task-utils.ts` and `client/src/lib/task-tree-utils.ts`

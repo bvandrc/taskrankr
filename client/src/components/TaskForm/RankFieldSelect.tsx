@@ -2,12 +2,10 @@
  * @fileoverview Select component for a single rank field in the task form
  */
 
-import type { ControllerRenderProps } from 'react-hook-form'
-
 import type { RankFieldValueMap } from '@/lib/constants'
 import { getRankFieldStyle } from '@/lib/rank-field-styles'
 import { cn } from '@/lib/utils'
-import type { MutateTask, RankField } from '~/shared/schema'
+import type { RankField } from '~/shared/schema'
 import { FormControl, FormItem, FormLabel } from '../primitives/forms/Form'
 import {
   Select,
@@ -17,21 +15,27 @@ import {
   SelectValue,
 } from '../primitives/forms/Select'
 
-interface RankFieldSelectProps {
-  name: RankField
+interface RankFieldSelectProps<
+  FieldName extends RankField,
+  Vals = RankFieldValueMap[FieldName] | null,
+> {
+  name: FieldName
   label: string
-  field: ControllerRenderProps<MutateTask, RankField>
+  field: {
+    value: Vals | undefined
+    onChange: (value: Vals) => void
+  }
   isRequired: boolean
   levels: string[]
 }
 
-export const RankFieldSelect = ({
+export const RankFieldSelect = <FieldName extends RankField>({
   name,
   label,
   levels,
   field,
   isRequired,
-}: RankFieldSelectProps) => {
+}: RankFieldSelectProps<FieldName>) => {
   const hasError = isRequired && !field.value
   const showNoneOption = !isRequired
   const NONE_VALUE = 'none'
@@ -45,7 +49,11 @@ export const RankFieldSelect = ({
         {label}
       </FormLabel>
       <Select
-        onValueChange={(v) => field.onChange(v === NONE_VALUE ? null : v)}
+        onValueChange={(v) =>
+          field.onChange(
+            v === NONE_VALUE ? null : (v as RankFieldValueMap[FieldName]),
+          )
+        }
         value={field.value ?? NONE_VALUE}
       >
         <FormControl>

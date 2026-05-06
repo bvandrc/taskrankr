@@ -1,3 +1,5 @@
+import type { MergeExclusive } from 'type-fest'
+
 import { cn } from '@/lib/utils'
 
 /**
@@ -11,34 +13,24 @@ export const Spinner = ({
   centered = false,
 }: {
   size?: 'sm' | 'md'
-  fullScreen?: boolean
-  centered?: boolean
-}) => {
+} & MergeExclusive<{ fullScreen?: boolean }, { centered?: boolean }>) => {
   const el = (
     <div
       className={cn(
         'rounded-full border-muted border-t-primary animate-spin',
         size === 'sm' ? 'size-4 border-2' : 'size-9 border-3',
       )}
+      data-testid="page-spinner"
     />
   )
 
-  if (fullScreen) {
+  if (centered || fullScreen) {
     return (
       <div
-        className="min-h-screen bg-background flex items-center justify-center"
-        data-testid="page-spinner"
-      >
-        {el}
-      </div>
-    )
-  }
-
-  if (centered) {
-    return (
-      <div
-        className="flex-1 flex items-center justify-center"
-        data-testid="page-spinner"
+        className={cn('flex items-center justify-center', {
+          'flex-1': centered,
+          'min-h-screen bg-background': fullScreen,
+        })}
       >
         {el}
       </div>

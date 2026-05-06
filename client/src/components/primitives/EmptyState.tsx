@@ -1,8 +1,3 @@
-// biome-ignore lint/style/useFilenamingConvention: is fine
-/**
- * @fileoverview Shared UI components for page error and empty states.
- */
-
 export const EmptyState = ({
   icon,
   title,

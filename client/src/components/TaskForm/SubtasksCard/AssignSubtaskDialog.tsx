@@ -9,7 +9,7 @@ import {
   filterRootTasks,
   getById,
 } from '@/lib/task-tree-utils'
-import { cn } from '@/lib/utils'
+import { cn, handleKeyDown } from '@/lib/utils'
 import { useTasks } from '@/providers/TasksProvider'
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Button } from '../../primitives/Button'
@@ -136,12 +136,7 @@ export const AssignSubtaskDialog = ({
                 aria-selected={selectedId === t.id}
                 tabIndex={0}
                 onClick={() => setSelectedId(t.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    setSelectedId(t.id)
-                  }
-                }}
+                onKeyDown={handleKeyDown}
                 className={cn(
                   'w-full text-left px-3 py-2.5 text-sm transition-colors cursor-pointer',
                   selectedId === t.id

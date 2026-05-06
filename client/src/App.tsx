@@ -9,6 +9,7 @@ import { Route, Switch, useLocation } from 'wouter'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from '@/components/primitives/overlays/Toaster'
 import { TooltipProvider } from '@/components/primitives/overlays/Tooltip'
+import { Spinner } from '@/components/primitives/Spinner'
 import { TaskFormDialogProvider } from '@/components/TaskForm/TaskFormDialogProvider'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
@@ -37,18 +38,9 @@ const HowToUse = lazy(() => import('@/pages/HowToUse'))
 const HowToInstall = lazy(() => import('@/pages/HowToInstall'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
-const PageSpinner = ({ fullScreen = false }: { fullScreen?: boolean }) => (
-  <div
-    className={`flex items-center justify-center ${fullScreen ? 'min-h-screen bg-background' : 'flex-1'}`}
-    data-testid="page-spinner"
-  >
-    <div className="w-9 h-9 border-3 border-muted rounded-full border-t-primary animate-spin" />
-  </div>
-)
-
 const Router = () => (
   <div className="flex-1 flex flex-col min-h-0">
-    <Suspense fallback={<PageSpinner />}>
+    <Suspense fallback={<Spinner centered />}>
       <Switch>
         <Route path={Routes.HOME} component={Home} />
         <Route path={Routes.COMPLETED} component={Completed} />
@@ -95,13 +87,13 @@ const AuthenticatedApp = () => {
   }, [isAuthenticated, isGuestMode, toast])
 
   if (isLoading && !isGuestMode) {
-    return <PageSpinner fullScreen />
+    return <Spinner fullScreen />
   }
 
   if (!isAuthenticated && !isGuestMode) {
     if (location === Routes.HOW_TO_INSTALL) {
       return (
-        <Suspense fallback={<PageSpinner fullScreen />}>
+        <Suspense fallback={<Spinner fullScreen />}>
           <HowToInstall />
         </Suspense>
       )

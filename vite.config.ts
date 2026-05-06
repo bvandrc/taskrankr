@@ -57,7 +57,6 @@ export default defineConfig({
   root: path.resolve(import.meta.dirname, 'client'),
   resolve: {
     tsconfigPaths: true,
-    dedupe: ['react', 'react-dom'],
   },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),

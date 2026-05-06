@@ -63,27 +63,23 @@ const StatusCell = ({
 }: {
   taskStatus: string
   taskCompletedAt: Date | null
-}) => {
-  if (taskStatus !== TaskStatus.COMPLETED) {
-    return (
-      <Badge
-        variant="outline"
-        className="text-xs shrink-0"
-        data-testid="badge-open"
-      >
-        Open
-      </Badge>
-    )
-  }
-  return (
+}) =>
+  taskStatus === TaskStatus.COMPLETED ? (
     <span
       className="text-xs text-muted-foreground shrink-0 whitespace-nowrap"
       data-testid="badge-completed"
     >
       {taskCompletedAt ? formatDaysSince(taskCompletedAt) : 'Completed'}
     </span>
+  ) : (
+    <Badge
+      variant="outline"
+      className="text-xs shrink-0"
+      data-testid="badge-open"
+    >
+      Open
+    </Badge>
   )
-}
 
 const AttachmentRow = ({
   attachment,

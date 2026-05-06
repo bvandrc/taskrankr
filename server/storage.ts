@@ -20,6 +20,7 @@ import {
   userSettings,
 } from '~/shared/schema'
 import {
+  getChildrenLatestCompletedAt,
   getHasIncomplete,
   mapById,
   statusToStatusPatch,
@@ -298,15 +299,22 @@ export class DatabaseStorage implements IStorage {
         !getHasIncomplete(children)
       ) {
         // Forward: flag just enabled and all children are already done — auto-complete
+        const latestCompletedAt = getChildrenLatestCompletedAt(children)
         const [completed] = await db
           .update(tasks)
           .set({
             status: TaskStatus.COMPLETED,
-            completedAt: new Date(),
+            completedAt: latestCompletedAt ?? new Date(),
             inProgressStartedAt: null,
           })
           .where(eq(tasks.id, id))
           .returning()
+
+        // Propagate to grandparent(s) if they also have inheritCompletionState
+        if (completed.parentId) {
+          await this.checkInheritCompletionState(completed.parentId, userId, id)
+        }
+
         return completed
       }
     }

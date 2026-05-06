@@ -37,6 +37,17 @@ describe('Completed Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
+  const grandparentTask = {
+    ...DefaultTask,
+    name: 'E2E Grandparent Task',
+    status: TaskStatus.PINNED,
+  } as const satisfies CreatedTask
+
+  const completedGrandparentTask = {
+    ...grandparentTask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
   const subtask = {
     ...DefaultTask,
     name: 'E2E Subtask',
@@ -199,8 +210,64 @@ describe('Completed Subtasks', () => {
       waitForUpdate([completedRootTask, completedRootTask])
       checkNumCalls({ create: 2, update: 3 })
 
+      checkTasksExistBackend([completedRootTask])
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
+      ])
+    })
+
+    it('auto-completes grandparent chain when completing the last subtask', () => {
+      // Step 1: Create grandparent (AUTOCOMPLETE) with rootTask as inline subtask
+      cy.get(Selectors.CREATE_TASK_BTN).click()
+      getTaskForm(0).within(() => {
+        fillTaskForm(grandparentTask)
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(rootTask)
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnCreate({ newTasks: [grandparentTask, rootTask] })
+      })
+      checkNumCalls({ create: 2, update: 0 })
+
+      // Step 2: Edit rootTask to enable AUTOCOMPLETE and add a subtask
+      expandAndCheckTree({ ...grandparentTask, subtasks: [rootTask] })
+      openTaskEditForm(rootTask)
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
+      })
+      checkNumCalls({ create: 3, update: 1 })
+
+      // Step 3: Complete the subtask — both rootTask and grandparentTask should auto-complete
+      expandAndCheckTree({
+        ...grandparentTask,
+        subtasks: [{ ...rootTask, subtasks: [subtask] }],
+      })
+      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
+
+      // Two more auto-completes fire: rootTask then grandparentTask
+      waitForUpdate([completedRootTask, completedGrandparentTask])
+      checkNumCalls({ create: 3, update: 4 })
+
+      checkTasksExistBackend([completedGrandparentTask])
+      checkCompletedPage([
+        {
+          ...completedGrandparentTask,
+          subtasks: [{ ...completedRootTask, subtasks: [completedSubtask] }],
+        },
       ])
     })
   })

@@ -504,6 +504,49 @@ export const TasksProvider = ({
               data: { status: TaskStatus.COMPLETED },
             })
             debugLog.log('task', 'inheritCompletion:onUpdate', { id })
+
+            // Propagate to grandparent(s) — same walk as setTaskStatus's upward chain
+            if (updatedTask.parentId) {
+              const autoCompletedParents: number[] = []
+              setTasks((prev) => {
+                let current = prev
+                let currentParentId: number | null = updatedTask.parentId
+                while (currentParentId !== null) {
+                  const parent = getById(current, currentParentId)
+                  if (
+                    !parent?.inheritCompletionState ||
+                    parent.status === TaskStatus.COMPLETED
+                  )
+                    break
+                  const thisChildren = getDirectSubtasks(current, parent.id)
+                  if (
+                    !thisChildren.every(
+                      (t) => t.status === TaskStatus.COMPLETED,
+                    )
+                  )
+                    break
+                  const parentLatestCompletedAt =
+                    getChildrenLatestCompletedAt(thisChildren)
+                  current = updateItem(current, parent.id, (t) => ({
+                    ...t,
+                    status: TaskStatus.COMPLETED,
+                    completedAt: parentLatestCompletedAt ?? new Date(),
+                    inProgressStartedAt: null,
+                  }))
+                  autoCompletedParents.push(parent.id)
+                  currentParentId = parent.parentId
+                }
+                return current === prev ? prev : current
+              })
+              for (const parentId of autoCompletedParents) {
+                enqueue({
+                  type: SyncOperationType.UPDATE_TASK,
+                  id: parentId,
+                  data: { status: TaskStatus.COMPLETED },
+                })
+                debugLog.log('task', 'inheritCompletion', { parentId })
+              }
+            }
           }
         }
       }

@@ -7,6 +7,7 @@
 
 import {
   DeleteObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
@@ -55,6 +56,26 @@ export async function getPresignedDownloadUrl(
     ResponseContentDisposition: `attachment; filename="${encodeURIComponent(fileName)}"`,
   })
   return getSignedUrl(client, command, { expiresIn: expiresInSeconds })
+}
+
+/** Lists every object key in the bucket, paginating automatically. */
+export async function listAllR2Keys(): Promise<string[]> {
+  const client = getR2Client()
+  const keys: string[] = []
+  let continuationToken: string | undefined
+  do {
+    const res = await client.send(
+      new ListObjectsV2Command({
+        Bucket: BUCKET,
+        ContinuationToken: continuationToken,
+      }),
+    )
+    for (const obj of res.Contents ?? []) {
+      if (obj.Key) keys.push(obj.Key)
+    }
+    continuationToken = res.NextContinuationToken
+  } while (continuationToken)
+  return keys
 }
 
 /** Permanently removes an object from R2. */

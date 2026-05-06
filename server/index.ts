@@ -13,6 +13,8 @@ import express, {
   type Response,
 } from 'express'
 
+import { log } from './log'
+import { scheduleReconciliation } from './reconcile'
 import { registerRoutes } from './routes'
 import { serveStatic } from './static'
 
@@ -34,17 +36,6 @@ app.use(
 )
 
 app.use(express.urlencoded({ extended: false }))
-
-export function log(message: string, source = 'express') {
-  const formattedTime = new Date().toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  })
-
-  console.log(`${formattedTime} [${source}] ${message}`)
-}
 
 app.use((req, res, next) => {
   const start = Date.now()
@@ -76,6 +67,7 @@ app.use((req, res, next) => {
 // biome-ignore lint/nursery/noFloatingPromises: added by Replit, don't break...
 ;(async () => {
   await registerRoutes(httpServer, app)
+  scheduleReconciliation()
 
   // biome-ignore lint/suspicious/noExplicitAny: error type comes from somethere else
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

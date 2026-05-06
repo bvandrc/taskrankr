@@ -11,6 +11,7 @@ import { FileIcon, Paperclip, Trash2 } from 'lucide-react'
 import { BackButtonHeader } from '@/components/BackButton'
 import { Badge } from '@/components/primitives/Badge'
 import { Button } from '@/components/primitives/Button'
+import { ProgressBar } from '@/components/primitives/ProgressBar'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
@@ -23,40 +24,25 @@ import { formatDaysSince } from '~/shared/utils/datetime'
 
 const QUERY_KEY = ['/api/attachments/all']
 
-function storageBarColor(usedBytes: number): string {
-  const pct = usedBytes / MAX_TOTAL_STORAGE_BYTES
-  if (pct >= 0.95) return 'bg-red-500'
-  if (pct >= 0.8) return 'bg-amber-500'
-  return 'bg-emerald-500'
-}
-
-const StorageMeter = ({ totalBytes }: { totalBytes: number }) => {
-  const pct = Math.min((totalBytes / MAX_TOTAL_STORAGE_BYTES) * 100, 100)
-  return (
-    <div
-      className="flex flex-col gap-2 px-4 py-3 rounded-lg bg-card border border-white/5"
-      data-testid="storage-meter"
-    >
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground font-medium">
-          Total storage used
+const StorageMeter = ({ totalBytes }: { totalBytes: number }) => (
+  <div
+    className="flex flex-col gap-2 px-4 py-3 rounded-lg bg-card border border-white/5"
+    data-testid="storage-meter"
+  >
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground font-medium">
+        Total storage used
+      </span>
+      <span className="font-mono text-foreground/80 text-xs">
+        {formatFileSize(totalBytes)}{' '}
+        <span className="text-muted-foreground">
+          / {formatFileSize(MAX_TOTAL_STORAGE_BYTES)}
         </span>
-        <span className="font-mono text-foreground/80 text-xs">
-          {formatFileSize(totalBytes)}{' '}
-          <span className="text-muted-foreground">
-            / {formatFileSize(MAX_TOTAL_STORAGE_BYTES)}
-          </span>
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full bg-secondary/40 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all ${storageBarColor(totalBytes)}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
+      </span>
     </div>
-  )
-}
+    <ProgressBar value={totalBytes / MAX_TOTAL_STORAGE_BYTES} />
+  </div>
+)
 
 const StatusCell = ({
   taskStatus,

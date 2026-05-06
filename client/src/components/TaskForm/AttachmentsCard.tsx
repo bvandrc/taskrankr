@@ -29,6 +29,7 @@ import {
 
 import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments, validateFile } from '@/hooks/useAttachments'
+import { uploadFiles } from '@/lib/attachment-upload'
 import { tsr } from '@/lib/ts-rest'
 import { cn, handleKeyDown } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
@@ -36,12 +37,12 @@ import { formatFileSize } from '~/shared/fileSize'
 import type { Attachment } from '~/shared/schema'
 import { Button } from '../primitives/Button'
 
-const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
-
 export interface AttachmentsCardHandle {
+  /** Returns the raw `File` objects currently staged for upload. */
+  getStagedFiles(): File[]
   /**
    * Uploads all staged files. Returns `false` if any upload failed
-   * (form should stay open).
+   * (form should stay open). No-op when `taskId` is null (new task).
    */
   commit(): Promise<boolean>
 }
@@ -173,7 +174,7 @@ const StagedFileRow = ({ staged, onRemove }: StagedFileRowProps) => (
 )
 
 interface AttachmentsCardProps {
-  taskId: number
+  taskId: number | null
 }
 
 export const AttachmentsCard = forwardRef<
@@ -193,77 +194,34 @@ export const AttachmentsCard = forwardRef<
   const { data: attachments = [], isLoading } = useQuery<Attachment[]>({
     queryKey,
     queryFn: async () => {
-      const res = await tsr.attachments.list.query({ query: { taskId } })
+      const res = await tsr.attachments.list.query({
+        query: { taskId: taskId ?? 0 },
+      })
       return res.status === 200 ? res.body : []
     },
-    enabled: !disabled,
+    enabled: !disabled && taskId !== null,
   })
 
   const totalCount = attachments.length + stagedFiles.length
 
   useImperativeHandle(ref, () => ({
+    getStagedFiles: () => stagedFiles.map((sf) => sf.file),
     async commit() {
-      if (disabled) return true
+      if (disabled || taskId === null) return true
       setUploadError(null)
       let success = true
 
       for (const staged of [...stagedFiles]) {
-        try {
-          const urlRes = await tsr.attachments.getUploadUrl.mutate({
-            body: {
-              taskId,
-              fileName: staged.file.name,
-              fileSize: staged.file.size,
-              mimeType: staged.file.type || 'application/octet-stream',
-            },
-          })
-          if (urlRes.status !== 200) {
-            setUploadError(`Failed to upload "${staged.file.name}"`)
-            success = false
-            continue
-          }
-          const { uploadUrl, key } = urlRes.body
-
-          const uploadRes = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: staged.file,
-            headers: {
-              'Content-Type': staged.file.type || 'application/octet-stream',
-            },
-          })
-          if (!uploadRes.ok) {
-            setUploadError(`Failed to upload "${staged.file.name}"`)
-            success = false
-            continue
-          }
-
-          const createRes = await tsr.attachments.create.mutate({
-            body: {
-              taskId,
-              fileName: staged.file.name,
-              fileSize: staged.file.size,
-              mimeType: staged.file.type || 'application/octet-stream',
-              r2Key: key,
-            },
-          })
-          if (createRes.status === 201) {
-            setStagedFiles((prev) =>
-              prev.filter((sf) => sf.clientKey !== staged.clientKey),
-            )
-          } else {
-            setUploadError(`Failed to save "${staged.file.name}"`)
-            success = false
-          }
-        } catch {
-          setUploadError(`Failed to upload "${staged.file.name}"`)
+        const errors = await uploadFiles([staged.file], taskId, queryClient)
+        if (errors.length > 0) {
+          setUploadError(errors[0])
           success = false
+        } else {
+          setStagedFiles((prev) =>
+            prev.filter((sf) => sf.clientKey !== staged.clientKey),
+          )
         }
       }
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey }),
-        queryClient.invalidateQueries({ queryKey: ALL_ATTACHMENTS_QUERY_KEY }),
-      ])
 
       return success
     },

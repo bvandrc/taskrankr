@@ -24,6 +24,7 @@ import {
   type MutateTaskContent,
   useTaskMutations,
 } from '@/providers/TasksProvider'
+import type { LocalTask } from '@/types'
 import type { CreateTask, Task } from '~/shared/schema'
 import { SubtaskSortMode } from '~/shared/schema'
 import { ConfirmDeleteDialog } from '../ConfirmDeleteDialog'
@@ -332,21 +333,21 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const handleSubmit = (data: MutateTaskContent) => {
+  const handleSubmit = (data: MutateTaskContent): LocalTask | undefined => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
 
     if (top.taskId === null) {
       // Fresh create with no draft: just create directly.
-      createTask({
+      const localTask = createTask({
         ...data,
         parentId: freshCreateParentId ?? undefined,
       } as CreateTask)
       // Defensive: any stray drafts get committed (shouldn't exist here).
       if (hasDraftSession) commitDraftSession()
       resetAndClose()
-      return
+      return localTask
     }
 
     // Save form data to current entity. updateTask routes drafts internally.

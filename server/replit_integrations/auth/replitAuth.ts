@@ -172,7 +172,10 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler<
-  Record<string, string | number>
+  Record<string, string | number>,
+  any,
+  any,
+  any
 > = async (req, res, next) => {
   const user = req.user as UserSession | undefined
 

@@ -236,8 +236,7 @@ const router = s.router(contract, {
   },
   attachments: {
     list: {
-      // biome-ignore lint/suspicious/noExplicitAny: isAuthenticated's ParsedQs generic conflicts with ts-rest's typed query
-      middleware: [isAuthenticated as any],
+      middleware: [isAuthenticated],
       handler: async ({ query, req }) => {
         const userId = getUserId(req)
         const task = await storage.getTask(query.taskId, userId)

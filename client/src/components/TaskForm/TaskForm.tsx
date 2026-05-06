@@ -306,8 +306,12 @@ export const TaskForm = ({
               disableAddSubtask={!nameValue}
             />
 
-            {initialData && initialData.id > 0 && !isGuestMode && (
-              <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
+            {initialData && initialData.id > 0 && (
+              <AttachmentsCard
+                ref={attachmentsRef}
+                taskId={initialData.id}
+                disabled={isGuestMode}
+              />
             )}
 
             <div className="flex flex-col gap-4 mt-2 pb-4">

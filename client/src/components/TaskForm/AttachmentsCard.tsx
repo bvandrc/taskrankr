@@ -17,7 +17,7 @@ import {
   useState,
 } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { FileIcon, Paperclip, Trash2, Upload, X } from 'lucide-react'
+import { FileIcon, Lock, Paperclip, Trash2, Upload, X } from 'lucide-react'
 
 import { tsr } from '@/lib/ts-rest'
 import type { Attachment } from '~/shared/schema'
@@ -133,12 +133,13 @@ const StagedFileRow = ({ staged, onRemove }: StagedFileRowProps) => (
 
 interface AttachmentsCardProps {
   taskId: number
+  disabled?: boolean
 }
 
 export const AttachmentsCard = forwardRef<
   AttachmentsCardHandle,
   AttachmentsCardProps
->(({ taskId }, ref) => {
+>(({ taskId, disabled = false }, ref) => {
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([])
@@ -153,6 +154,7 @@ export const AttachmentsCard = forwardRef<
       const res = await tsr.attachments.list.query({ query: { taskId } })
       return res.status === 200 ? res.body : []
     },
+    enabled: !disabled,
   })
 
   const visibleAttachments = useMemo(
@@ -164,6 +166,7 @@ export const AttachmentsCard = forwardRef<
 
   useImperativeHandle(ref, () => ({
     async commit() {
+      if (disabled) return true
       let success = true
 
       for (const staged of [...stagedFiles]) {
@@ -269,68 +272,82 @@ export const AttachmentsCard = forwardRef<
   }, [])
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <Paperclip className="size-3" />
-          Attachments
-          {totalCount > 0 && (
-            <span className="text-muted-foreground/60">({totalCount})</span>
-          )}
+    <div className={disabled ? 'opacity-50' : undefined}>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <Paperclip className="size-3" />
+            Attachments
+            {disabled ? (
+              <span className="flex items-center gap-0.5 text-muted-foreground/60">
+                <Lock className="size-2.5" />
+                Logged in only
+              </span>
+            ) : (
+              totalCount > 0 && (
+                <span className="text-muted-foreground/60">({totalCount})</span>
+              )
+            )}
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled}
+            className="h-6 px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
+            data-testid="attachment-upload-button"
+          >
+            <Upload className="size-3" />
+            Add file
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+            data-testid="attachment-file-input"
+          />
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          className="h-6 px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
-          data-testid="attachment-upload-button"
-        >
-          <Upload className="size-3" />
-          Add file
-        </Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          onChange={handleFileChange}
-          data-testid="attachment-file-input"
-        />
+
+        {!disabled && uploadError && (
+          <p
+            className="text-[11px] text-destructive"
+            data-testid="attachment-upload-error"
+          >
+            {uploadError}
+          </p>
+        )}
+
+        {disabled ? (
+          <div className="text-[11px] text-muted-foreground/50 px-2">
+            Sign in to attach files to your tasks
+          </div>
+        ) : isLoading ? (
+          <div className="text-[11px] text-muted-foreground px-2">Loading…</div>
+        ) : totalCount === 0 ? (
+          <div className="text-[11px] text-muted-foreground/50 px-2">
+            No attachments yet
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {visibleAttachments.map((a) => (
+              <AttachmentRow
+                key={a.id}
+                attachment={a}
+                onDelete={handleDeleteExisting}
+              />
+            ))}
+            {stagedFiles.map((sf) => (
+              <StagedFileRow
+                key={sf.clientKey}
+                staged={sf}
+                onRemove={handleRemoveStaged}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {uploadError && (
-        <p
-          className="text-[11px] text-destructive"
-          data-testid="attachment-upload-error"
-        >
-          {uploadError}
-        </p>
-      )}
-
-      {isLoading ? (
-        <div className="text-[11px] text-muted-foreground px-2">Loading…</div>
-      ) : totalCount === 0 ? (
-        <div className="text-[11px] text-muted-foreground/50 px-2">
-          No attachments yet
-        </div>
-      ) : (
-        <div className="flex flex-col gap-1">
-          {visibleAttachments.map((a) => (
-            <AttachmentRow
-              key={a.id}
-              attachment={a}
-              onDelete={handleDeleteExisting}
-            />
-          ))}
-          {stagedFiles.map((sf) => (
-            <StagedFileRow
-              key={sf.clientKey}
-              staged={sf}
-              onRemove={handleRemoveStaged}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 })

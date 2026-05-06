@@ -27,8 +27,8 @@ export const useFormFieldsWithDefaults = <
   const keys = Object.keys(defaults) as Array<keyof D & string>
   const values = useWatch({
     control: form.control,
-    name: keys as unknown as readonly Path<T>[],
-  }) as unknown[]
+    name: keys as Path<T>[],
+  })
 
   const result = {} as { [K in keyof D]: D[K] }
   keys.forEach((key, i) => {

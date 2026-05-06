@@ -23,7 +23,7 @@ import {
   type Task,
   TaskStatus,
 } from '~/shared/schema'
-import { formatDuration } from '~/shared/utils'
+import { formatDuration } from '~/shared/utils/datetime'
 import { isAutoHiddenByParent } from '~/shared/utils/task-utils'
 import { ChangeStatusDialog } from './ChangeStatusDialog'
 import { Badge } from './primitives/Badge'

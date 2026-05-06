@@ -27,6 +27,7 @@ import {
   X as XIcon,
 } from 'lucide-react'
 
+import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
 import { useGuestMode } from '@/providers/GuestModeProvider'
@@ -342,7 +343,9 @@ export const AttachmentsCard = forwardRef<
             Sign in to attach files to your tasks
           </div>
         ) : isLoading ? (
-          <div className="text-[11px] text-muted-foreground px-2">Loading…</div>
+          <div className="px-2 py-1">
+            <Spinner size="sm" />
+          </div>
         ) : totalCount === 0 ? (
           <div className="text-[11px] text-muted-foreground/50 px-2">
             No attachments yet

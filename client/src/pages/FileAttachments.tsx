@@ -12,6 +12,7 @@ import { BackButtonHeader } from '@/components/BackButton'
 import { Badge } from '@/components/primitives/Badge'
 import { Button } from '@/components/primitives/Button'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
+import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
@@ -188,14 +189,7 @@ const FileAttachments = () => {
         <StorageMeter totalBytes={totalBytes} />
 
         {isLoading ? (
-          <div className="flex flex-col gap-2">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-16 rounded-lg bg-card border border-white/5 animate-pulse"
-              />
-            ))}
-          </div>
+          <Spinner centered />
         ) : attachments.length === 0 ? (
           <EmptyState />
         ) : (

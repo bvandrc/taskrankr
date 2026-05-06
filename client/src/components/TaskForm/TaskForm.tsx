@@ -2,7 +2,7 @@
  * @fileoverview Form component for creating and editing tasks
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
@@ -45,7 +45,7 @@ import {
 } from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
-import { AttachmentsCard } from './AttachmentsCard'
+import { AttachmentsCard, type AttachmentsCardHandle } from './AttachmentsCard'
 import { RankFieldSelect } from './RankFieldSelect'
 import { SubtasksCard } from './SubtasksCard'
 import { useTaskFormParentChain } from './useTaskFormParentChain'
@@ -198,12 +198,13 @@ export const TaskForm = ({
     void form.trigger()
   }, [settings.fieldConfig, form, timeSpentRequired])
 
+  const attachmentsRef = useRef<AttachmentsCardHandle>(null)
   const isEditingExisting = !!initialData && !isDraft
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => {
+        onSubmit={form.handleSubmit(async (data) => {
           const submitted: MutateTaskContent = { ...data }
           if (
             submitted.status === TaskStatus.COMPLETED &&
@@ -211,6 +212,8 @@ export const TaskForm = ({
           ) {
             submitted.completedAt = new Date()
           }
+          const committed = await attachmentsRef.current?.commit()
+          if (committed === false) return
           onSubmit(submitted)
         })}
         className="flex flex-col h-full"
@@ -302,7 +305,7 @@ export const TaskForm = ({
             />
 
             {initialData && initialData.id > 0 && (
-              <AttachmentsCard taskId={initialData.id} />
+              <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
             )}
 
             <div className="flex flex-col gap-4 mt-2 pb-4">

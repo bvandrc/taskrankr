@@ -7,6 +7,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { minutesToMilliseconds } from 'date-fns'
 
 import { storage } from '@/lib/storage'
 import { AuthPaths } from '~/shared/constants'
@@ -67,7 +68,7 @@ export function useAuth() {
     queryKey: [AuthPaths.USER],
     queryFn: fetchUser,
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: minutesToMilliseconds(5), // 5 minutes
   })
 
   const logoutMutation = useMutation({

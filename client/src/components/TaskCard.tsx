@@ -23,6 +23,7 @@ import {
   type Task,
   TaskStatus,
 } from '~/shared/schema'
+import { formatDuration } from '~/shared/utils'
 import { isAutoHiddenByParent } from '~/shared/utils/task-utils'
 import { ChangeStatusDialog } from './ChangeStatusDialog'
 import { Badge } from './primitives/Badge'
@@ -160,23 +161,6 @@ const CollapseCaret = ({
     />
   </button>
 )
-
-const formatDuration = (ms: number) => {
-  if (ms <= 0) return null
-  const totalSeconds = Math.floor(ms / 1000)
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-
-  if (hours > 0 && minutes > 0) {
-    return `${hours}h ${minutes}m`
-  } else if (hours > 0) {
-    return `${hours}h`
-  } else if (minutes > 0) {
-    return `${minutes}m`
-  } else {
-    return `${totalSeconds}s`
-  }
-}
 
 const getTotalAccumulatedTime = (
   task: Pick<

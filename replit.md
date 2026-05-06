@@ -85,7 +85,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
 - **Attachments DB migration**: The `attachments` table was created directly via `executeSql` (not via a drizzle migration file) because `db:push` and `db:generate` both fail non-interactively. If resetting the DB, re-run: `CREATE TABLE IF NOT EXISTS attachments (id serial PRIMARY KEY, task_id integer NOT NULL REFERENCES tasks(id) ON DELETE CASCADE, user_id varchar NOT NULL, file_name text NOT NULL, file_size integer NOT NULL, mime_type text NOT NULL, r2_key text NOT NULL, created_at timestamp DEFAULT now() NOT NULL);`
 - **R2 middleware typing**: The `list` attachment route uses `isAuthenticated as any` in the middleware array because ts-rest's strict query-param type (`{ taskId: number }`) conflicts with Express's `ParsedQs` in the middleware signature.
-- **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart resolves it with no code changes needed.
+- **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
 
 ## Pointers
 

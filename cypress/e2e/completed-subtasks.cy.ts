@@ -4,6 +4,8 @@ import { checkTasksExistBackend, isLoggedIn } from '@cypress/support/utils'
 import {
   type CreatedTask,
   checkNumCalls,
+  interceptUpdate,
+  waitForUpdate,
 } from '@cypress/support/utils/intercepts'
 import { goToCompletedPage } from '@cypress/support/utils/navigation'
 import {
@@ -135,6 +137,76 @@ describe('Completed Subtasks', () => {
       cy.contains(rootTask.name).should('not.exist')
     })
   }
+
+  context('Auto-complete parent when all subtasks completed', () => {
+    const completedRootTask = {
+      ...rootTask,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
+
+    it('auto-completes parent when inheritCompletionState is enabled and the last subtask is completed', () => {
+      cy.get(Selectors.CREATE_TASK_BTN).click()
+      getTaskForm(0).within(() => {
+        fillTaskForm(rootTask)
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(
+          TaskForm.AUTO_COMPLETE_WHEN_ALL_SUBTASKS_COMPLETE_SWITCH,
+        ).toggleState(true)
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        clickSubmitBtnCreate()
+      })
+
+      getTaskForm(0).within(() => {
+        clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+      })
+
+      checkNumCalls({ create: 2, update: 0 })
+
+      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
+
+      // Parent auto-completes as the last subtask is marked done
+      waitForUpdate([completedRootTask])
+      checkNumCalls({ create: 2, update: 2 })
+
+      checkTasksExistBackend([completedRootTask])
+      goToCompletedPage()
+      cy.contains(rootTask.name).should('exist')
+    })
+
+    it('auto-completes parent when inheritCompletionState is enabled after all subtasks are already completed', () => {
+      createUncompletedSubtask()
+      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+
+      // Complete the subtask — parent should NOT auto-complete yet (setting still off)
+      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
+      checkNumCalls({ create: 2, update: 1 })
+      expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
+
+      // Enable inheritCompletionState on the parent task
+      openTaskEditForm(rootTask)
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(
+          TaskForm.AUTO_COMPLETE_WHEN_ALL_SUBTASKS_COMPLETE_SWITCH,
+        ).toggleState(true)
+        clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
+      })
+      checkNumCalls({ create: 2, update: 2 })
+
+      // Reload to trigger reconciliation — parent should now be auto-completed
+      cy.reload()
+      interceptUpdate()
+      waitForUpdate([completedRootTask])
+
+      goToCompletedPage()
+      cy.contains(rootTask.name).should('exist')
+    })
+  })
 
   context('Auto-hide completed subtasks', () => {
     context('When creating a new root task', () => {

@@ -7,6 +7,7 @@
 
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -43,12 +44,11 @@ export async function getPresignedUploadUrl(
 }
 
 /** Returns a presigned URL that allows downloading the object for a limited time. */
-export async function getPresignedDownloadUrl(
+export function getPresignedDownloadUrl(
   key: string,
   fileName: string,
   expiresInSeconds = 3600,
 ): Promise<string> {
-  const { GetObjectCommand } = await import('@aws-sdk/client-s3')
   const client = getR2Client()
   const command = new GetObjectCommand({
     Bucket: BUCKET,

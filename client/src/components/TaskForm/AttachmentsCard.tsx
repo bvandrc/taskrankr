@@ -198,6 +198,7 @@ export const AttachmentsCard = forwardRef<
   useImperativeHandle(ref, () => ({
     async commit() {
       if (disabled) return true
+      setUploadError(null)
       let success = true
 
       for (const staged of [...stagedFiles]) {

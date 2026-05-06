@@ -8,6 +8,7 @@
 
 import type { Server } from 'node:http'
 import { createExpressEndpoints, initServer } from '@ts-rest/express'
+import { hoursToSeconds } from 'date-fns'
 import { isNil, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
@@ -360,7 +361,7 @@ function registerTestRoutes(app: Express): void {
         profileImageUrl: null,
       })
 
-      const expiresAt = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+      const expiresAt = Math.floor(Date.now() / 1000) + hoursToSeconds(24 * 7)
       const user: UserSession = {
         claims: {
           sub: TEST_USER_ID,

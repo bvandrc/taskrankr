@@ -6,6 +6,7 @@
 
 import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { hoursToMilliseconds } from 'date-fns'
 import { FileIcon, Paperclip, Trash2 } from 'lucide-react'
 
 import { BackButtonHeader } from '@/components/BackButton'
@@ -22,7 +23,9 @@ import { TaskStatus } from '~/shared/schema'
 const QUERY_KEY = ['/api/attachments/all']
 
 function daysSinceCompleted(date: Date): string {
-  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
+  const days = Math.floor(
+    (Date.now() - date.getTime()) / hoursToMilliseconds(24),
+  )
   if (days === 0) return 'Today'
   if (days === 1) return '1 day ago'
   return `${days} days ago`

@@ -145,7 +145,7 @@ describe('Completed Subtasks', () => {
   }
 
   context('Auto-complete parent when all subtasks completed', () => {
-    it('auto-completes parent when inheritCompletionState is enabled and the last subtask is completed', () => {
+    it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask is completed', () => {
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)
@@ -178,7 +178,7 @@ describe('Completed Subtasks', () => {
       ])
     })
 
-    it('auto-completes parent when inheritCompletionState is enabled after all subtasks are already completed', () => {
+    it('auto-completes parent when inheritCompletionState becomes enabled after all subtasks are already completed', () => {
       createUncompletedSubtask()
       expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 

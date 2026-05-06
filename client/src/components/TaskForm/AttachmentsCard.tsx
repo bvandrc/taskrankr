@@ -43,14 +43,16 @@ interface StagedFile {
   file: File
 }
 
+type IconComponent = React.ComponentType<{ className?: string }>
+
 interface FileRowProps {
-  icon: React.ReactNode
+  icon: IconComponent
   name: string
   sizeLabel: string
   onNameClick?: () => void
   nameTestId?: string
   onAction: () => void
-  actionIcon: React.ReactNode
+  actionIcon: IconComponent
   actionDisabled?: boolean
   actionLabel: string
   actionTestId: string
@@ -59,13 +61,13 @@ interface FileRowProps {
 }
 
 const FileRow = ({
-  icon,
+  icon: Icon,
   name,
   sizeLabel,
   onNameClick,
   nameTestId,
   onAction,
-  actionIcon,
+  actionIcon: ActionIcon,
   actionDisabled,
   actionLabel,
   actionTestId,
@@ -76,7 +78,7 @@ const FileRow = ({
     className={`flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group ${dimmed ? 'opacity-60' : 'hover:bg-secondary/20'}`}
     data-testid={testId}
   >
-    <span className="size-3.5 shrink-0 text-muted-foreground">{icon}</span>
+    <Icon className="size-3.5 shrink-0 text-muted-foreground" />
     {onNameClick ? (
       <button
         type="button"
@@ -105,7 +107,7 @@ const FileRow = ({
       data-testid={actionTestId}
       aria-label={actionLabel}
     >
-      {actionIcon}
+      <ActionIcon className="size-3.5" />
     </button>
   </div>
 )
@@ -124,13 +126,13 @@ const AttachmentRow = ({
   isDeleting,
 }: AttachmentRowProps) => (
   <FileRow
-    icon={<FileIcon className="size-3.5" />}
+    icon={FileIcon}
     name={attachment.fileName}
     sizeLabel={formatFileSize(attachment.fileSize)}
     onNameClick={() => onDownload(attachment.id, attachment.fileName)}
     nameTestId={`attachment-download-${attachment.id}`}
     onAction={() => onDelete(attachment.id)}
-    actionIcon={<Trash2 className="size-3.5" />}
+    actionIcon={Trash2}
     actionDisabled={isDeleting}
     actionLabel="Delete attachment"
     actionTestId={`attachment-delete-${attachment.id}`}
@@ -145,11 +147,11 @@ interface StagedFileRowProps {
 
 const StagedFileRow = ({ staged, onRemove }: StagedFileRowProps) => (
   <FileRow
-    icon={<Upload className="size-3.5" />}
+    icon={Upload}
     name={staged.file.name}
     sizeLabel={`${formatFileSize(staged.file.size)} · pending`}
     onAction={() => onRemove(staged.clientKey)}
-    actionIcon={<X className="size-3.5" />}
+    actionIcon={X}
     actionLabel="Remove pending upload"
     actionTestId={`attachment-staged-remove-${staged.clientKey}`}
     dimmed

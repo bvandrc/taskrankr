@@ -13,6 +13,7 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { getHasIncompleteSubtasks } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
+import { useGuestMode } from '@/providers/GuestModeProvider'
 import { useSettings } from '@/providers/SettingsProvider'
 import type {
   DeleteTaskArgs,
@@ -141,6 +142,7 @@ export const TaskForm = ({
 }: TaskFormProps) => {
   const parentChain = useTaskFormParentChain(parentId ?? undefined)
   const { tasksWithDrafts: allTasks } = useDraftSession()
+  const { isGuestMode } = useGuestMode()
   const { settings } = useSettings()
   const hasIncompleteSubtasks = initialData
     ? getHasIncompleteSubtasks(allTasks, initialData.id)
@@ -304,7 +306,7 @@ export const TaskForm = ({
               disableAddSubtask={!nameValue}
             />
 
-            {initialData && initialData.id > 0 && (
+            {initialData && initialData.id > 0 && !isGuestMode && (
               <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
             )}
 

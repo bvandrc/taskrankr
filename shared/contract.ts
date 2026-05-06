@@ -9,9 +9,11 @@ import { z } from 'zod'
 import {
   attachmentSchema,
   attachmentWithTaskSchema,
+  createAttachmentBodySchema,
   insertTaskSchema,
   insertUserSettingsSchema,
   taskSchema,
+  uploadUrlBodySchema,
   userSettingsSchema,
 } from './schema'
 
@@ -188,12 +190,7 @@ const attachmentsContract = c.router({
   getUploadUrl: {
     method: 'POST',
     path: `${ApiPaths.ATTACHMENTS}/upload-url`,
-    body: z.object({
-      taskId: z.number(),
-      fileName: z.string(),
-      fileSize: z.number(),
-      mimeType: z.string(),
-    }),
+    body: uploadUrlBodySchema,
     responses: {
       200: z.object({ uploadUrl: z.string(), key: z.string() }),
       400: errorSchemas.validation,
@@ -204,13 +201,7 @@ const attachmentsContract = c.router({
   create: {
     method: 'POST',
     path: ApiPaths.ATTACHMENTS,
-    body: z.object({
-      taskId: z.number(),
-      fileName: z.string(),
-      fileSize: z.number(),
-      mimeType: z.string(),
-      key: z.string(),
-    }),
+    body: createAttachmentBodySchema,
     responses: {
       201: attachmentSchema,
       400: errorSchemas.validation,

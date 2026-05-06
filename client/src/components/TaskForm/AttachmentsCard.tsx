@@ -198,7 +198,7 @@ export const AttachmentsCard = forwardRef<
               fileName: staged.file.name,
               fileSize: staged.file.size,
               mimeType: staged.file.type || 'application/octet-stream',
-              key,
+              r2Key: key,
             },
           })
           if (createRes.status === 201) {

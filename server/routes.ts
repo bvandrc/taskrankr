@@ -281,12 +281,8 @@ const router = s.router(contract, {
           return ERRORS.TASK_NOT_FOUND
         }
         const attachment = await storage.createAttachment({
-          taskId: body.taskId,
+          ...body,
           userId,
-          fileName: body.fileName,
-          fileSize: body.fileSize,
-          mimeType: body.mimeType,
-          r2Key: body.key,
         })
         return { status: 201, body: attachment }
       },

@@ -37,6 +37,15 @@ export const insertAttachmentSchema = createInsertSchema(attachments).omit({
 
 export type InsertAttachment = z.infer<typeof insertAttachmentSchema>
 
+export const uploadUrlBodySchema = insertAttachmentSchema.omit({
+  userId: true,
+  r2Key: true,
+})
+
+export const createAttachmentBodySchema = insertAttachmentSchema.omit({
+  userId: true,
+})
+
 export const attachmentWithTaskSchema = attachmentSchema.extend({
   taskName: z.string(),
   taskStatus: z.string(),

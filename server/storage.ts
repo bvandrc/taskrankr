@@ -58,6 +58,8 @@ export interface IStorage {
   deleteAttachment(id: number, userId: string): Promise<void>
   /** Recursively collects all R2 keys for a task and every descendant. */
   getAttachmentKeysForTaskTree(id: number, userId: string): Promise<string[]>
+  /** Returns every r2Key stored in the attachments table, across all users. */
+  getAllAttachmentR2Keys(): Promise<string[]>
 }
 
 export class DatabaseStorage implements IStorage {
@@ -492,6 +494,11 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(attachments)
       .where(and(eq(attachments.id, id), eq(attachments.userId, userId)))
+  }
+
+  async getAllAttachmentR2Keys(): Promise<string[]> {
+    const rows = await db.select({ r2Key: attachments.r2Key }).from(attachments)
+    return rows.map((r) => r.r2Key)
   }
 
   async getAttachmentKeysForTaskTree(

@@ -7,16 +7,14 @@ import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import './index.css'
+import { hoursToMilliseconds } from 'date-fns'
 
 registerSW({
   onRegisteredSW(_swUrl, registration) {
     if (registration) {
-      setInterval(
-        () => {
-          registration.update()
-        },
-        60 * 60 * 1000,
-      )
+      setInterval(() => {
+        registration.update()
+      }, hoursToMilliseconds(1))
     }
   },
 })

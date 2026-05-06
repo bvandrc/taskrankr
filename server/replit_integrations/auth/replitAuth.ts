@@ -9,6 +9,7 @@
 /** biome-ignore-all lint/complexity/useLiteralKeys: added by Replit */
 /** biome-ignore-all lint/suspicious/noExplicitAny: added by Replit */
 import connectPg from 'connect-pg-simple'
+import { hoursToMilliseconds } from 'date-fns'
 import type { Express, RequestHandler } from 'express'
 import session from 'express-session'
 import memoize from 'memoizee'
@@ -26,11 +27,11 @@ const getOidcConfig = memoize(
       process.env.REPL_ID!,
     )
   },
-  { maxAge: 3600 * 1000 },
+  { maxAge: hoursToMilliseconds(1) },
 )
 
 export function getSession() {
-  const sessionTtl = 30 * 24 * 60 * 60 * 1000 // 30 days
+  const sessionTtl = hoursToMilliseconds(24 * 30) // 30 days
   const pgStore = connectPg(session)
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,

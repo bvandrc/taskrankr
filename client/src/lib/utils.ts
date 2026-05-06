@@ -14,19 +14,6 @@ export const without = <const T, const V extends readonly T[]>(
   ...values: V
 ) => withoutEsToolkit(array, ...values) as Exclude<T, V[number]>[]
 
-export const hoursMinutesToMs = (hours: number, minutes: number): number =>
-  (hours * 3600 + minutes * 60) * 1000
-
-export const msToHoursMinutes = (
-  ms: number,
-): { hours: number; minutes: number } => {
-  const totalMinutes = Math.floor(ms / 60_000)
-  return {
-    hours: Math.floor(totalMinutes / 60),
-    minutes: totalMinutes % 60,
-  }
-}
-
 type ForwardRefRenderFunction<T, P> = React.ForwardRefRenderFunction<
   T,
   React.PropsWithoutRef<P>

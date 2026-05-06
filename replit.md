@@ -83,6 +83,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
 - **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
+- **Vite duplicate-React / Invalid hook call**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Root cause: `workbox-window` is only imported by the PWA service worker — Vite never discovers it during the initial module-graph crawl, so it triggers a mid-session full-page reload + re-bundle the first time the browser runs the service worker. That reload races with module loading and can land two React instances in the graph simultaneously. Pre-including it prevents the mid-session reload entirely. Do not remove either option.
 
 ## Pointers
 

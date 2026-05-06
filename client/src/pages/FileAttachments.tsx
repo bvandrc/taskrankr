@@ -182,8 +182,7 @@ const FileAttachments = () => {
   )
 
   const totalBytes = useMemo(
-    () =>
-      (data as AttachmentWithTask[]).reduce((sum, a) => sum + a.fileSize, 0),
+    () => data.reduce((sum, a) => sum + a.fileSize, 0),
     [data],
   )
 

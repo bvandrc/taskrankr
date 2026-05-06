@@ -13,6 +13,7 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { getHasIncompleteSubtasks } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
+import { useGuestMode } from '@/providers/GuestModeProvider'
 import { useSettings } from '@/providers/SettingsProvider'
 import type {
   DeleteTaskArgs,
@@ -198,6 +199,7 @@ export const TaskForm = ({
     void form.trigger()
   }, [settings.fieldConfig, form, timeSpentRequired])
 
+  const { isGuestMode } = useGuestMode()
   const attachmentsRef = useRef<AttachmentsCardHandle>(null)
   const isEditingExisting = !!initialData && !isDraft
 
@@ -396,7 +398,7 @@ export const TaskForm = ({
           </div>
         </div>
 
-        {initialData && initialData.id > 0 && (
+        {initialData && (isGuestMode || initialData.id > 0) && (
           <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
         )}
 

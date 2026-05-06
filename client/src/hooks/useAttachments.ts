@@ -35,7 +35,9 @@ export function useAttachments(queryKey: QueryKey) {
         const a = document.createElement('a')
         a.href = res.body.downloadUrl
         a.download = fileName
+        document.body.appendChild(a)
         a.click()
+        document.body.removeChild(a)
       }
     } catch {
       toast({ title: 'Failed to get download link', variant: 'destructive' })

@@ -547,7 +547,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(attachments)
       .where(eq(attachments.userId, userId))
-    return row?.total ?? 0
+    return Number(row?.total ?? 0)
   }
 }
 

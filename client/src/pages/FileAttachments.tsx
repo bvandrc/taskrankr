@@ -164,7 +164,7 @@ const FileAttachments = () => {
 
   const attachments = useMemo(
     () =>
-      (data as AttachmentWithTask[]).slice().sort((a, b) => {
+      data.slice().sort((a, b) => {
         const aOpen = a.taskStatus !== TaskStatus.COMPLETED
         const bOpen = b.taskStatus !== TaskStatus.COMPLETED
         if (aOpen !== bOpen) return aOpen ? -1 : 1
@@ -180,8 +180,7 @@ const FileAttachments = () => {
   )
 
   const totalBytes = useMemo(
-    () =>
-      (data as AttachmentWithTask[]).reduce((sum, a) => sum + a.fileSize, 0),
+    () => data.reduce((sum, a) => sum + a.fileSize, 0),
     [data],
   )
 

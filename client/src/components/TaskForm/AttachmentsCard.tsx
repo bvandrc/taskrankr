@@ -29,7 +29,6 @@ import {
 
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
-import { cn, handleKeyDown } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
@@ -86,26 +85,27 @@ const FileRow = ({
     className={`flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group ${dimmed ? 'opacity-60' : 'hover:bg-secondary/20'}`}
     data-testid={testId}
   >
-    <span className="size-3.5 shrink-0 text-muted-foreground">
-      {<Icon className="size-3.5" />}
-    </span>
-    {/** biome-ignore lint/a11y/noStaticElementInteractions: div may act as a button or not depending on onNameClick */}
-    <div
-      className={cn('flex-1 min-w-0', { 'text-left': onNameClick })}
-      role={onNameClick ? 'button' : undefined}
-      onClick={onNameClick}
-      onKeyDown={onNameClick ? handleKeyDown : undefined}
-      data-testid={nameTestId}
-    >
-      <span
-        className={cn('text-xs truncate block text-foreground/80', {
-          'hover:text-foreground hover:underline': onNameClick,
-        })}
+    <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+    {onNameClick ? (
+      <button
+        type="button"
+        className="flex-1 min-w-0 text-left"
+        onClick={onNameClick}
+        data-testid={nameTestId}
       >
-        {name}
-      </span>
-      <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
-    </div>
+        <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
+          {name}
+        </span>
+        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+      </button>
+    ) : (
+      <div className="flex-1 min-w-0">
+        <span className="text-xs truncate block text-foreground/80">
+          {name}
+        </span>
+        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+      </div>
+    )}
     <button
       type="button"
       onClick={onAction}
@@ -253,14 +253,10 @@ export const AttachmentsCard = forwardRef<
         }
       }
 
-      if (success) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey }),
-          queryClient.invalidateQueries({
-            queryKey: ALL_ATTACHMENTS_QUERY_KEY,
-          }),
-        ])
-      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ALL_ATTACHMENTS_QUERY_KEY }),
+      ])
 
       return success
     },

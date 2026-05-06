@@ -9,7 +9,7 @@
 import type { Server } from 'node:http'
 import { createExpressEndpoints, initServer } from '@ts-rest/express'
 import { hoursToSeconds } from 'date-fns'
-import { isNil, omit } from 'es-toolkit'
+import { isNil, noop, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
 import { TestPaths } from '~/shared/constants'
@@ -293,7 +293,7 @@ const router = s.router(contract, {
           })
           return { status: 201, body: attachment }
         } catch {
-          await deleteR2Object(body.r2Key).catch(() => undefined)
+          await deleteR2Object(body.r2Key).catch(noop)
           return {
             status: 400,
             body: { message: 'Failed to save attachment metadata' },

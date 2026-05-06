@@ -38,6 +38,8 @@ const errorSchemas = {
   }),
 }
 
+const zId = z.coerce.number()
+
 const tasksContract = c.router({
   list: {
     method: 'GET',
@@ -50,9 +52,7 @@ const tasksContract = c.router({
   get: {
     method: 'GET',
     path: `${ApiPaths.TASKS}/:id`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     responses: {
       200: taskSchema,
       404: errorSchemas.notFound,
@@ -72,9 +72,7 @@ const tasksContract = c.router({
   update: {
     method: 'PUT',
     path: `${ApiPaths.TASKS}/:id`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     body: insertTaskSchema.omit({ userId: true }).partial(),
     responses: {
       200: taskSchema,
@@ -86,9 +84,7 @@ const tasksContract = c.router({
   delete: {
     method: 'DELETE',
     path: `${ApiPaths.TASKS}/:id`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     body: c.noBody(),
     responses: {
       204: c.noBody(),
@@ -132,9 +128,7 @@ const tasksContract = c.router({
   reorderSubtasks: {
     method: 'PUT',
     path: `${ApiPaths.TASKS}/:id/reorder`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     body: z.object({
       orderedIds: z.array(z.number()),
     }),
@@ -171,9 +165,7 @@ const attachmentsContract = c.router({
   list: {
     method: 'GET',
     path: ApiPaths.ATTACHMENTS,
-    query: z.object({
-      taskId: z.coerce.number(),
-    }),
+    query: z.object({ taskId: zId }),
     responses: {
       200: z.array(attachmentSchema),
     },
@@ -212,9 +204,7 @@ const attachmentsContract = c.router({
   getDownloadUrl: {
     method: 'GET',
     path: `${ApiPaths.ATTACHMENTS}/:id/download-url`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     responses: {
       200: z.object({ downloadUrl: z.string() }),
       404: errorSchemas.notFound,
@@ -224,9 +214,7 @@ const attachmentsContract = c.router({
   delete: {
     method: 'DELETE',
     path: `${ApiPaths.ATTACHMENTS}/:id`,
-    pathParams: z.object({
-      id: z.coerce.number(),
-    }),
+    pathParams: z.object({ id: zId }),
     body: c.noBody(),
     responses: {
       204: c.noBody(),

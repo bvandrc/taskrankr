@@ -16,6 +16,7 @@ import memoize from 'memoizee'
 import * as client from 'openid-client'
 import { Strategy, type VerifyFunction } from 'openid-client/passport'
 import passport from 'passport'
+import type { Jsonifiable } from 'type-fest'
 
 import { AuthPaths } from '~/shared/constants'
 import { authStorage } from './storage'
@@ -174,8 +175,8 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler<
   Record<string, string | number>,
   any,
-  any,
-  any
+  Jsonifiable,
+  Jsonifiable
 > = async (req, res, next) => {
   const user = req.user as UserSession | undefined
 

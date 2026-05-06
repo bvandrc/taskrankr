@@ -43,6 +43,73 @@ interface StagedFile {
   file: File
 }
 
+interface FileRowProps {
+  icon: React.ReactNode
+  name: string
+  sizeLabel: string
+  onNameClick?: () => void
+  nameTestId?: string
+  onAction: () => void
+  actionIcon: React.ReactNode
+  actionDisabled?: boolean
+  actionLabel: string
+  actionTestId: string
+  dimmed?: boolean
+  'data-testid': string
+}
+
+const FileRow = ({
+  icon,
+  name,
+  sizeLabel,
+  onNameClick,
+  nameTestId,
+  onAction,
+  actionIcon,
+  actionDisabled,
+  actionLabel,
+  actionTestId,
+  dimmed,
+  'data-testid': testId,
+}: FileRowProps) => (
+  <div
+    className={`flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group ${dimmed ? 'opacity-60' : 'hover:bg-secondary/20'}`}
+    data-testid={testId}
+  >
+    <span className="size-3.5 shrink-0 text-muted-foreground">{icon}</span>
+    {onNameClick ? (
+      <button
+        type="button"
+        className="flex-1 min-w-0 text-left"
+        onClick={onNameClick}
+        data-testid={nameTestId}
+      >
+        <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
+          {name}
+        </span>
+        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+      </button>
+    ) : (
+      <div className="flex-1 min-w-0">
+        <span className="text-xs truncate block text-foreground/80">
+          {name}
+        </span>
+        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+      </div>
+    )}
+    <button
+      type="button"
+      onClick={onAction}
+      disabled={actionDisabled}
+      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5 disabled:opacity-30"
+      data-testid={actionTestId}
+      aria-label={actionLabel}
+    >
+      {actionIcon}
+    </button>
+  </div>
+)
+
 interface AttachmentRowProps {
   attachment: Attachment
   onDelete: (id: number) => void
@@ -56,35 +123,19 @@ const AttachmentRow = ({
   onDownload,
   isDeleting,
 }: AttachmentRowProps) => (
-  <div
-    className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 hover:bg-secondary/20 group"
+  <FileRow
+    icon={<FileIcon className="size-3.5" />}
+    name={attachment.fileName}
+    sizeLabel={formatFileSize(attachment.fileSize)}
+    onNameClick={() => onDownload(attachment.id, attachment.fileName)}
+    nameTestId={`attachment-download-${attachment.id}`}
+    onAction={() => onDelete(attachment.id)}
+    actionIcon={<Trash2 className="size-3.5" />}
+    actionDisabled={isDeleting}
+    actionLabel="Delete attachment"
+    actionTestId={`attachment-delete-${attachment.id}`}
     data-testid={`attachment-row-${attachment.id}`}
-  >
-    <FileIcon className="size-3.5 shrink-0 text-muted-foreground" />
-    <button
-      type="button"
-      className="flex-1 min-w-0 text-left"
-      onClick={() => onDownload(attachment.id, attachment.fileName)}
-      data-testid={`attachment-download-${attachment.id}`}
-    >
-      <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
-        {attachment.fileName}
-      </span>
-      <span className="text-[10px] text-muted-foreground">
-        {formatFileSize(attachment.fileSize)}
-      </span>
-    </button>
-    <button
-      type="button"
-      onClick={() => onDelete(attachment.id)}
-      disabled={isDeleting}
-      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5 disabled:opacity-30"
-      data-testid={`attachment-delete-${attachment.id}`}
-      aria-label="Delete attachment"
-    >
-      <Trash2 className="size-3.5" />
-    </button>
-  </div>
+  />
 )
 
 interface StagedFileRowProps {
@@ -93,29 +144,17 @@ interface StagedFileRowProps {
 }
 
 const StagedFileRow = ({ staged, onRemove }: StagedFileRowProps) => (
-  <div
-    className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group opacity-60"
+  <FileRow
+    icon={<Upload className="size-3.5" />}
+    name={staged.file.name}
+    sizeLabel={`${formatFileSize(staged.file.size)} · pending`}
+    onAction={() => onRemove(staged.clientKey)}
+    actionIcon={<X className="size-3.5" />}
+    actionLabel="Remove pending upload"
+    actionTestId={`attachment-staged-remove-${staged.clientKey}`}
+    dimmed
     data-testid={`attachment-staged-${staged.clientKey}`}
-  >
-    <Upload className="size-3.5 shrink-0 text-muted-foreground" />
-    <div className="flex-1 min-w-0">
-      <span className="text-xs truncate block text-foreground/80">
-        {staged.file.name}
-      </span>
-      <span className="text-[10px] text-muted-foreground">
-        {formatFileSize(staged.file.size)} · pending
-      </span>
-    </div>
-    <button
-      type="button"
-      onClick={() => onRemove(staged.clientKey)}
-      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5"
-      data-testid={`attachment-staged-remove-${staged.clientKey}`}
-      aria-label="Remove pending upload"
-    >
-      <X className="size-3.5" />
-    </button>
-  </div>
+  />
 )
 
 interface AttachmentsCardProps {

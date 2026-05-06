@@ -30,6 +30,7 @@ import {
 import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
+import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
@@ -83,30 +84,40 @@ const FileRow = ({
   'data-testid': testId,
 }: FileRowProps) => (
   <div
-    className={`flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group ${dimmed ? 'opacity-60' : 'hover:bg-secondary/20'}`}
+    className={cn(
+      'flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 group',
+      dimmed ? 'opacity-60' : 'hover:bg-secondary/20',
+    )}
     data-testid={testId}
   >
     <Icon className="size-3.5 shrink-0 text-muted-foreground" />
-    {onNameClick ? (
-      <button
-        type="button"
-        className="flex-1 min-w-0 text-left"
-        onClick={onNameClick}
-        data-testid={nameTestId}
+    <div
+      {...(onNameClick
+        ? {
+            role: 'button' as const,
+            tabIndex: 0,
+            onClick: onNameClick,
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onNameClick()
+              }
+            },
+          }
+        : {})}
+      data-testid={nameTestId}
+      className="flex-1 min-w-0"
+    >
+      <span
+        className={cn(
+          'text-xs truncate block text-foreground/80',
+          onNameClick && 'hover:text-foreground hover:underline',
+        )}
       >
-        <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
-          {name}
-        </span>
-        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
-      </button>
-    ) : (
-      <div className="flex-1 min-w-0">
-        <span className="text-xs truncate block text-foreground/80">
-          {name}
-        </span>
-        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
-      </div>
-    )}
+        {name}
+      </span>
+      <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+    </div>
     <button
       type="button"
       onClick={onAction}

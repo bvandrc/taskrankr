@@ -269,7 +269,7 @@ export class DatabaseStorage implements IStorage {
     const updated = task
 
     // inheritCompletionState turned on: enforce consistency with children
-    if (dbUpdates.inheritCompletionState === true) {
+    if (dbUpdates.inheritCompletionState) {
       const children = await db
         .select()
         .from(tasks)

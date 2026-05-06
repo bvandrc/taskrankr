@@ -470,7 +470,7 @@ export const TasksProvider = ({
       enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: updates })
       debugLog.log('task', 'update', { id, updates })
 
-      if (updates.inheritCompletionState === true && updatedTask) {
+      if (updates.inheritCompletionState && updatedTask) {
         if (updatedTask.status === TaskStatus.COMPLETED) {
           if (getHasIncompleteSubtasks(tasksRef.current, id)) {
             // Revert: flag just enabled but parent is completed with incomplete subtasks

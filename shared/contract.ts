@@ -16,6 +16,12 @@ import {
 
 const c = initContract()
 
+const ApiPaths = {
+  TASKS: '/api/tasks',
+  SETTINGS: '/api/settings',
+  ATTACHMENTS: '/api/attachments',
+} as const
+
 const errorSchemas = {
   validation: z.object({
     message: z.string(),
@@ -32,7 +38,7 @@ const errorSchemas = {
 const tasksContract = c.router({
   list: {
     method: 'GET',
-    path: '/api/tasks',
+    path: ApiPaths.TASKS,
     responses: {
       200: z.array(taskSchema),
     },
@@ -40,7 +46,7 @@ const tasksContract = c.router({
   },
   get: {
     method: 'GET',
-    path: '/api/tasks/:id',
+    path: `${ApiPaths.TASKS}/:id`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -52,7 +58,7 @@ const tasksContract = c.router({
   },
   create: {
     method: 'POST',
-    path: '/api/tasks',
+    path: ApiPaths.TASKS,
     body: insertTaskSchema.omit({ userId: true }),
     responses: {
       201: taskSchema,
@@ -62,7 +68,7 @@ const tasksContract = c.router({
   },
   update: {
     method: 'PUT',
-    path: '/api/tasks/:id',
+    path: `${ApiPaths.TASKS}/:id`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -76,7 +82,7 @@ const tasksContract = c.router({
   },
   delete: {
     method: 'DELETE',
-    path: '/api/tasks/:id',
+    path: `${ApiPaths.TASKS}/:id`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -89,7 +95,7 @@ const tasksContract = c.router({
   },
   export: {
     method: 'GET',
-    path: '/api/tasks/export',
+    path: `${ApiPaths.TASKS}/export`,
     responses: {
       200: z.object({
         version: z.number(),
@@ -101,7 +107,7 @@ const tasksContract = c.router({
   },
   import: {
     method: 'POST',
-    path: '/api/tasks/import',
+    path: `${ApiPaths.TASKS}/import`,
     body: z.object({
       tasks: z.array(
         insertTaskSchema.omit({ userId: true }).extend({
@@ -122,7 +128,7 @@ const tasksContract = c.router({
   },
   reorderSubtasks: {
     method: 'PUT',
-    path: '/api/tasks/:id/reorder',
+    path: `${ApiPaths.TASKS}/:id/reorder`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -141,7 +147,7 @@ const tasksContract = c.router({
 const settingsContract = c.router({
   get: {
     method: 'GET',
-    path: '/api/settings',
+    path: ApiPaths.SETTINGS,
     responses: {
       200: userSettingsSchema,
     },
@@ -149,7 +155,7 @@ const settingsContract = c.router({
   },
   update: {
     method: 'PUT',
-    path: '/api/settings',
+    path: ApiPaths.SETTINGS,
     body: insertUserSettingsSchema.omit({ userId: true }).partial(),
     responses: {
       200: userSettingsSchema,
@@ -161,7 +167,7 @@ const settingsContract = c.router({
 const attachmentsContract = c.router({
   list: {
     method: 'GET',
-    path: '/api/attachments',
+    path: ApiPaths.ATTACHMENTS,
     query: z.object({
       taskId: z.coerce.number(),
     }),
@@ -172,7 +178,7 @@ const attachmentsContract = c.router({
   },
   getUploadUrl: {
     method: 'POST',
-    path: '/api/attachments/upload-url',
+    path: `${ApiPaths.ATTACHMENTS}/upload-url`,
     body: z.object({
       taskId: z.number(),
       fileName: z.string(),
@@ -188,7 +194,7 @@ const attachmentsContract = c.router({
   },
   create: {
     method: 'POST',
-    path: '/api/attachments',
+    path: ApiPaths.ATTACHMENTS,
     body: z.object({
       taskId: z.number(),
       fileName: z.string(),
@@ -205,7 +211,7 @@ const attachmentsContract = c.router({
   },
   getDownloadUrl: {
     method: 'GET',
-    path: '/api/attachments/:id/download-url',
+    path: `${ApiPaths.ATTACHMENTS}/:id/download-url`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),
@@ -217,7 +223,7 @@ const attachmentsContract = c.router({
   },
   delete: {
     method: 'DELETE',
-    path: '/api/attachments/:id',
+    path: `${ApiPaths.ATTACHMENTS}/:id`,
     pathParams: z.object({
       id: z.coerce.number(),
     }),

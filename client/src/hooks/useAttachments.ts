@@ -19,11 +19,8 @@ export function useAttachments(queryKey: QueryKey) {
     setDeletingId(id)
     try {
       const res = await tsr.attachments.delete.mutate({ params: { id } })
-      if (res.status === 204) {
-        await queryClient.invalidateQueries({ queryKey })
-      } else {
-        toast({ title: 'Failed to delete attachment', variant: 'destructive' })
-      }
+      if (res.status !== 204) throw new Error()
+      await queryClient.invalidateQueries({ queryKey })
     } catch {
       toast({ title: 'Failed to delete attachment', variant: 'destructive' })
     } finally {

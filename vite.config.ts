@@ -60,7 +60,11 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
-    entries: ['./index.html'],
+    // workbox-window is only discovered when the PWA service worker runs in
+    // the browser, not during the initial module-graph crawl. Pre-including it
+    // prevents Vite from triggering a mid-session full-page reload + re-bundle
+    // which can land two React instances in the module graph simultaneously.
+    include: ['workbox-window'],
   },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),

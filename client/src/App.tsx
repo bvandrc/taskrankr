@@ -17,7 +17,6 @@ import {
   migrateGuestTasksToAuth,
 } from '@/lib/migrate-guest-tasks'
 import { StorageMode } from '@/lib/storage'
-import FileAttachments from '@/pages/FileAttachments'
 import Home from '@/pages/Home'
 import Landing from '@/pages/Landing'
 import { BannersProvider } from '@/providers/BannersProvider'
@@ -33,6 +32,7 @@ import { Routes } from './lib/constants'
 import { queryClient } from './lib/query-client'
 
 const Completed = lazy(() => import('@/pages/Completed'))
+const FileAttachments = lazy(() => import('@/pages/FileAttachments'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const HowToUse = lazy(() => import('@/pages/HowToUse'))
 const HowToInstall = lazy(() => import('@/pages/HowToInstall'))

@@ -56,7 +56,7 @@ export const isAutoHiddenByParent = (
   task: Pick<Task, 'status'>,
   parent: Pick<Task, 'autoHideCompleted'> | undefined,
 ): boolean =>
-  parent?.autoHideCompleted === true && task.status === TaskStatus.COMPLETED
+  Boolean(parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED)
 
 /**
  * true iff `task` should be considered hidden in the UI, accounting for both

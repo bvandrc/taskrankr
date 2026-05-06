@@ -271,7 +271,7 @@ export class DatabaseStorage implements IStorage {
     // inheritCompletionState turned on while task is already completed:
     // revert if it still has incomplete children
     if (
-      dbUpdates.inheritCompletionState === true &&
+      dbUpdates.inheritCompletionState &&
       updated.status === TaskStatus.COMPLETED
     ) {
       const children = await db

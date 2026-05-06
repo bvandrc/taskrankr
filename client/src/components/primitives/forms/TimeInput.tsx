@@ -1,12 +1,16 @@
 import {
   hoursToMilliseconds,
+  hoursToMinutes,
   intervalToDuration,
   minutesToMilliseconds,
 } from 'date-fns'
 
 import { Input } from './Input'
 
-const MAX_MINUTES = 59
+const MAX_MINUTES = hoursToMinutes(1) - 1
+
+const getDurationMs = (hours: number, minutes: number) =>
+  hoursToMilliseconds(hours) + minutesToMilliseconds(minutes)
 
 const parseNumericOnChange = (e: React.ChangeEvent<HTMLInputElement>) =>
   Math.max(0, Number.parseInt(e.target.value) || 0)
@@ -48,9 +52,7 @@ export const TimeInput = ({
           value={hours.toString()}
           onChange={(e) => {
             const h = parseNumericOnChange(e)
-            onDurationChange(
-              hoursToMilliseconds(h) + minutesToMilliseconds(minutes),
-            )
+            onDurationChange(getDurationMs(h, minutes))
           }}
           onFocus={handleFocus}
           onBlur={onBlur}
@@ -68,9 +70,7 @@ export const TimeInput = ({
           value={minutes.toString()}
           onChange={(e) => {
             const m = Math.min(MAX_MINUTES, parseNumericOnChange(e))
-            onDurationChange(
-              hoursToMilliseconds(hours) + minutesToMilliseconds(m),
-            )
+            onDurationChange(getDurationMs(hours, m))
           }}
           onFocus={handleFocus}
           onBlur={onBlur}

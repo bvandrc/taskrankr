@@ -5,10 +5,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { tsr } from '@/lib/ts-rest'
 import { useToast } from './useToast'
 
+const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
+
 /**
  * Shared attachment actions (delete + download) for any component that lists
  * attachments. The caller provides the `queryKey` that should be invalidated
- * after a successful deletion.
+ * after a successful deletion — the global all-attachments key is always
+ * invalidated too, keeping the storage meter in sync.
  */
 export function useAttachments(queryKey: QueryKey) {
   const queryClient = useQueryClient()
@@ -20,7 +23,10 @@ export function useAttachments(queryKey: QueryKey) {
     try {
       const res = await tsr.attachments.delete.mutate({ params: { id } })
       if (res.status !== 204) throw new Error()
-      await queryClient.invalidateQueries({ queryKey })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey }),
+        queryClient.invalidateQueries({ queryKey: ALL_ATTACHMENTS_QUERY_KEY }),
+      ])
     } catch {
       toast({ title: 'Failed to delete attachment', variant: 'destructive' })
     } finally {

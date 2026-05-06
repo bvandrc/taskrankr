@@ -324,8 +324,8 @@ const router = s.router(contract, {
         if (!attachment) {
           return ERRORS.ATTACHMENT_NOT_FOUND
         }
-        await deleteR2Object(attachment.r2Key)
         await storage.deleteAttachment(params.id, userId)
+        await deleteR2Object(attachment.r2Key)
         return { status: 204, body: undefined }
       },
     },

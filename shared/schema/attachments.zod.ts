@@ -9,7 +9,7 @@ import {
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
-import { tasks } from './tasks.zod'
+import { TaskStatus, tasks } from './tasks.zod'
 
 export const attachments = pgTable('attachments', {
   id: serial('id').primaryKey(),
@@ -48,7 +48,7 @@ export const createAttachmentBodySchema = insertAttachmentSchema.omit({
 
 export const attachmentWithTaskSchema = attachmentSchema.extend({
   taskName: z.string(),
-  taskStatus: z.string(),
+  taskStatus: z.nativeEnum(TaskStatus),
   taskCompletedAt: z.coerce.date().nullable(),
 })
 

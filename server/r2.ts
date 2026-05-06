@@ -29,7 +29,7 @@ function getR2Client(): S3Client {
 }
 
 /** Returns a presigned URL that the client can PUT a file to directly. */
-export async function getPresignedUploadUrl(
+export function getPresignedUploadUrl(
   key: string,
   mimeType: string,
   expiresInSeconds = 300,
@@ -40,7 +40,7 @@ export async function getPresignedUploadUrl(
     Key: key,
     ContentType: mimeType,
   })
-  return await getSignedUrl(client, command, { expiresIn: expiresInSeconds })
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds })
 }
 
 /** Returns a presigned URL that allows downloading the object for a limited time. */

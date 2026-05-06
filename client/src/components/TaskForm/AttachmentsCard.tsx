@@ -350,11 +350,7 @@ export const AttachmentsCard = forwardRef<
           <div className="px-2 py-1">
             <Spinner size="sm" />
           </div>
-        ) : totalCount === 0 ? (
-          <div className="text-[11px] text-muted-foreground/50 px-2">
-            No attachments yet
-          </div>
-        ) : (
+        ) : totalCount === 0 ? null : (
           <div className="flex flex-col gap-1">
             {attachments.map((a) => (
               <AttachmentRow

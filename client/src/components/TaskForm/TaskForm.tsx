@@ -304,10 +304,6 @@ export const TaskForm = ({
               disableAddSubtask={!nameValue}
             />
 
-            {initialData && initialData.id > 0 && (
-              <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
-            )}
-
             <div className="flex flex-col gap-4 mt-2 pb-4">
               <FormField
                 control={form.control}
@@ -399,6 +395,10 @@ export const TaskForm = ({
             </div>
           </div>
         </div>
+
+        {initialData && initialData.id > 0 && (
+          <AttachmentsCard ref={attachmentsRef} taskId={initialData.id} />
+        )}
 
         <div className="pt-2 pb-4 px-4 flex gap-3 ">
           <Button

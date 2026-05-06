@@ -22,6 +22,7 @@ import { FileIcon, Lock, Paperclip, Trash2, Upload, X } from 'lucide-react'
 
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
+import { useGuestMode } from '@/providers/GuestModeProvider'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
 import type { Attachment } from '~/shared/schema'
@@ -119,13 +120,13 @@ const StagedFileRow = ({ staged, onRemove }: StagedFileRowProps) => (
 
 interface AttachmentsCardProps {
   taskId: number
-  disabled?: boolean
 }
 
 export const AttachmentsCard = forwardRef<
   AttachmentsCardHandle,
   AttachmentsCardProps
->(({ taskId, disabled = false }, ref) => {
+>(({ taskId }, ref) => {
+  const { isGuestMode: disabled } = useGuestMode()
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([])

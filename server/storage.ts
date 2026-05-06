@@ -6,7 +6,7 @@
  * cascading status changes to subtasks, and recursive task deletion.
  */
 
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { without } from 'es-toolkit'
 
 import {
@@ -31,6 +31,12 @@ import { db } from './db'
 
 type UpdateTaskArg = Omit<UpdateTask, 'id'>
 
+export type AttachmentWithTask = Attachment & {
+  taskName: string
+  taskStatus: string
+  taskCompletedAt: Date | null
+}
+
 export interface IStorage {
   getTasks(userId: string): Promise<Task[]>
   getTask(id: number, userId: string): Promise<Task | undefined>
@@ -49,6 +55,8 @@ export interface IStorage {
   ): Promise<UserSettings>
   getAttachments(taskId: number, userId: string): Promise<Attachment[]>
   getAttachment(id: number, userId: string): Promise<Attachment | undefined>
+  getAllAttachments(userId: string): Promise<AttachmentWithTask[]>
+  getTotalStorageUsed(userId: string): Promise<number>
   createAttachment(attachment: InsertAttachment): Promise<Attachment>
   deleteAttachment(id: number, userId: string): Promise<void>
 }
@@ -485,6 +493,37 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(attachments)
       .where(and(eq(attachments.id, id), eq(attachments.userId, userId)))
+  }
+
+  async getAllAttachments(userId: string): Promise<AttachmentWithTask[]> {
+    return await db
+      .select({
+        id: attachments.id,
+        taskId: attachments.taskId,
+        userId: attachments.userId,
+        fileName: attachments.fileName,
+        fileSize: attachments.fileSize,
+        mimeType: attachments.mimeType,
+        r2Key: attachments.r2Key,
+        createdAt: attachments.createdAt,
+        taskName: tasks.name,
+        taskStatus: tasks.status,
+        taskCompletedAt: tasks.completedAt,
+      })
+      .from(attachments)
+      .innerJoin(tasks, eq(attachments.taskId, tasks.id))
+      .where(eq(attachments.userId, userId))
+      .orderBy(attachments.createdAt)
+  }
+
+  async getTotalStorageUsed(userId: string): Promise<number> {
+    const [row] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${attachments.fileSize}), 0)`,
+      })
+      .from(attachments)
+      .where(eq(attachments.userId, userId))
+    return row?.total ?? 0
   }
 }
 

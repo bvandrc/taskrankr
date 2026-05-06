@@ -63,7 +63,8 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Guest Mode**: Local storage-based guest mode with demo data for unauthenticated users.
 - **Replit Auth Integration**: Secure user authentication via Replit's authentication service.
 - **PWA Support**: Installable as a Progressive Web App for an app-like experience.
-- **File Attachments**: Authenticated users can attach files (up to 50 MB each) to any saved task. Files are stored in Cloudflare R2 via presigned URLs; downloads use time-limited presigned GET URLs.
+- **File Attachments**: Authenticated users can attach files (up to 50 MB each) to any saved task. Files are stored in Cloudflare R2 via presigned URLs; downloads use time-limited presigned GET URLs. A 1 GB per-user storage cap is enforced at upload time.
+- **File Attachments Page**: Accessible from the nav menu (auth only, `/file-attachments`). Lists all attachments across every task with a storage meter, task status ("Open" or "X days ago"), file size, download, and delete per attachment.
 
 ## User preferences
 
@@ -86,6 +87,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Attachments DB migration**: The `attachments` table was created directly via `executeSql` (not via a drizzle migration file) because `db:push` and `db:generate` both fail non-interactively. If resetting the DB, re-run: `CREATE TABLE IF NOT EXISTS attachments (id serial PRIMARY KEY, task_id integer NOT NULL REFERENCES tasks(id) ON DELETE CASCADE, user_id varchar NOT NULL, file_name text NOT NULL, file_size integer NOT NULL, mime_type text NOT NULL, r2_key text NOT NULL, created_at timestamp DEFAULT now() NOT NULL);`
 - **R2 middleware typing**: The `list` attachment route uses `isAuthenticated as any` in the middleware array because ts-rest's strict query-param type (`{ taskId: number }`) conflicts with Express's `ParsedQs` in the middleware signature.
 - **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
+- **Vite duplicate-React guard**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` to prevent Vite from loading a second React instance when lazy-loaded pages trigger dep re-optimization mid-session. Do not remove this.
 
 ## Pointers
 

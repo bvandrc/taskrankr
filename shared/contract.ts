@@ -164,6 +164,14 @@ const settingsContract = c.router({
   },
 })
 
+export const attachmentWithTaskSchema = attachmentSchema.extend({
+  taskName: z.string(),
+  taskStatus: z.string(),
+  taskCompletedAt: z.coerce.date().nullable(),
+})
+
+export type AttachmentWithTask = z.infer<typeof attachmentWithTaskSchema>
+
 const attachmentsContract = c.router({
   list: {
     method: 'GET',
@@ -175,6 +183,14 @@ const attachmentsContract = c.router({
       200: z.array(attachmentSchema),
     },
     summary: 'List attachments for a task',
+  },
+  listAll: {
+    method: 'GET',
+    path: `${ApiPaths.ATTACHMENTS}/all`,
+    responses: {
+      200: z.array(attachmentWithTaskSchema),
+    },
+    summary: 'List all attachments for the authenticated user with task info',
   },
   getUploadUrl: {
     method: 'POST',

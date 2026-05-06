@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  Paperclip,
   Search,
   Settings,
 } from 'lucide-react'
@@ -121,6 +122,14 @@ export const DropdownMenuHeader = ({
                 label="Home (Open Tasks)"
                 href={Routes.HOME}
                 data-testid="menu-item-home"
+              />
+            )}
+            {!isGuestMode && (
+              <DropdownMenuItem
+                icon={Paperclip}
+                label="File Attachments"
+                href={Routes.FILE_ATTACHMENTS}
+                data-testid="menu-item-file-attachments"
               />
             )}
             <DropdownMenuItem

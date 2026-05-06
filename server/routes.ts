@@ -28,6 +28,8 @@ import {
 import type { UserSession } from './replit_integrations/auth/replitAuth'
 import { storage } from './storage'
 
+const MAX_TOTAL_STORAGE_BYTES = 1024 * 1024 * 1024
+
 const ERRORS = {
   TASK_NOT_FOUND: {
     status: 404 as const,
@@ -240,6 +242,14 @@ const router = s.router(contract, {
         return { status: 200, body: result }
       },
     },
+    listAll: {
+      middleware: [isAuthenticated],
+      handler: async ({ req }) => {
+        const userId = getUserId(req)
+        const result = await storage.getAllAttachments(userId)
+        return { status: 200, body: result }
+      },
+    },
     getUploadUrl: {
       middleware: [isAuthenticated],
       handler: async ({ body, req }) => {
@@ -247,6 +257,16 @@ const router = s.router(contract, {
         const task = await storage.getTask(body.taskId, userId)
         if (!task) {
           return ERRORS.TASK_NOT_FOUND
+        }
+        const totalUsed = await storage.getTotalStorageUsed(userId)
+        if (totalUsed + body.fileSize > MAX_TOTAL_STORAGE_BYTES) {
+          return {
+            status: 400,
+            body: {
+              message:
+                'Storage limit of 1 GB reached. Delete some attachments to free up space.',
+            },
+          }
         }
         const key = `${userId}/${body.taskId}/${Date.now()}-${body.fileName}`
         const uploadUrl = await getPresignedUploadUrl(key, body.mimeType)

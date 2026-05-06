@@ -26,6 +26,7 @@ export const Routes = {
   HOW_TO_USE: '/how-to-use',
   HOW_TO_INSTALL: '/how-to-install',
   COMPLETED: '/completed',
+  FILE_ATTACHMENTS: '/file-attachments',
 } as const
 
 export const RANK_FIELD_ENUMS = {

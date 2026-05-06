@@ -32,6 +32,7 @@ import { Routes } from './lib/constants'
 import { queryClient } from './lib/query-client'
 
 const Completed = lazy(() => import('@/pages/Completed'))
+const FileAttachments = lazy(() => import('@/pages/FileAttachments'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const HowToUse = lazy(() => import('@/pages/HowToUse'))
 const HowToInstall = lazy(() => import('@/pages/HowToInstall'))
@@ -52,6 +53,7 @@ const Router = () => (
       <Switch>
         <Route path={Routes.HOME} component={Home} />
         <Route path={Routes.COMPLETED} component={Completed} />
+        <Route path={Routes.FILE_ATTACHMENTS} component={FileAttachments} />
         <Route path={Routes.SETTINGS} component={Settings} />
         <Route path={Routes.HOW_TO_USE} component={HowToUse} />
         <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />

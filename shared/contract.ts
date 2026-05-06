@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import {
   attachmentSchema,
+  attachmentWithTaskSchema,
   insertTaskSchema,
   insertUserSettingsSchema,
   taskSchema,
@@ -163,14 +164,6 @@ const settingsContract = c.router({
     summary: 'Update user settings',
   },
 })
-
-export const attachmentWithTaskSchema = attachmentSchema.extend({
-  taskName: z.string(),
-  taskStatus: z.string(),
-  taskCompletedAt: z.coerce.date().nullable(),
-})
-
-export type AttachmentWithTask = z.infer<typeof attachmentWithTaskSchema>
 
 const attachmentsContract = c.router({
   list: {

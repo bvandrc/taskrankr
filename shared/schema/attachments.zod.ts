@@ -36,3 +36,11 @@ export const insertAttachmentSchema = createInsertSchema(attachments).omit({
 })
 
 export type InsertAttachment = z.infer<typeof insertAttachmentSchema>
+
+export const attachmentWithTaskSchema = attachmentSchema.extend({
+  taskName: z.string(),
+  taskStatus: z.string(),
+  taskCompletedAt: z.coerce.date().nullable(),
+})
+
+export type AttachmentWithTask = z.infer<typeof attachmentWithTaskSchema>

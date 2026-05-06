@@ -11,6 +11,7 @@ import { without } from 'es-toolkit'
 
 import {
   type Attachment,
+  type AttachmentWithTask,
   attachments,
   type InsertAttachment,
   type InsertTask,
@@ -31,11 +32,7 @@ import { db } from './db'
 
 type UpdateTaskArg = Omit<UpdateTask, 'id'>
 
-export type AttachmentWithTask = Attachment & {
-  taskName: string
-  taskStatus: string
-  taskCompletedAt: Date | null
-}
+export type { AttachmentWithTask }
 
 export interface IStorage {
   getTasks(userId: string): Promise<Task[]>

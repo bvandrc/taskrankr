@@ -14,9 +14,9 @@ import { Button } from '@/components/primitives/Button'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useToast } from '@/hooks/useToast'
 import { tsr } from '@/lib/ts-rest'
-import type { AttachmentWithTask } from '~/shared/contract'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
+import type { AttachmentWithTask } from '~/shared/schema'
 import { TaskStatus } from '~/shared/schema'
 
 const QUERY_KEY = ['/api/attachments/all']

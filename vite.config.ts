@@ -59,6 +59,9 @@ export default defineConfig({
     tsconfigPaths: true,
     dedupe: ['react', 'react-dom'],
   },
+  optimizeDeps: {
+    entries: ['./index.html'],
+  },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,

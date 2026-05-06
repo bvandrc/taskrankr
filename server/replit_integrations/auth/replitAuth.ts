@@ -27,7 +27,7 @@ const getOidcConfig = memoize(
       process.env.REPL_ID!,
     )
   },
-  { maxAge: 3600 * 1000 },
+  { maxAge: hoursToMilliseconds(1) },
 )
 
 export function getSession() {

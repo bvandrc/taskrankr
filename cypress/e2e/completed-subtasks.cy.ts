@@ -4,7 +4,6 @@ import { checkTasksExistBackend, isLoggedIn } from '@cypress/support/utils'
 import {
   type CreatedTask,
   checkNumCalls,
-  interceptUpdate,
   waitForUpdate,
 } from '@cypress/support/utils/intercepts'
 import { goToCompletedPage } from '@cypress/support/utils/navigation'
@@ -192,14 +191,14 @@ describe('Completed Subtasks', () => {
       getTaskForm(0).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
         cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
-        clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
+        // Don't pass updatedTasks: status flips to COMPLETED immediately after save
+        clickSubmitBtnUpdate()
       })
-      checkNumCalls({ create: 2, update: 2 })
 
-      // Reload to trigger reconciliation — parent should now be auto-completed
-      cy.reload()
-      interceptUpdate()
-      waitForUpdate([completedRootTask])
+      // Two more updates fire: form save (inheritCompletionState: true) + auto-complete (status: COMPLETED)
+      waitForUpdate([completedRootTask, completedRootTask])
+      checkNumCalls({ create: 2, update: 3 })
+
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])

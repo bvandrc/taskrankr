@@ -470,22 +470,43 @@ export const TasksProvider = ({
       enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: updates })
       debugLog.log('task', 'update', { id, updates })
 
-      if (
-        updates.inheritCompletionState === true &&
-        updatedTask &&
-        updatedTask.status === TaskStatus.COMPLETED &&
-        getHasIncompleteSubtasks(tasksRef.current, id)
-      ) {
-        updateTaskById(id, () => ({
-          status: TaskStatus.OPEN,
-          completedAt: null,
-          inProgressStartedAt: null,
-        }))
-        enqueue({
-          type: SyncOperationType.UPDATE_TASK,
-          id,
-          data: { status: TaskStatus.OPEN },
-        })
+      if (updates.inheritCompletionState === true && updatedTask) {
+        if (
+          updatedTask.status === TaskStatus.COMPLETED &&
+          getHasIncompleteSubtasks(tasksRef.current, id)
+        ) {
+          // Revert: flag just enabled but parent is completed with incomplete subtasks
+          updateTaskById(id, () => ({
+            status: TaskStatus.OPEN,
+            completedAt: null,
+            inProgressStartedAt: null,
+          }))
+          enqueue({
+            type: SyncOperationType.UPDATE_TASK,
+            id,
+            data: { status: TaskStatus.OPEN },
+          })
+        } else if (updatedTask.status !== TaskStatus.COMPLETED) {
+          // Forward: flag just enabled and all subtasks are already done — auto-complete immediately
+          const subtasks = getDirectSubtasks(tasksRef.current, id)
+          if (
+            subtasks.length > 0 &&
+            subtasks.every((t) => t.status === TaskStatus.COMPLETED)
+          ) {
+            const latestCompletedAt = getChildrenLatestCompletedAt(subtasks)
+            updateTaskById(id, () => ({
+              status: TaskStatus.COMPLETED,
+              completedAt: latestCompletedAt ?? new Date(),
+              inProgressStartedAt: null,
+            }))
+            enqueue({
+              type: SyncOperationType.UPDATE_TASK,
+              id,
+              data: { status: TaskStatus.COMPLETED },
+            })
+            debugLog.log('task', 'inheritCompletion:onUpdate', { id })
+          }
+        }
       }
 
       if (updates.parentId != null && updatedTask) {

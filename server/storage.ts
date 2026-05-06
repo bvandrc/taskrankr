@@ -268,17 +268,18 @@ export class DatabaseStorage implements IStorage {
 
     const updated = task
 
-    // inheritCompletionState turned on while task is already completed:
-    // revert if it still has incomplete children
-    if (
-      dbUpdates.inheritCompletionState === true &&
-      updated.status === TaskStatus.COMPLETED
-    ) {
+    // inheritCompletionState turned on: enforce consistency with children
+    if (dbUpdates.inheritCompletionState === true) {
       const children = await db
         .select()
         .from(tasks)
         .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
-      if (getHasIncomplete(children)) {
+
+      if (
+        updated.status === TaskStatus.COMPLETED &&
+        getHasIncomplete(children)
+      ) {
+        // Revert: flag just enabled but parent is completed with incomplete children
         const [reverted] = await db
           .update(tasks)
           .set({
@@ -289,6 +290,24 @@ export class DatabaseStorage implements IStorage {
           .where(eq(tasks.id, id))
           .returning()
         return reverted
+      }
+
+      if (
+        updated.status !== TaskStatus.COMPLETED &&
+        children.length > 0 &&
+        !getHasIncomplete(children)
+      ) {
+        // Forward: flag just enabled and all children are already done — auto-complete
+        const [completed] = await db
+          .update(tasks)
+          .set({
+            status: TaskStatus.COMPLETED,
+            completedAt: new Date(),
+            inProgressStartedAt: null,
+          })
+          .where(eq(tasks.id, id))
+          .returning()
+        return completed
       }
     }
 

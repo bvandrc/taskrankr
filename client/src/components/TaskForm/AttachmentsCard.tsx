@@ -22,6 +22,7 @@ import { FileIcon, Lock, Paperclip, Trash2, Upload, X } from 'lucide-react'
 
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
+import { cn, handleKeyDown } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
@@ -77,26 +78,23 @@ const FileRow = ({
     data-testid={testId}
   >
     <span className="size-3.5 shrink-0 text-muted-foreground">{icon}</span>
-    {onNameClick ? (
-      <button
-        type="button"
-        className="flex-1 min-w-0 text-left"
-        onClick={onNameClick}
-        data-testid={nameTestId}
+    {/** biome-ignore lint/a11y/noStaticElementInteractions: div may act as a button or not depending on onNameClick */}
+    <div
+      className={cn('flex-1 min-w-0', { 'text-left': onNameClick })}
+      role={onNameClick ? 'button' : undefined}
+      onClick={onNameClick}
+      onKeyDown={onNameClick ? handleKeyDown : undefined}
+      data-testid={nameTestId}
+    >
+      <span
+        className={cn('text-xs truncate block text-foreground/80', {
+          'hover:text-foreground hover:underline': onNameClick,
+        })}
       >
-        <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
-          {name}
-        </span>
-        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
-      </button>
-    ) : (
-      <div className="flex-1 min-w-0">
-        <span className="text-xs truncate block text-foreground/80">
-          {name}
-        </span>
-        <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
-      </div>
-    )}
+        {name}
+      </span>
+      <span className="text-[10px] text-muted-foreground">{sizeLabel}</span>
+    </div>
     <button
       type="button"
       onClick={onAction}

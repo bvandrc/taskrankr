@@ -1,5 +1,3 @@
-import { flattenDeep } from 'es-toolkit'
-
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
@@ -91,9 +89,12 @@ export const changeStatusViaStatusChangeDialog = (
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }
 
+const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
+  nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
+
 export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
   cy.log('Check task is not in main tree')
-  flattenDeep(completedTasks).forEach((task) => {
+  flattenTree(completedTasks).forEach((task) => {
     cy.contains(task.name).should('not.exist')
   })
 

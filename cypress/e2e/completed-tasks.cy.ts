@@ -6,7 +6,6 @@ import {
   isLoggedIn,
 } from '@cypress/support/utils'
 import { checkNumCalls } from '@cypress/support/utils/intercepts'
-import { goToCompletedPage } from '@cypress/support/utils/navigation'
 import {
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -14,7 +13,7 @@ import {
 } from '@cypress/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
-  expandAndCheckTree,
+  checkCompletedPage,
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
 
@@ -78,13 +77,8 @@ describe('Completed Tasks', () => {
       setupTask()
       const completedTask = { ...DefaultTask, status: TaskStatus.COMPLETED }
 
-      cy.log('Check task is not in main tree')
-      cy.contains(completedTask.name).should('not.exist')
-
-      cy.log('Check task is in completed page tree')
       checkTasksExistBackend([completedTask])
-      goToCompletedPage()
-      expandAndCheckTree(completedTask)
+      checkCompletedPage([completedTask])
     })
   }
 })

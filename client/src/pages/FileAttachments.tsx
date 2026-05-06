@@ -4,15 +4,15 @@
  * showing storage usage, associated task status, and per-file delete controls.
  */
 
-import { useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { FileIcon, Paperclip, Trash2 } from 'lucide-react'
 
 import { BackButtonHeader } from '@/components/BackButton'
 import { Badge } from '@/components/primitives/Badge'
 import { Button } from '@/components/primitives/Button'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
-import { useToast } from '@/hooks/useToast'
+import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
@@ -152,9 +152,7 @@ const EmptyState = () => (
 )
 
 const FileAttachments = () => {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const { handleDelete, handleDownload, deletingId } = useAttachments(QUERY_KEY)
 
   const { data = [], isLoading } = useQuery<AttachmentWithTask[]>({
     queryKey: QUERY_KEY,
@@ -182,39 +180,10 @@ const FileAttachments = () => {
   )
 
   const totalBytes = useMemo(
-    () => data.reduce((sum, a) => sum + a.fileSize, 0),
+    () =>
+      (data as AttachmentWithTask[]).reduce((sum, a) => sum + a.fileSize, 0),
     [data],
   )
-
-  const handleDelete = async (id: number) => {
-    setDeletingId(id)
-    try {
-      const res = await tsr.attachments.delete.mutate({ params: { id } })
-      if (res.status === 204) {
-        await queryClient.invalidateQueries({ queryKey: QUERY_KEY })
-      } else {
-        toast({ title: 'Failed to delete attachment', variant: 'destructive' })
-      }
-    } catch {
-      toast({ title: 'Failed to delete attachment', variant: 'destructive' })
-    } finally {
-      setDeletingId(null)
-    }
-  }
-
-  const handleDownload = async (id: number, fileName: string) => {
-    try {
-      const res = await tsr.attachments.getDownloadUrl.query({ params: { id } })
-      if (res.status === 200) {
-        const a = document.createElement('a')
-        a.href = res.body.downloadUrl
-        a.download = fileName
-        a.click()
-      }
-    } catch {
-      toast({ title: 'Failed to get download link', variant: 'destructive' })
-    }
-  }
 
   return (
     <ScrollablePage>

@@ -1,9 +1,10 @@
 /**
  * @fileoverview Attachment list and upload UI for an existing task.
  *
- * Uploads and deletions are buffered in local state — nothing hits the backend
+ * Staged uploads are buffered in local state — nothing hits the backend
  * until the parent form calls `commit()` via the forwarded ref. Cancelling the
- * form discards all pending changes without any server interaction.
+ * form discards all pending uploads without any server interaction. Deletions
+ * of existing attachments are applied immediately.
  *
  * Only rendered when the task has been saved (positive ID).
  */
@@ -19,16 +20,19 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileIcon, Lock, Paperclip, Trash2, Upload, X } from 'lucide-react'
 
+import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
 import type { Attachment } from '~/shared/schema'
 import { Button } from '../primitives/Button'
 
+const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
+
 export interface AttachmentsCardHandle {
   /**
-   * Uploads all staged files and executes pending deletions.
-   * Returns `false` if any upload failed (form should stay open).
+   * Uploads all staged files. Returns `false` if any upload failed
+   * (form should stay open).
    */
   commit(): Promise<boolean>
 }
@@ -41,57 +45,46 @@ interface StagedFile {
 interface AttachmentRowProps {
   attachment: Attachment
   onDelete: (id: number) => void
+  onDownload: (id: number, fileName: string) => void
+  isDeleting: boolean
 }
 
-const AttachmentRow = ({ attachment, onDelete }: AttachmentRowProps) => {
-  const [downloading, setDownloading] = useState(false)
-
-  const handleDownload = async () => {
-    setDownloading(true)
-    try {
-      const res = await tsr.attachments.getDownloadUrl.query({
-        params: { id: attachment.id },
-      })
-      if (res.status === 200) {
-        window.open(res.body.downloadUrl, '_blank', 'noopener,noreferrer')
-      }
-    } finally {
-      setDownloading(false)
-    }
-  }
-
-  return (
-    <div
-      className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 hover:bg-secondary/20 group"
-      data-testid={`attachment-row-${attachment.id}`}
+const AttachmentRow = ({
+  attachment,
+  onDelete,
+  onDownload,
+  isDeleting,
+}: AttachmentRowProps) => (
+  <div
+    className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-secondary/10 hover:bg-secondary/20 group"
+    data-testid={`attachment-row-${attachment.id}`}
+  >
+    <FileIcon className="size-3.5 shrink-0 text-muted-foreground" />
+    <button
+      type="button"
+      className="flex-1 min-w-0 text-left"
+      onClick={() => onDownload(attachment.id, attachment.fileName)}
+      data-testid={`attachment-download-${attachment.id}`}
     >
-      <FileIcon className="size-3.5 shrink-0 text-muted-foreground" />
-      <button
-        type="button"
-        className="flex-1 min-w-0 text-left"
-        onClick={handleDownload}
-        disabled={downloading}
-        data-testid={`attachment-download-${attachment.id}`}
-      >
-        <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
-          {attachment.fileName}
-        </span>
-        <span className="text-[10px] text-muted-foreground">
-          {formatFileSize(attachment.fileSize)}
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onDelete(attachment.id)}
-        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5"
-        data-testid={`attachment-delete-${attachment.id}`}
-        aria-label="Delete attachment"
-      >
-        <Trash2 className="size-3.5" />
-      </button>
-    </div>
-  )
-}
+      <span className="text-xs truncate block text-foreground/80 hover:text-foreground hover:underline">
+        {attachment.fileName}
+      </span>
+      <span className="text-[10px] text-muted-foreground">
+        {formatFileSize(attachment.fileSize)}
+      </span>
+    </button>
+    <button
+      type="button"
+      onClick={() => onDelete(attachment.id)}
+      disabled={isDeleting}
+      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5 disabled:opacity-30"
+      data-testid={`attachment-delete-${attachment.id}`}
+      aria-label="Delete attachment"
+    >
+      <Trash2 className="size-3.5" />
+    </button>
+  </div>
+)
 
 interface StagedFileRowProps {
   staged: StagedFile
@@ -136,12 +129,13 @@ export const AttachmentsCard = forwardRef<
   const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([])
-  const [pendingDeletes, setPendingDeletes] = useState<Set<number>>(new Set())
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   const queryKey = useMemo(() => ['/api/attachments', taskId], [taskId])
 
-  const { data: fetchedAttachments = [], isLoading } = useQuery<Attachment[]>({
+  const { handleDelete, handleDownload, deletingId } = useAttachments(queryKey)
+
+  const { data: attachments = [], isLoading } = useQuery<Attachment[]>({
     queryKey,
     queryFn: async () => {
       const res = await tsr.attachments.list.query({ query: { taskId } })
@@ -150,12 +144,7 @@ export const AttachmentsCard = forwardRef<
     enabled: !disabled,
   })
 
-  const visibleAttachments = useMemo(
-    () => fetchedAttachments.filter((a) => !pendingDeletes.has(a.id)),
-    [fetchedAttachments, pendingDeletes],
-  )
-
-  const totalCount = visibleAttachments.length + stagedFiles.length
+  const totalCount = attachments.length + stagedFiles.length
 
   useImperativeHandle(ref, () => ({
     async commit() {
@@ -215,21 +204,13 @@ export const AttachmentsCard = forwardRef<
         }
       }
 
-      for (const id of [...pendingDeletes]) {
-        try {
-          await tsr.attachments.delete.mutate({ params: { id } })
-          setPendingDeletes((prev) => {
-            const next = new Set(prev)
-            next.delete(id)
-            return next
-          })
-        } catch {
-          // Best-effort — a failed delete doesn't block form save
-        }
-      }
-
       if (success) {
-        await queryClient.invalidateQueries({ queryKey })
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey }),
+          queryClient.invalidateQueries({
+            queryKey: ALL_ATTACHMENTS_QUERY_KEY,
+          }),
+        ])
       }
 
       return success
@@ -257,10 +238,6 @@ export const AttachmentsCard = forwardRef<
     },
     [],
   )
-
-  const handleDeleteExisting = useCallback((id: number) => {
-    setPendingDeletes((prev) => new Set([...prev, id]))
-  }, [])
 
   const handleRemoveStaged = useCallback((clientKey: string) => {
     setStagedFiles((prev) => prev.filter((sf) => sf.clientKey !== clientKey))
@@ -326,11 +303,13 @@ export const AttachmentsCard = forwardRef<
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {visibleAttachments.map((a) => (
+            {attachments.map((a) => (
               <AttachmentRow
                 key={a.id}
                 attachment={a}
-                onDelete={handleDeleteExisting}
+                onDelete={handleDelete}
+                onDownload={handleDownload}
+                isDeleting={deletingId === a.id}
               />
             ))}
             {stagedFiles.map((sf) => (

@@ -5,7 +5,7 @@
 import { useMemo, useState } from 'react'
 import { CheckCircle2, Search } from 'lucide-react'
 
-import { EmptyState as EmptyStateBase } from '@/components/PageStates'
+import { EmptyState as EmptyStateBase } from '@/components/primitives/EmptyState'
 import { Icon } from '@/components/primitives/LucideIcon'
 import { TaskCard } from '@/components/TaskCard'
 import {

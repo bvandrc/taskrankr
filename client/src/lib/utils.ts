@@ -46,3 +46,10 @@ export function forwardRefHelper<T, P>(
   Comp.displayName = typeof name === 'string' ? name : name.displayName
   return Comp
 }
+
+export const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault() // Prevents page scrolling when Space is pressed
+    event.currentTarget.click()
+  }
+}

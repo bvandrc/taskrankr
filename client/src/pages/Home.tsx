@@ -7,8 +7,8 @@
 import { useMemo, useState } from 'react'
 import { LayoutList, Plus, Search } from 'lucide-react'
 
-import { EmptyState as EmptyStateBase } from '@/components/PageStates'
 import { Button } from '@/components/primitives/Button'
+import { EmptyState as EmptyStateBase } from '@/components/primitives/EmptyState'
 import { Icon } from '@/components/primitives/LucideIcon'
 import { SortButton } from '@/components/SortButton'
 import { TaskCard } from '@/components/TaskCard'

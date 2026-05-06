@@ -3,11 +3,11 @@
 import type React from 'react'
 import type { EmptyObject } from 'type-fest'
 
+import { Spinner } from '@/components/primitives/Spinner'
 import { HowToUseBanner } from './appInfo/HowToUseBanner'
 import { InstallBanner } from './appInfo/InstallBanner'
 import { WhyDifferentBanner } from './appInfo/WhyDifferentBanner'
 import { DropdownMenuHeader } from './DropdownMenuHeader'
-import { PageLoading } from './PageStates'
 
 export const TaskListPageHeader = ({
   title,
@@ -50,7 +50,7 @@ export const TaskListPageWrapper = ({
   children,
   isLoading,
 }: React.PropsWithChildren<{ isLoading: boolean }>) => {
-  if (isLoading) return <PageLoading />
+  if (isLoading) return <Spinner fullScreen />
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-background text-foreground">

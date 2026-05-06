@@ -28,11 +28,10 @@ import {
 } from 'lucide-react'
 
 import { Spinner } from '@/components/primitives/Spinner'
-import { useAttachments } from '@/hooks/useAttachments'
+import { useAttachments, validateFile } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
 import { cn, handleKeyDown } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
-import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
 import type { Attachment } from '~/shared/schema'
 import { Button } from '../primitives/Button'
@@ -276,10 +275,9 @@ export const AttachmentsCard = forwardRef<
       if (fileInputRef.current) fileInputRef.current.value = ''
       if (!file) return
 
-      if (file.size > MAX_FILE_SIZE_BYTES) {
-        setUploadError(
-          `File must be under ${formatFileSize(MAX_FILE_SIZE_BYTES)}`,
-        )
+      const error = validateFile(file)
+      if (error) {
+        setUploadError(error)
         return
       }
 

@@ -3,9 +3,18 @@ import type { QueryKey } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { tsr } from '@/lib/ts-rest'
+import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
+import { formatFileSize } from '~/shared/fileSize'
 import { useToast } from './useToast'
 
 const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
+
+/** Returns an error message if `file` exceeds the per-file size limit, otherwise `null`. */
+export function validateFile(file: File): string | null {
+  if (file.size > MAX_FILE_SIZE_BYTES)
+    return `File must be under ${formatFileSize(MAX_FILE_SIZE_BYTES)}`
+  return null
+}
 
 /**
  * Shared attachment actions (delete + download) for any component that lists

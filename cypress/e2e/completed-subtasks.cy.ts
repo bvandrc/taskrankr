@@ -149,9 +149,7 @@ describe('Completed Subtasks', () => {
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(
-          TaskForm.AUTO_COMPLETE_WHEN_ALL_SUBTASKS_COMPLETE_SWITCH,
-        ).toggleState(true)
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
 
@@ -191,9 +189,7 @@ describe('Completed Subtasks', () => {
       openTaskEditForm(rootTask)
       getTaskForm(0).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(
-          TaskForm.AUTO_COMPLETE_WHEN_ALL_SUBTASKS_COMPLETE_SWITCH,
-        ).toggleState(true)
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
       })
       checkNumCalls({ create: 2, update: 2 })
@@ -225,7 +221,7 @@ describe('Completed Subtasks', () => {
 
         getTaskForm(0).within(() => {
           cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-          cy.get(TaskForm.AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
+          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
         })
       })
 
@@ -233,7 +229,7 @@ describe('Completed Subtasks', () => {
       const afterEachSafe = () => {
         getTaskForm(0).within(() => {
           cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click() // show settings for debug purposes
-          cy.get(TaskForm.AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH)
+          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
             .getCheckedState()
             .should('be.true')
           checkTaskFormSubtasks([subtask])
@@ -322,7 +318,7 @@ describe('Completed Subtasks', () => {
           checkTaskFormSubtasks(subtasks)
 
           cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-          cy.get(TaskForm.AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
+          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
           checkTaskFormSubtasks([subtask])
           clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
         })

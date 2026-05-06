@@ -49,10 +49,10 @@ export const Selectors = {
     SUBTASK_ROW: testIdStartsWith('subtask-row-'),
     SUBTASK_NAME: testIdStartsWith('subtask-name-'),
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
-    AUTO_COMPLETE_WHEN_ALL_SUBTASKS_COMPLETE_SWITCH: testId(
-      'switch-inherit-completion-state',
-    ),
-    AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
+    /** Autocomplete when all subtasks complete */
+    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'),
+    /** Auto-hide completed subtasks */
+    AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
   },
   AssignSubtaskDialog: {

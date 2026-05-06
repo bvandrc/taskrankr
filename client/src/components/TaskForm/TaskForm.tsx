@@ -45,6 +45,7 @@ import {
 } from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
+import { AttachmentsCard } from './AttachmentsCard'
 import { RankFieldSelect } from './RankFieldSelect'
 import { SubtasksCard } from './SubtasksCard'
 import { useTaskFormParentChain } from './useTaskFormParentChain'
@@ -299,6 +300,10 @@ export const TaskForm = ({
               onAssignSubtask={(t) => onAssignSubtask(t, form.getValues())}
               disableAddSubtask={!nameValue}
             />
+
+            {initialData && initialData.id > 0 && (
+              <AttachmentsCard taskId={initialData.id} />
+            )}
 
             <div className="flex flex-col gap-4 mt-2 pb-4">
               <FormField

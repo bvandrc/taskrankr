@@ -7,6 +7,7 @@ import { initContract } from '@ts-rest/core'
 import { z } from 'zod'
 
 import {
+  attachmentSchema,
   insertTaskSchema,
   insertUserSettingsSchema,
   taskSchema,
@@ -157,10 +158,83 @@ const settingsContract = c.router({
   },
 })
 
+const attachmentsContract = c.router({
+  list: {
+    method: 'GET',
+    path: '/api/attachments',
+    query: z.object({
+      taskId: z.coerce.number(),
+    }),
+    responses: {
+      200: z.array(attachmentSchema),
+    },
+    summary: 'List attachments for a task',
+  },
+  getUploadUrl: {
+    method: 'POST',
+    path: '/api/attachments/upload-url',
+    body: z.object({
+      taskId: z.number(),
+      fileName: z.string(),
+      fileSize: z.number(),
+      mimeType: z.string(),
+    }),
+    responses: {
+      200: z.object({ uploadUrl: z.string(), key: z.string() }),
+      400: errorSchemas.validation,
+      404: errorSchemas.notFound,
+    },
+    summary: 'Get a presigned URL for uploading a file to R2',
+  },
+  create: {
+    method: 'POST',
+    path: '/api/attachments',
+    body: z.object({
+      taskId: z.number(),
+      fileName: z.string(),
+      fileSize: z.number(),
+      mimeType: z.string(),
+      key: z.string(),
+    }),
+    responses: {
+      201: attachmentSchema,
+      400: errorSchemas.validation,
+      404: errorSchemas.notFound,
+    },
+    summary: 'Save attachment metadata after a successful upload',
+  },
+  getDownloadUrl: {
+    method: 'GET',
+    path: '/api/attachments/:id/download-url',
+    pathParams: z.object({
+      id: z.coerce.number(),
+    }),
+    responses: {
+      200: z.object({ downloadUrl: z.string() }),
+      404: errorSchemas.notFound,
+    },
+    summary: 'Get a presigned download URL for an attachment',
+  },
+  delete: {
+    method: 'DELETE',
+    path: '/api/attachments/:id',
+    pathParams: z.object({
+      id: z.coerce.number(),
+    }),
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+      404: errorSchemas.notFound,
+    },
+    summary: 'Delete an attachment from R2 and the database',
+  },
+})
+
 export const contract = c.router(
   {
     tasks: tasksContract,
     settings: settingsContract,
+    attachments: attachmentsContract,
   },
   {
     pathPrefix: '',

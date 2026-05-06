@@ -10,6 +10,9 @@ import { and, eq } from 'drizzle-orm'
 import { without } from 'es-toolkit'
 
 import {
+  type Attachment,
+  attachments,
+  type InsertAttachment,
   type InsertTask,
   sanitizeSettings,
   type Task,
@@ -44,6 +47,10 @@ export interface IStorage {
     userId: string,
     updates: Partial<UserSettings>,
   ): Promise<UserSettings>
+  getAttachments(taskId: number, userId: string): Promise<Attachment[]>
+  getAttachment(id: number, userId: string): Promise<Attachment | undefined>
+  createAttachment(attachment: InsertAttachment): Promise<Attachment>
+  deleteAttachment(id: number, userId: string): Promise<void>
 }
 
 export class DatabaseStorage implements IStorage {
@@ -443,6 +450,41 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userSettings.userId, userId))
       .returning()
     return sanitizeSettings(settings)
+  }
+
+  async getAttachments(taskId: number, userId: string): Promise<Attachment[]> {
+    return await db
+      .select()
+      .from(attachments)
+      .where(
+        and(eq(attachments.taskId, taskId), eq(attachments.userId, userId)),
+      )
+      .orderBy(attachments.createdAt)
+  }
+
+  async getAttachment(
+    id: number,
+    userId: string,
+  ): Promise<Attachment | undefined> {
+    const [attachment] = await db
+      .select()
+      .from(attachments)
+      .where(and(eq(attachments.id, id), eq(attachments.userId, userId)))
+    return attachment
+  }
+
+  async createAttachment(attachment: InsertAttachment): Promise<Attachment> {
+    const [created] = await db
+      .insert(attachments)
+      .values(attachment)
+      .returning()
+    return created
+  }
+
+  async deleteAttachment(id: number, userId: string): Promise<void> {
+    await db
+      .delete(attachments)
+      .where(and(eq(attachments.id, id), eq(attachments.userId, userId)))
   }
 }
 

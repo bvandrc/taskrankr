@@ -15,6 +15,11 @@ import { TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
 import {
+  deleteR2Object,
+  getPresignedDownloadUrl,
+  getPresignedUploadUrl,
+} from './r2'
+import {
   authStorage,
   isAuthenticated,
   registerAuthRoutes,
@@ -202,6 +207,81 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const settings = await storage.updateSettings(userId, body)
         return { status: 200, body: settings }
+      },
+    },
+  },
+  attachments: {
+    list: {
+      // biome-ignore lint/suspicious/noExplicitAny: isAuthenticated's ParsedQs generic conflicts with ts-rest's typed query
+      middleware: [isAuthenticated as any],
+      handler: async ({ query, req }) => {
+        const userId = getUserId(req)
+        const task = await storage.getTask(query.taskId, userId)
+        if (!task) {
+          return { status: 200, body: [] }
+        }
+        const result = await storage.getAttachments(query.taskId, userId)
+        return { status: 200, body: result }
+      },
+    },
+    getUploadUrl: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, req }) => {
+        const userId = getUserId(req)
+        const task = await storage.getTask(body.taskId, userId)
+        if (!task) {
+          return { status: 404, body: { message: 'Task not found' } }
+        }
+        const key = `${userId}/${body.taskId}/${Date.now()}-${body.fileName}`
+        const uploadUrl = await getPresignedUploadUrl(key, body.mimeType)
+        return { status: 200, body: { uploadUrl, key } }
+      },
+    },
+    create: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, req }) => {
+        const userId = getUserId(req)
+        const task = await storage.getTask(body.taskId, userId)
+        if (!task) {
+          return { status: 404, body: { message: 'Task not found' } }
+        }
+        const attachment = await storage.createAttachment({
+          taskId: body.taskId,
+          userId,
+          fileName: body.fileName,
+          fileSize: body.fileSize,
+          mimeType: body.mimeType,
+          r2Key: body.key,
+        })
+        return { status: 201, body: attachment }
+      },
+    },
+    getDownloadUrl: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, req }) => {
+        const userId = getUserId(req)
+        const attachment = await storage.getAttachment(params.id, userId)
+        if (!attachment) {
+          return { status: 404, body: { message: 'Attachment not found' } }
+        }
+        const downloadUrl = await getPresignedDownloadUrl(
+          attachment.r2Key,
+          attachment.fileName,
+        )
+        return { status: 200, body: { downloadUrl } }
+      },
+    },
+    delete: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, req }) => {
+        const userId = getUserId(req)
+        const attachment = await storage.getAttachment(params.id, userId)
+        if (!attachment) {
+          return { status: 404, body: { message: 'Attachment not found' } }
+        }
+        await deleteR2Object(attachment.r2Key)
+        await storage.deleteAttachment(params.id, userId)
+        return { status: 204, body: undefined }
       },
     },
   },

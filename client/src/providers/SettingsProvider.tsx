@@ -13,7 +13,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { toMerged } from 'es-toolkit'
+import { pickBy, toMerged } from 'es-toolkit'
 
 import { debugLog } from '@/lib/debug-logger'
 import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
@@ -120,23 +120,15 @@ export const SettingsProvider = ({
   const acknowledgeSettingsSync = useCallback(
     (synced: Partial<UserSettings>) => {
       setPendingSettingsSync((current) => {
-        if (current === null) return null
         // Fast path: nothing changed during flight, drop everything.
-        if (current === synced) return null
+        if (current === null || current === synced) return null
         // Otherwise keep keys the user changed mid-flight (new keys, or keys
         // whose value diverged from what we just synced).
-        const remaining: Partial<UserSettings> = {}
-        let hasRemaining = false
-        for (const key of Object.keys(current) as (keyof UserSettings)[]) {
-          const syncedValue = synced[key]
-          const currentValue = current[key]
-          if (!(key in synced) || currentValue !== syncedValue) {
-            // biome-ignore lint/suspicious/noExplicitAny: heterogeneous partial
-            ;(remaining as any)[key] = currentValue
-            hasRemaining = true
-          }
-        }
-        return hasRemaining ? remaining : null
+        const remaining = pickBy(
+          current,
+          (v, key) => !(key in synced) || v !== synced[key],
+        )
+        return Object.keys(remaining).length > 0 ? remaining : null
       })
     },
     [],

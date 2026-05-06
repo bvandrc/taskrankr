@@ -27,8 +27,10 @@ export const useFormFieldsWithDefaults = <
   const keys = Object.keys(defaults) as Array<keyof D & string>
   const values = useWatch({
     control: form.control,
-    name: keys as unknown as readonly Path<T>[],
-  }) as unknown[]
+    // biome-ignore lint/suspicious/noExplicitAny: we specify our return type here, type cast is ok
+    name: keys as any as readonly Path<T>[],
+    // biome-ignore lint/suspicious/noExplicitAny: we specify our return type here, type cast is ok
+  }) as any[]
 
   const result = {} as { [K in keyof D]: D[K] }
   keys.forEach((key, i) => {

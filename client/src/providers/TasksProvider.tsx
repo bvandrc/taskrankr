@@ -471,22 +471,21 @@ export const TasksProvider = ({
       debugLog.log('task', 'update', { id, updates })
 
       if (updates.inheritCompletionState === true && updatedTask) {
-        if (
-          updatedTask.status === TaskStatus.COMPLETED &&
-          getHasIncompleteSubtasks(tasksRef.current, id)
-        ) {
-          // Revert: flag just enabled but parent is completed with incomplete subtasks
-          updateTaskById(id, () => ({
-            status: TaskStatus.OPEN,
-            completedAt: null,
-            inProgressStartedAt: null,
-          }))
-          enqueue({
-            type: SyncOperationType.UPDATE_TASK,
-            id,
-            data: { status: TaskStatus.OPEN },
-          })
-        } else if (updatedTask.status !== TaskStatus.COMPLETED) {
+        if (updatedTask.status === TaskStatus.COMPLETED) {
+          if (getHasIncompleteSubtasks(tasksRef.current, id)) {
+            // Revert: flag just enabled but parent is completed with incomplete subtasks
+            updateTaskById(id, () => ({
+              status: TaskStatus.OPEN,
+              completedAt: null,
+              inProgressStartedAt: null,
+            }))
+            enqueue({
+              type: SyncOperationType.UPDATE_TASK,
+              id,
+              data: { status: TaskStatus.OPEN },
+            })
+          }
+        } else {
           // Forward: flag just enabled and all subtasks are already done — auto-complete immediately
           const subtasks = getDirectSubtasks(tasksRef.current, id)
           if (

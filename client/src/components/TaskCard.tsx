@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { intervalToDuration } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronRight, Pin } from 'lucide-react'
 
@@ -163,19 +164,18 @@ const CollapseCaret = ({
 
 const formatDuration = (ms: number) => {
   if (ms <= 0) return null
-  const totalSeconds = Math.floor(ms / 1000)
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-
-  if (hours > 0 && minutes > 0) {
-    return `${hours}h ${minutes}m`
-  } else if (hours > 0) {
-    return `${hours}h`
-  } else if (minutes > 0) {
-    return `${minutes}m`
-  } else {
-    return `${totalSeconds}s`
-  }
+  const {
+    hours = 0,
+    minutes = 0,
+    seconds = 0,
+  } = intervalToDuration({
+    start: 0,
+    end: ms,
+  })
+  if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`
+  if (hours > 0) return `${hours}h`
+  if (minutes > 0) return `${minutes}m`
+  return `${seconds}s`
 }
 
 const getTotalAccumulatedTime = (

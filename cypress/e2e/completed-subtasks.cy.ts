@@ -17,6 +17,7 @@ import {
 } from '@cypress/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
+  checkCompletedPage,
   expandAndCheckTree,
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
@@ -172,11 +173,9 @@ describe('Completed Subtasks', () => {
       checkNumCalls({ create: 2, update: 2 })
 
       checkTasksExistBackend([completedRootTask])
-      cy.contains(rootTask.name).should('not.exist')
-      cy.contains(subtask.name).should('not.exist')
-
-      goToCompletedPage()
-      expandAndCheckTree({ ...completedSubtask, subtasks: [completedSubtask] })
+      checkCompletedPage([
+        { ...completedRootTask, subtasks: [completedSubtask] },
+      ])
     })
 
     it('auto-completes parent when inheritCompletionState is enabled after all subtasks are already completed', () => {
@@ -201,11 +200,9 @@ describe('Completed Subtasks', () => {
       cy.reload()
       interceptUpdate()
       waitForUpdate([completedRootTask])
-      cy.contains(rootTask.name).should('not.exist')
-      cy.contains(subtask.name).should('not.exist')
-
-      goToCompletedPage()
-      expandAndCheckTree({ ...completedSubtask, subtasks: [completedSubtask] })
+      checkCompletedPage([
+        { ...completedRootTask, subtasks: [completedSubtask] },
+      ])
     })
   })
 

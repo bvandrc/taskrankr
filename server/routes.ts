@@ -128,7 +128,12 @@ const router = s.router(contract, {
         if (!existing) {
           return ERRORS.TASK_NOT_FOUND
         }
+        const r2Keys = await storage.getAttachmentKeysForTaskTree(
+          params.id,
+          userId,
+        )
         await storage.deleteTask(params.id, userId)
+        await Promise.allSettled(r2Keys.map((key) => deleteR2Object(key)))
         return { status: 204, body: undefined }
       },
     },
@@ -281,11 +286,19 @@ const router = s.router(contract, {
         if (!task) {
           return ERRORS.TASK_NOT_FOUND
         }
-        const attachment = await storage.createAttachment({
-          ...body,
-          userId,
-        })
-        return { status: 201, body: attachment }
+        try {
+          const attachment = await storage.createAttachment({
+            ...body,
+            userId,
+          })
+          return { status: 201, body: attachment }
+        } catch {
+          await deleteR2Object(body.r2Key).catch(() => undefined)
+          return {
+            status: 400,
+            body: { message: 'Failed to save attachment metadata' },
+          }
+        }
       },
     },
     getDownloadUrl: {

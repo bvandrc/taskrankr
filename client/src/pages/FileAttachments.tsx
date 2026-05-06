@@ -6,7 +6,6 @@
 
 import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { hoursToMilliseconds } from 'date-fns'
 import { FileIcon, Paperclip, Trash2 } from 'lucide-react'
 
 import { BackButtonHeader } from '@/components/BackButton'
@@ -19,17 +18,9 @@ import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
 import type { AttachmentWithTask } from '~/shared/schema'
 import { TaskStatus } from '~/shared/schema'
+import { formatDaysSince } from '~/shared/utils/datetime'
 
 const QUERY_KEY = ['/api/attachments/all']
-
-function daysSinceCompleted(date: Date): string {
-  const days = Math.floor(
-    (Date.now() - date.getTime()) / hoursToMilliseconds(24),
-  )
-  if (days === 0) return 'Today'
-  if (days === 1) return '1 day ago'
-  return `${days} days ago`
-}
 
 function storageBarColor(usedBytes: number): string {
   const pct = usedBytes / MAX_TOTAL_STORAGE_BYTES
@@ -89,7 +80,7 @@ const StatusCell = ({
       className="text-xs text-muted-foreground shrink-0 whitespace-nowrap"
       data-testid="badge-completed"
     >
-      {taskCompletedAt ? daysSinceCompleted(taskCompletedAt) : 'Completed'}
+      {taskCompletedAt ? formatDaysSince(taskCompletedAt) : 'Completed'}
     </span>
   )
 }

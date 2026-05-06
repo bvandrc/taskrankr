@@ -9,6 +9,9 @@ type TaskTreeNode = Pick<Task, 'name' | 'status'> & {
   subtasks?: TaskTreeNode[]
 }
 
+const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
+  nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
+
 export const getTaskCardTitle = (task: Pick<Task, 'name'>) =>
   cy
     .contains(
@@ -88,9 +91,6 @@ export const changeStatusViaStatusChangeDialog = (
   waitForUpdate([{ ...task, status: newStatus }])
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }
-
-const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
-  nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
 export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
   cy.log('Check task is not in main tree')

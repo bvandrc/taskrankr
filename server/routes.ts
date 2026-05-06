@@ -13,6 +13,8 @@ import type { Express } from 'express'
 
 import { TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
+import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
+import { formatFileSize } from '~/shared/fileSize'
 import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
 import {
   deleteR2Object,
@@ -27,8 +29,6 @@ import {
 } from './replit_integrations/auth'
 import type { UserSession } from './replit_integrations/auth/replitAuth'
 import { storage } from './storage'
-
-const MAX_TOTAL_STORAGE_BYTES = 1024 * 1024 * 1024
 
 const ERRORS = {
   TASK_NOT_FOUND: {
@@ -263,8 +263,7 @@ const router = s.router(contract, {
           return {
             status: 400,
             body: {
-              message:
-                'Storage limit of 1 GB reached. Delete some attachments to free up space.',
+              message: `Storage limit of ${formatFileSize(MAX_TOTAL_STORAGE_BYTES)} reached. Delete some attachments to free up space.`,
             },
           }
         }

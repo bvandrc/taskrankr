@@ -63,7 +63,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Guest Mode**: Local storage-based guest mode with demo data for unauthenticated users.
 - **Replit Auth Integration**: Secure user authentication via Replit's authentication service.
 - **PWA Support**: Installable as a Progressive Web App for an app-like experience.
-- **File Attachments**: Authenticated users can attach files (up to 50 MB each) to any saved task. Files are stored in Cloudflare R2 via presigned URLs; downloads use time-limited presigned GET URLs. A 1 GB per-user storage cap is enforced at upload time.
+- **File Attachments**: Authenticated users can attach files (up to 50 MB each) to any saved task. Files are stored in Cloudflare R2 via presigned URLs; downloads use time-limited presigned GET URLs. A per-user storage cap is enforced at upload time.
 - **File Attachments Page**: Accessible from the nav menu (auth only, `/file-attachments`). Lists all attachments across every task with a storage meter, task status ("Open" or "X days ago"), file size, download, and delete per attachment.
 
 ## User preferences

@@ -20,17 +20,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileIcon, Lock, Paperclip, Trash2, Upload, X } from 'lucide-react'
 
 import { tsr } from '@/lib/ts-rest'
+import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
+import { formatFileSize } from '~/shared/fileSize'
 import type { Attachment } from '~/shared/schema'
 import { Button } from '../primitives/Button'
-
-const MAX_FILE_SIZE_MB = 50
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
 
 export interface AttachmentsCardHandle {
   /**
@@ -250,7 +243,9 @@ export const AttachmentsCard = forwardRef<
       if (!file) return
 
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        setUploadError(`File must be under ${MAX_FILE_SIZE_MB} MB`)
+        setUploadError(
+          `File must be under ${formatFileSize(MAX_FILE_SIZE_BYTES)}`,
+        )
         return
       }
 

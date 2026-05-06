@@ -15,16 +15,9 @@ import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useToast } from '@/hooks/useToast'
 import { tsr } from '@/lib/ts-rest'
 import type { AttachmentWithTask } from '~/shared/contract'
+import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
+import { formatFileSize } from '~/shared/fileSize'
 import { TaskStatus } from '~/shared/schema'
-
-const GB_BYTES = 1024 * 1024 * 1024
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < GB_BYTES) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / GB_BYTES).toFixed(2)} GB`
-}
 
 function daysSinceCompleted(date: Date): string {
   const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
@@ -34,7 +27,7 @@ function daysSinceCompleted(date: Date): string {
 }
 
 function storageBarColor(usedBytes: number): string {
-  const pct = usedBytes / GB_BYTES
+  const pct = usedBytes / MAX_TOTAL_STORAGE_BYTES
   if (pct >= 0.95) return 'bg-red-500'
   if (pct >= 0.8) return 'bg-amber-500'
   return 'bg-emerald-500'
@@ -43,7 +36,7 @@ function storageBarColor(usedBytes: number): string {
 const QUERY_KEY = ['/api/attachments/all']
 
 const StorageMeter = ({ totalBytes }: { totalBytes: number }) => {
-  const pct = Math.min((totalBytes / GB_BYTES) * 100, 100)
+  const pct = Math.min((totalBytes / MAX_TOTAL_STORAGE_BYTES) * 100, 100)
   return (
     <div
       className="flex flex-col gap-2 px-4 py-3 rounded-lg bg-card border border-white/5"
@@ -55,7 +48,9 @@ const StorageMeter = ({ totalBytes }: { totalBytes: number }) => {
         </span>
         <span className="font-mono text-foreground/80 text-xs">
           {formatFileSize(totalBytes)}{' '}
-          <span className="text-muted-foreground">/ 1 GB</span>
+          <span className="text-muted-foreground">
+            / {formatFileSize(MAX_TOTAL_STORAGE_BYTES)}
+          </span>
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-secondary/40 overflow-hidden">

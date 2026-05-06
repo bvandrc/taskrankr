@@ -6,7 +6,7 @@ import {
   TaskStatus,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { getElementArrayText } from '.'
+import { getElementArrayText, isLoggedIn } from '.'
 import { checkTasksDontExistBackend } from './api'
 import { type CreatedTask, waitForCreate, waitForUpdate } from './intercepts'
 
@@ -21,6 +21,7 @@ export const fillTaskFormRankFields = (
   task: TaskFormData,
   settings: FieldConfig,
 ) => {
+  const loggedIn = isLoggedIn()
   const requiredFields = RankField.filter(
     (field) => settings[field].visible && settings[field].required,
   )
@@ -46,6 +47,10 @@ export const fillTaskFormRankFields = (
       cy.get(RankSelect).should('not.exist')
     }
   }
+
+  cy.get(TaskForm.ATTACHMENTS_CARD)
+    .should('be.visible')
+    .should(loggedIn ? 'not.have.class' : 'have.class', 'opacity-50')
 }
 
 /**

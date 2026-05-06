@@ -295,7 +295,10 @@ export const AttachmentsCard = forwardRef<
   }, [])
 
   return (
-    <div className={disabled ? 'opacity-50' : undefined}>
+    <div
+      className={disabled ? 'opacity-50' : undefined}
+      data-testid="attachments-card"
+    >
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">

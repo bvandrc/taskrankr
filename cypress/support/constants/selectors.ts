@@ -32,16 +32,11 @@ export const Selectors = {
   TaskForm: {
     FORM: testId('task-form'),
     NAME_INPUT: testId('task-name-input'),
+    rankSelect: (field: RankField) => testId(`rank-select-${field}`),
     TIME_SPENT_INPUT: testId('time-spent-input'),
     TIME_SPENT_INPUT_HOURS: testId('time-spent-input-hours'),
     TIME_SPENT_INPUT_MINUTES: testId('time-spent-input-minutes'),
     MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
-    rankSelect: (field: RankField) => testId(`rank-select-${field}`),
-    SUBMIT_BTN: testId('submit-button'),
-    CANCEL_BTN: testId('cancel-button'),
-    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
-    CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
-    CANCEL_DENY_BTN: testId('button-cancel-deny'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
@@ -51,6 +46,15 @@ export const Selectors = {
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
     AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
+    // attachments
+    ATTACHMENTS_CARD: testId('attachments-card'),
+    // form bns
+    SUBMIT_BTN: testId('submit-button'),
+    CANCEL_BTN: testId('cancel-button'),
+    // cancel dialog
+    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
+    CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
+    CANCEL_DENY_BTN: testId('button-cancel-deny'),
   },
   AssignSubtaskDialog: {
     DIALOG: testId('assign-subtask-dialog'),

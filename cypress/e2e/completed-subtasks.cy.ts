@@ -32,6 +32,11 @@ describe('Completed Subtasks', () => {
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
+  const completedRootTask = {
+    ...rootTask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
   const subtask = {
     ...DefaultTask,
     name: 'E2E Subtask',
@@ -139,11 +144,6 @@ describe('Completed Subtasks', () => {
   }
 
   context('Auto-complete parent when all subtasks completed', () => {
-    const completedRootTask = {
-      ...rootTask,
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
-
     it('auto-completes parent when inheritCompletionState is enabled and the last subtask is completed', () => {
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
@@ -172,8 +172,11 @@ describe('Completed Subtasks', () => {
       checkNumCalls({ create: 2, update: 2 })
 
       checkTasksExistBackend([completedRootTask])
+      cy.contains(rootTask.name).should('not.exist')
+      cy.contains(subtask.name).should('not.exist')
+
       goToCompletedPage()
-      cy.contains(rootTask.name).should('exist')
+      expandAndCheckTree({ ...completedSubtask, subtasks: [completedSubtask] })
     })
 
     it('auto-completes parent when inheritCompletionState is enabled after all subtasks are already completed', () => {
@@ -198,9 +201,11 @@ describe('Completed Subtasks', () => {
       cy.reload()
       interceptUpdate()
       waitForUpdate([completedRootTask])
+      cy.contains(rootTask.name).should('not.exist')
+      cy.contains(subtask.name).should('not.exist')
 
       goToCompletedPage()
-      cy.contains(rootTask.name).should('exist')
+      expandAndCheckTree({ ...completedSubtask, subtasks: [completedSubtask] })
     })
   })
 

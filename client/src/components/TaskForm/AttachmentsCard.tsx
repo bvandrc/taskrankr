@@ -30,7 +30,7 @@ import {
 import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
 import { tsr } from '@/lib/ts-rest'
-import { cn } from '@/lib/utils'
+import { cn, handleKeyDown } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
@@ -97,12 +97,7 @@ const FileRow = ({
             role: 'button' as const,
             tabIndex: 0,
             onClick: onNameClick,
-            onKeyDown: (e: React.KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                onNameClick()
-              }
-            },
+            onKeyDown: handleKeyDown,
           }
         : {})}
       data-testid={nameTestId}

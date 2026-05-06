@@ -1,3 +1,5 @@
+import { intervalToDuration } from 'date-fns'
+
 import { Input } from './Input'
 
 const MS_PER_MINUTE = 60 * 1000
@@ -26,8 +28,10 @@ export const TimeInput = ({
   className = 'w-16 h-8 text-center text-sm',
   'data-testid': testId = 'time-input',
 }: TimeInputProps) => {
-  const hours = Math.floor(durationMs / MS_PER_HOUR)
-  const minutes = Math.floor((durationMs % MS_PER_HOUR) / MS_PER_MINUTE)
+  const { hours = 0, minutes = 0 } = intervalToDuration({
+    start: 0,
+    end: durationMs,
+  })
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     const input = e.target

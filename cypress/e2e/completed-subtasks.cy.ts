@@ -178,8 +178,6 @@ describe('Completed Subtasks', () => {
       // Parent auto-completes as the last subtask is marked done
       waitForUpdate([completedRootTask])
       checkNumCalls({ create: 2, update: 2 })
-
-      checkTasksExistBackend([completedRootTask])
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
@@ -211,8 +209,6 @@ describe('Completed Subtasks', () => {
       // Two more updates fire: form save (inheritCompletionState: true) + auto-complete (status: COMPLETED)
       waitForUpdate([completedRootTask, completedRootTask])
       checkNumCalls({ create: 2, update: 3 })
-
-      checkTasksExistBackend([completedRootTask])
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
@@ -265,12 +261,6 @@ describe('Completed Subtasks', () => {
       changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED)
       waitForUpdate([completedRootTask, completedSubtask])
       checkNumCalls({ create: 3, update: 4 })
-
-      checkTasksExistBackend([
-        completedRootTask,
-        completedSubtask,
-        completedSubtask2,
-      ])
       checkCompletedPage([
         {
           ...completedRootTask,

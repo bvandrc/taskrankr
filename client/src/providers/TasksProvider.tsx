@@ -471,7 +471,7 @@ export const TasksProvider = ({
       debugLog.log('task', 'update', { id, updates })
 
       if (
-        updates.inheritCompletionState === true &&
+        updates.inheritCompletionState &&
         updatedTask &&
         updatedTask.status === TaskStatus.COMPLETED &&
         getHasIncompleteSubtasks(tasksRef.current, id)

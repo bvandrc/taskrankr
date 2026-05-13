@@ -1,12 +1,16 @@
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
+import { goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
 type TaskTreeNode = Pick<Task, 'name' | 'status'> & {
   subtasks?: TaskTreeNode[]
 }
+
+const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
+  nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
 export const getTaskCardTitle = (task: Pick<Task, 'name'>) =>
   cy
@@ -86,4 +90,17 @@ export const changeStatusViaStatusChangeDialog = (
   cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).click()
   waitForUpdate([{ ...task, status: newStatus }])
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
+}
+
+export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
+  cy.log('Check task is not in main tree')
+  flattenTree(completedTasks).forEach((task) => {
+    cy.contains(task.name).should('not.exist')
+  })
+
+  cy.log('Check task is in completed page')
+  goToCompletedPage()
+  for (const task of completedTasks) {
+    expandAndCheckTree(task)
+  }
 }

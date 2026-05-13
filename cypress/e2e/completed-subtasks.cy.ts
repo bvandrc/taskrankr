@@ -219,7 +219,7 @@ describe('Completed Subtasks', () => {
     })
 
     it('auto-completes grandparent chain when completing the last subtask', () => {
-      cy.log('Step 1: Create root task (autocomplete=on) with subtask inline')
+      cy.log('Step 1: Create root task with subtask, set autocomplete=on')
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)

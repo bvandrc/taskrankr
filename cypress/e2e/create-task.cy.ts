@@ -33,7 +33,6 @@ describe('Task Creation', () => {
   })
 
   it('create a task, check displays in main tree', () => {
-    cy.log('Step 1: Create task')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(task)
     clickSubmitBtnCreate({ newTasks: [task] })

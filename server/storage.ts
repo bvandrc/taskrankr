@@ -29,6 +29,10 @@ import { db } from './db'
 
 type UpdateTaskArg = Omit<UpdateTask, 'id'>
 
+/** Scopes a task lookup to a single owner — the standard authorization predicate for task rows. */
+const byIdAndUser = (id: number, userId: string) =>
+  and(eq(tasks.id, id), eq(tasks.userId, userId))
+
 export interface IStorage {
   getTasks(userId: string): Promise<Task[]>
   getTask(id: number, userId: string): Promise<Task | undefined>
@@ -89,7 +93,7 @@ export class DatabaseStorage implements IStorage {
                 ? { subtaskOrder: fix.subtaskOrder }
                 : { parentId: fix.parentId },
             )
-            .where(and(eq(tasks.id, fix.id), eq(tasks.userId, userId))),
+            .where(byIdAndUser(fix.id, userId)),
         ),
       )
     }
@@ -98,10 +102,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTask(id: number, userId: string): Promise<Task | undefined> {
-    const [task] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+    const [task] = await db.select().from(tasks).where(byIdAndUser(id, userId))
     return task
   }
 
@@ -260,7 +261,7 @@ export class DatabaseStorage implements IStorage {
     const [task] = await db
       .update(tasks)
       .set(dbUpdates)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .where(byIdAndUser(id, userId))
       .returning()
 
     const updated = task
@@ -354,9 +355,7 @@ export class DatabaseStorage implements IStorage {
         await db
           .update(tasks)
           .set(updates)
-          .where(
-            and(eq(tasks.id, taskToDelete.parentId), eq(tasks.userId, userId)),
-          )
+          .where(byIdAndUser(taskToDelete.parentId, userId))
       }
     }
 
@@ -365,9 +364,7 @@ export class DatabaseStorage implements IStorage {
       await this.deleteTaskWithoutTimeAccumulation(child.id, userId)
     }
 
-    await db
-      .delete(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+    await db.delete(tasks).where(byIdAndUser(id, userId))
   }
 
   private async deleteTaskWithoutTimeAccumulation(
@@ -379,9 +376,7 @@ export class DatabaseStorage implements IStorage {
       await this.deleteTaskWithoutTimeAccumulation(child.id, userId)
     }
 
-    await db
-      .delete(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+    await db.delete(tasks).where(byIdAndUser(id, userId))
   }
 
   async reorderSubtasks(
@@ -392,7 +387,7 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(tasks)
       .set({ subtaskOrder: orderedIds })
-      .where(and(eq(tasks.id, parentId), eq(tasks.userId, userId)))
+      .where(byIdAndUser(parentId, userId))
   }
 
   async getSettings(userId: string): Promise<UserSettings> {

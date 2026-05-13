@@ -271,10 +271,7 @@ export class DatabaseStorage implements IStorage {
       dbUpdates.inheritCompletionState &&
       updated.status === TaskStatus.COMPLETED
     ) {
-      const children = await db
-        .select()
-        .from(tasks)
-        .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
+      const children = await this.getSubtasks(updated.id, updated.userId)
       if (getHasIncomplete(children)) {
         const [reverted] = await db
           .update(tasks)
@@ -303,10 +300,7 @@ export class DatabaseStorage implements IStorage {
         newStatus === TaskStatus.COMPLETED ||
         (oldStatus === TaskStatus.COMPLETED && newStatus === TaskStatus.OPEN)
       ) {
-        const childTasks = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
+        const childTasks = await this.getSubtasks(id, userId)
         for (const child of childTasks) {
           await this.updateTask(child.id, userId, { status: newStatus })
         }
@@ -331,10 +325,7 @@ export class DatabaseStorage implements IStorage {
 
     let total = task.timeSpent
 
-    const childTasks = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
+    const childTasks = await this.getSubtasks(id, userId)
 
     for (const child of childTasks) {
       total += await this.getTotalTimeForTask(child.id, userId)
@@ -369,10 +360,7 @@ export class DatabaseStorage implements IStorage {
       }
     }
 
-    const childTasks = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
+    const childTasks = await this.getSubtasks(id, userId)
     for (const child of childTasks) {
       await this.deleteTaskWithoutTimeAccumulation(child.id, userId)
     }
@@ -386,10 +374,7 @@ export class DatabaseStorage implements IStorage {
     id: number,
     userId: string,
   ): Promise<void> {
-    const childTasks = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
+    const childTasks = await this.getSubtasks(id, userId)
     for (const child of childTasks) {
       await this.deleteTaskWithoutTimeAccumulation(child.id, userId)
     }

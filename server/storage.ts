@@ -271,7 +271,7 @@ export class DatabaseStorage implements IStorage {
       dbUpdates.inheritCompletionState &&
       updated.status === TaskStatus.COMPLETED
     ) {
-      const children = await this.getSubtasks(updated.id, updated.userId)
+      const children = await this.getSubtasks(id, userId)
       if (getHasIncomplete(children)) {
         const [reverted] = await db
           .update(tasks)

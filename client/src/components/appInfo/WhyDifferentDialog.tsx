@@ -125,7 +125,7 @@ export const WhyDifferentDialog = ({
                 Create subtasks, subtasks of subtasks, and so on. Subtasks get
                 crossed out as you complete them. Within each level, you can
                 manually sort them (i.e. a step-by-step process), or, leave
-                un-ordered, where subtasks will inherit the overall sort order
+                unordered, where subtasks will inherit the overall sort order
                 of your view (highest priority/greatest ease/etc.). Other
                 features such as "auto-complete when all subtasks complete" let
                 <em>you</em> decide and configure how you want a task's workflow
@@ -137,8 +137,8 @@ export const WhyDifferentDialog = ({
           <div className="border-t border-border pt-4 space-y-3">
             <p>
               I encourage you to give it a shot. I built this to help me, and if
-              you're someone who can use some organization of their tasks, I
-              think it can help you too. Check out{' '}
+              you're looking to better organize your tasks, I think it can help
+              you too. Check out{' '}
               <InlineLink onClick={goToSettings}>Settings</InlineLink> to see
               what you can customize.
             </p>

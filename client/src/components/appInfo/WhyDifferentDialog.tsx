@@ -78,18 +78,30 @@ export const WhyDifferentDialog = ({
                 </span>{' '}
                 At different times of life, or the week, or the day, there is
                 more to consider than just importance. TaskRankr gives you the
-                option to sort by <strong>Ease, Enjoyment, or Time</strong> —
-                For example, You've been working on high-priority tasks all day.
-                Now it's evening and you want to stay productive but enjoy
-                yourself, i.e. hobbies or side projects— sort by{' '}
-                <strong>Enjoyment</strong> for something fun, or{' '}
-                <strong>Ease</strong> to knock out something easy. Or say you
-                have a few minutes, you can sort by <strong>Time</strong> to
-                make the most of it.
-                <br />
-                And, you can disable any of these in your{' '}
-                <InlineLink onClick={goToSettings}>settings</InlineLink> to your
-                needs.
+                option to sort by <strong>Ease, Enjoyment, or Time</strong>:
+                <ul className="my-1.5 space-y-1.5 ml-1">
+                  <li className="flex gap-2">
+                    <span className="text-emerald-500 shrink-0">•</span>
+                    <span>
+                      <strong>Ease or Enjoyment</strong> — You've been working
+                      on high-priority tasks all day. Now it's evening and you
+                      want to stay productive but enjoy yourself (e.g. hobbies
+                      or side projects) — sort by <strong>Enjoyment</strong> for
+                      something fun, or <strong>Ease</strong> to knock out
+                      something easy.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-emerald-500 shrink-0">•</span>
+                    <span>
+                      <strong>Time</strong> — You have a few minutes; sort by{' '}
+                      <strong>Time</strong> to make the most of it.
+                    </span>
+                  </li>
+                </ul>
+                You can disable any of these in your{' '}
+                <InlineLink onClick={goToSettings}>settings</InlineLink> to suit
+                your needs.
               </div>
             </li>
 
@@ -124,7 +136,7 @@ export const WhyDifferentDialog = ({
 
           <div className="border-t border-border pt-4 space-y-3">
             <p>
-              I encourage you to give it a shot.I built this to help me, and if
+              I encourage you to give it a shot. I built this to help me, and if
               you're someone who can use some organization of their tasks, I
               think it can help you too. Check out{' '}
               <InlineLink onClick={goToSettings}>Settings</InlineLink> to see

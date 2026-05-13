@@ -494,44 +494,72 @@ export const TasksProvider = ({
           })
           debugLog.log('task', 'inheritCompletion:onUpdate', { id })
 
-          // Propagate to grandparent(s) — same walk as setTaskStatus's upward chain
+          // Propagate to grandparent(s) — same walk as setTaskStatus's upward chain.
+          // Patch the just-auto-completed task into the snapshot so ancestors see it.
           if (updatedTask.parentId) {
+            let snapshot = tasksRef.current.map((t) =>
+              t.id === id
+                ? {
+                    ...t,
+                    ...updates,
+                    status: TaskStatus.COMPLETED,
+                    completedAt: latestCompletedAt ?? new Date(),
+                    inProgressStartedAt: null,
+                  }
+                : t,
+            )
             const autoCompletedParents: number[] = []
-            setTasks((prev) => {
-              let current = prev
-              let currentParentId: number | null = updatedTask.parentId
-              while (currentParentId !== null) {
-                const parent = getById(current, currentParentId)
-                if (
-                  !parent?.inheritCompletionState ||
-                  parent.status === TaskStatus.COMPLETED
-                )
-                  break
-                const thisChildren = getDirectSubtasks(current, parent.id)
-                if (
-                  !thisChildren.every((t) => t.status === TaskStatus.COMPLETED)
-                )
-                  break
-                const parentLatestCompletedAt =
-                  getChildrenLatestCompletedAt(thisChildren)
-                current = updateItem(current, parent.id, (t) => ({
-                  ...t,
-                  status: TaskStatus.COMPLETED,
-                  completedAt: parentLatestCompletedAt ?? new Date(),
-                  inProgressStartedAt: null,
-                }))
-                autoCompletedParents.push(parent.id)
-                currentParentId = parent.parentId
-              }
-              return current === prev ? prev : current
-            })
-            for (const parentId of autoCompletedParents) {
-              enqueue({
-                type: SyncOperationType.UPDATE_TASK,
-                id: parentId,
-                data: { status: TaskStatus.COMPLETED },
+            let currentParentId: number | null = updatedTask.parentId
+
+            while (currentParentId !== null) {
+              const parent: LocalTask | undefined = getById(
+                snapshot,
+                currentParentId,
+              )
+              if (
+                !parent?.inheritCompletionState ||
+                parent.status === TaskStatus.COMPLETED
+              )
+                break
+              const thisChildren = getDirectSubtasks(snapshot, parent.id)
+              if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
+                break
+              const parentLatestCompletedAt =
+                getChildrenLatestCompletedAt(thisChildren)
+              snapshot = updateItem(snapshot, parent.id, (t) => ({
+                ...t,
+                status: TaskStatus.COMPLETED,
+                completedAt: parentLatestCompletedAt ?? new Date(),
+                inProgressStartedAt: null,
+              }))
+              autoCompletedParents.push(parent.id)
+              currentParentId = parent.parentId
+            }
+
+            if (autoCompletedParents.length > 0) {
+              setTasks((prev) => {
+                let current = prev
+                for (const parentId of autoCompletedParents) {
+                  const thisChildren = getDirectSubtasks(current, parentId)
+                  const parentLatestCompletedAt =
+                    getChildrenLatestCompletedAt(thisChildren)
+                  current = updateItem(current, parentId, (t) => ({
+                    ...t,
+                    status: TaskStatus.COMPLETED,
+                    completedAt: parentLatestCompletedAt ?? new Date(),
+                    inProgressStartedAt: null,
+                  }))
+                }
+                return current
               })
-              debugLog.log('task', 'inheritCompletion', { parentId })
+              for (const parentId of autoCompletedParents) {
+                enqueue({
+                  type: SyncOperationType.UPDATE_TASK,
+                  id: parentId,
+                  data: { status: TaskStatus.COMPLETED },
+                })
+                debugLog.log('task', 'inheritCompletion', { parentId })
+              }
             }
           }
         }
@@ -595,47 +623,66 @@ export const TasksProvider = ({
       debugLog.log('task', 'setStatus', { id, status })
 
       if (status === TaskStatus.COMPLETED && updatedTask?.parentId) {
+        // Compute which ancestors to auto-complete synchronously. tasksRef
+        // hasn't been flushed yet, so we manually patch in the just-completed
+        // task before walking up.
+        let snapshot = tasksRef.current.map((t) =>
+          t.id === id ? { ...t, ...statusToStatusPatch(status) } : t,
+        )
         const autoCompletedParents: number[] = []
+        let currentParentId: number | null = updatedTask.parentId
 
-        setTasks((prev) => {
-          let updated = prev
-          let currentParentId: number | null = updatedTask.parentId
+        while (currentParentId !== null) {
+          const parent: LocalTask | undefined = getById(
+            snapshot,
+            currentParentId,
+          )
+          if (
+            !parent?.inheritCompletionState ||
+            parent.status === TaskStatus.COMPLETED
+          )
+            break
 
-          while (currentParentId !== null) {
-            const parent = getById(updated, currentParentId)
-            if (
-              !parent?.inheritCompletionState ||
-              parent.status === TaskStatus.COMPLETED
-            )
-              break
+          const thisChildren = getDirectSubtasks(snapshot, parent.id)
+          if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
+            break
 
-            const thisChildren = getDirectSubtasks(updated, parent.id)
-            if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
-              break
+          const latestCompletedAt = getChildrenLatestCompletedAt(thisChildren)
+          snapshot = updateItem(snapshot, parent.id, (t) => ({
+            ...t,
+            status: TaskStatus.COMPLETED,
+            completedAt: latestCompletedAt ?? new Date(),
+            inProgressStartedAt: null,
+          }))
+          autoCompletedParents.push(parent.id)
+          currentParentId = parent.parentId
+        }
 
-            const latestCompletedAt = getChildrenLatestCompletedAt(thisChildren)
-
-            updated = updateItem(updated, parent.id, (t) => ({
-              ...t,
-              status: TaskStatus.COMPLETED,
-              completedAt: latestCompletedAt ?? new Date(),
-              inProgressStartedAt: null,
-            }))
-            autoCompletedParents.push(parent.id)
-
-            currentParentId = parent.parentId
-          }
-
-          return updated === prev ? prev : updated
-        })
-
-        for (const parentId of autoCompletedParents) {
-          enqueue({
-            type: SyncOperationType.UPDATE_TASK,
-            id: parentId,
-            data: { status: TaskStatus.COMPLETED },
+        if (autoCompletedParents.length > 0) {
+          setTasks((prev) => {
+            let updated = prev
+            for (const parentId of autoCompletedParents) {
+              const thisChildren = getDirectSubtasks(updated, parentId)
+              const latestCompletedAt =
+                getChildrenLatestCompletedAt(thisChildren)
+              updated = updateItem(updated, parentId, (t) => ({
+                ...t,
+                status: TaskStatus.COMPLETED,
+                completedAt: latestCompletedAt ?? new Date(),
+                inProgressStartedAt: null,
+              }))
+            }
+            return updated
           })
-          debugLog.log('task', 'inheritCompletion', { parentId })
+
+          for (const parentId of autoCompletedParents) {
+            enqueue({
+              type: SyncOperationType.UPDATE_TASK,
+              id: parentId,
+              data: { status: TaskStatus.COMPLETED },
+            })
+            debugLog.log('task', 'inheritCompletion', { parentId })
+          }
         }
       }
 

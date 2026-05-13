@@ -106,7 +106,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSubtasks(parentId: number, userId: string): Promise<Task[]> {
-    return db
+    return await db
       .select()
       .from(tasks)
       .where(and(eq(tasks.parentId, parentId), eq(tasks.userId, userId)))

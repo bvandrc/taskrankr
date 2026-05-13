@@ -37,17 +37,6 @@ describe('Completed Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
-  const grandparentTask = {
-    ...DefaultTask,
-    name: 'E2E Grandparent Task',
-    status: TaskStatus.PINNED,
-  } as const satisfies CreatedTask
-
-  const completedGrandparentTask = {
-    ...grandparentTask,
-    status: TaskStatus.COMPLETED,
-  } as const satisfies CreatedTask
-
   const subtask = {
     ...DefaultTask,
     name: 'E2E Subtask',
@@ -155,7 +144,7 @@ describe('Completed Subtasks', () => {
   }
 
   context('Auto-complete parent when all subtasks completed', () => {
-    it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask is completed', () => {
+    it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask becomes completed', () => {
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)
@@ -202,13 +191,10 @@ describe('Completed Subtasks', () => {
       getTaskForm(0).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
         cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
-        // Don't pass updatedTasks: status flips to COMPLETED immediately after save
-        clickSubmitBtnUpdate()
+        clickSubmitBtnUpdate({ updatedTasks: [completedRootTask] })
       })
 
-      // Two more updates fire: form save (inheritCompletionState: true) + auto-complete (status: COMPLETED)
-      waitForUpdate([completedRootTask, completedRootTask])
-      checkNumCalls({ create: 2, update: 3 })
+      checkNumCalls({ create: 2, update: 2 })
 
       checkTasksExistBackend([completedRootTask])
       checkCompletedPage([
@@ -217,27 +203,10 @@ describe('Completed Subtasks', () => {
     })
 
     it('auto-completes grandparent chain when completing the last subtask', () => {
-      // Step 1: Create grandparent (AUTOCOMPLETE) with rootTask as inline subtask
+      // Step 1: Create root (autocomplete=true) with subtask
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
-        fillTaskForm(grandparentTask)
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
-        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-      })
-      getTaskForm(1).within(() => {
         fillTaskForm(rootTask)
-        clickSubmitBtnCreate()
-      })
-      getTaskForm(0).within(() => {
-        clickSubmitBtnCreate({ newTasks: [grandparentTask, rootTask] })
-      })
-      checkNumCalls({ create: 2, update: 0 })
-
-      // Step 2: Edit rootTask to enable AUTOCOMPLETE and add a subtask
-      expandAndCheckTree({ ...grandparentTask, subtasks: [rootTask] })
-      openTaskEditForm(rootTask)
-      getTaskForm(0).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
         cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -247,26 +216,45 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
-        clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
+        clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+      })
+      checkNumCalls({ create: 2, update: 0 })
+      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+
+      // Step 2: Edit subtask to set autocomplete=true, and add a subtask
+      openTaskEditForm(subtask)
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask2)
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({ updatedTasks: [subtask] })
       })
       checkNumCalls({ create: 3, update: 1 })
-
-      // Step 3: Complete the subtask — both rootTask and grandparentTask should auto-complete
       expandAndCheckTree({
-        ...grandparentTask,
-        subtasks: [{ ...rootTask, subtasks: [subtask] }],
+        ...rootTask,
+        subtasks: [{ ...subtask, subtasks: [subtask2] }],
       })
-      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
 
-      // Two more auto-completes fire: rootTask then grandparentTask
-      waitForUpdate([completedRootTask, completedGrandparentTask])
+      // Step 3: Complete the grandchild subtask — both subtask and rootTask should auto-complete
+      changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED)
+      waitForUpdate([completedRootTask, completedSubtask])
       checkNumCalls({ create: 3, update: 4 })
 
-      checkTasksExistBackend([completedGrandparentTask])
+      checkTasksExistBackend([
+        completedRootTask,
+        completedSubtask,
+        completedSubtask2,
+      ])
       checkCompletedPage([
         {
-          ...completedGrandparentTask,
-          subtasks: [{ ...completedRootTask, subtasks: [completedSubtask] }],
+          ...completedRootTask,
+          subtasks: [{ ...completedSubtask, subtasks: [completedSubtask2] }],
         },
       ])
     })

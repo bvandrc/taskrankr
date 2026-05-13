@@ -203,7 +203,7 @@ const Home = () => {
   }, [taskTree, inProgressTask, pinnedTasks, search, sortBy, settings])
 
   return (
-    <TaskListPageWrapper isLoading={!isInitialized}>
+    <TaskListPageWrapper isLoading={!isInitialized} data-testid="home-page">
       <TaskListPageHeader
         title="Home (Open Tasks)"
         showTitle={false}

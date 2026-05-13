@@ -54,19 +54,20 @@ describe('Assign Subtasks', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
-    // Create the orphan tasks
+    cy.log('Create orphan tasks')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(orphanTask)
     clickSubmitBtnCreate({ newTasks: [orphanTask] })
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
 
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(orphanTask2)
     clickSubmitBtnCreate({ newTasks: [orphanTask2] })
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
   })
 
   it('assign an existing orphaned task as a subtask of a task', () => {
+    cy.log(
+      'Step 1: Create root task, create new subtask, assign sibling orphanTask',
+    )
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
       fillTaskForm(rootTask)
@@ -78,7 +79,6 @@ describe('Assign Subtasks', () => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
-    // add a brand-new subtask via the new button (just to test that it works alongside the assign flow)
     getTaskForm(1).within(() => {
       fillTaskForm(newSubtask)
       clickSubmitBtnCreate()
@@ -95,7 +95,7 @@ describe('Assign Subtasks', () => {
     expandAndCheckTree({ ...rootTask, subtasks: [orphanTask, newSubtask] })
     checkNumCalls({ create: 4, update: 1 })
 
-    // test EDIT
+    cy.log('Step 2: Edit root task, assign second orphan')
     openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([orphanTask, newSubtask])

@@ -155,8 +155,6 @@ describe('Completed Subtasks', () => {
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
 
@@ -166,6 +164,8 @@ describe('Completed Subtasks', () => {
       })
 
       getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
 
@@ -223,8 +223,6 @@ describe('Completed Subtasks', () => {
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
         fillTaskForm(rootTask)
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(1).within(() => {
@@ -232,6 +230,8 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
       checkNumCalls({ create: 2, update: 0 })
@@ -242,8 +242,6 @@ describe('Completed Subtasks', () => {
       )
       openTaskEditForm(subtask)
       getTaskForm(0).within(() => {
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(1).within(() => {
@@ -251,6 +249,8 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
+        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         clickSubmitBtnUpdate({ updatedTasks: [subtask] })
       })
       checkNumCalls({ create: 3, update: 1 })

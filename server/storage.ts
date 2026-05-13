@@ -277,23 +277,6 @@ export class DatabaseStorage implements IStorage {
         .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
 
       if (
-        updated.status === TaskStatus.COMPLETED &&
-        getHasIncomplete(children)
-      ) {
-        // Revert: flag just enabled but parent is completed with incomplete children
-        const [reverted] = await db
-          .update(tasks)
-          .set({
-            status: TaskStatus.OPEN,
-            completedAt: null,
-            inProgressStartedAt: null,
-          })
-          .where(eq(tasks.id, id))
-          .returning()
-        return reverted
-      }
-
-      if (
         updated.status !== TaskStatus.COMPLETED &&
         children.length > 0 &&
         !getHasIncomplete(children)

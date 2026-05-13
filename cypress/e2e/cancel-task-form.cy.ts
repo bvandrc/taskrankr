@@ -52,7 +52,7 @@ describe('Task Form Cancellation', () => {
     {
       contextName: 'New Task',
       beforeEachHook: () => {
-        cy.log('Open new task form and fill root task')
+        cy.log('Open new task form and fill')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
           fillTaskForm(rootTask)

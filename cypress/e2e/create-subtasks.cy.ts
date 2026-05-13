@@ -56,7 +56,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create a subtask, check appears in tree', () => {
-    cy.log('Step 1: Add subtask inline and create')
+    cy.log('Step 1: Add subtask and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -96,7 +96,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create multiple subtasks, check appear in tree', () => {
-    cy.log('Step 1: Add two subtasks inline and create')
+    cy.log('Step 1: Add two subtasks and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -146,7 +146,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create nested subtasks, ensure appear in tree', () => {
-    cy.log('Step 1: Add subtask with two nested children inline')
+    cy.log('Step 1: Add subtask with two nested children')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })

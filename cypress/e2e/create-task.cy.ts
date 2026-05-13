@@ -38,7 +38,6 @@ describe('Task Creation', () => {
     fillTaskForm(task)
     clickSubmitBtnCreate({ newTasks: [task] })
 
-    cy.log('Step 2: Verify task appears in tree')
     expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
   })

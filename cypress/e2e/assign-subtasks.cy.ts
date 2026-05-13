@@ -66,7 +66,7 @@ describe('Assign Subtasks', () => {
 
   it('assign an existing orphaned task as a subtask of a task', () => {
     cy.log(
-      'Step 1: Create root task, assign orphanTask, add new subtask inline',
+      'Step 1: Create root task, create new subtask, assign sibling orphanTask',
     )
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {

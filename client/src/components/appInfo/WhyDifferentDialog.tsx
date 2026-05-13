@@ -98,7 +98,7 @@ export const WhyDifferentDialog = ({
                     </span>
                   </li>
                 </ul>
-                You can disable any of these in your{' '}
+                You can hide any of these in your{' '}
                 <InlineLink onClick={goToSettings}>settings</InlineLink> to suit
                 your needs.
               </div>

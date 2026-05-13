@@ -76,29 +76,27 @@ export const isEffectivelyHiddenInTree = (
  * Additional props to change when changing a task's status, including:
  *  - timestamps that accompany the IN_PROGRESS and COMPLETED transitions
  */
-export const statusToStatusPatch = (
-  status: TaskStatus,
-): Pick<Task, 'status' | 'inProgressStartedAt' | 'completedAt'> => {
+export const statusToStatusPatch = (status: TaskStatus) => {
   switch (status) {
     case TaskStatus.IN_PROGRESS:
       return {
         status,
         inProgressStartedAt: new Date(),
         completedAt: null,
-      }
+      } as const satisfies Partial<Task>
     case TaskStatus.COMPLETED:
       return {
         status,
         completedAt: new Date(),
         inProgressStartedAt: null,
-      }
+      } as const satisfies Partial<Task>
     case TaskStatus.PINNED:
     case TaskStatus.OPEN:
       return {
         status,
         inProgressStartedAt: null,
         completedAt: null,
-      }
+      } as const satisfies Partial<Task>
     default:
       throw new Error(`Unhandled status: ${status satisfies never}`)
   }
@@ -162,15 +160,17 @@ export const statusChangeSideEffectsPatch = (
   newStatus: TaskStatus,
   currentTask: Pick<Task, 'status' | 'timeSpent' | 'inProgressStartedAt'>,
   now: number,
-): Pick<Task, 'status' | 'inProgressStartedAt' | 'completedAt'> &
-  Partial<Pick<Task, 'timeSpent'>> => {
+) => {
   const patch = statusToStatusPatch(newStatus)
   if (
     currentTask.status === TaskStatus.IN_PROGRESS &&
     newStatus !== TaskStatus.IN_PROGRESS &&
     currentTask.inProgressStartedAt
   ) {
-    return { ...patch, timeSpent: accumulatedTimeSpent(currentTask, now) }
+    return {
+      ...patch,
+      timeSpent: accumulatedTimeSpent(currentTask, now),
+    } satisfies Partial<Task>
   }
   return patch
 }
@@ -187,7 +187,7 @@ export const statusChangeSideEffectsPatch = (
 export const autoCompleteParentPatch = (
   children: Task[],
   options: { treatAsCompleted?: number } = {},
-): Pick<Task, 'status' | 'completedAt' | 'inProgressStartedAt'> | null => {
+) => {
   const allComplete = children.every(
     (c) =>
       c.id === options.treatAsCompleted || c.status === TaskStatus.COMPLETED,
@@ -197,5 +197,5 @@ export const autoCompleteParentPatch = (
     status: TaskStatus.COMPLETED,
     completedAt: getChildrenLatestCompletedAt(children) ?? new Date(),
     inProgressStartedAt: null,
-  }
+  } as const satisfies Partial<Task>
 }

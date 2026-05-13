@@ -125,9 +125,9 @@ export const WhyDifferentDialog = ({
                 Create subtasks, subtasks of subtasks, and so on. Subtasks get
                 crossed out as you complete them. Within each level, you can
                 manually sort them (i.e. a step-by-step process), or, leave
-                unordered, where subtasks will inherit the overall sort order
-                of your view (highest priority/greatest ease/etc.). Other
-                features such as "auto-complete when all subtasks complete" let
+                unordered, where subtasks will inherit the overall sort order of
+                your view (highest priority/greatest ease/etc.). Other features
+                such as "auto-complete when all subtasks complete" let
                 <em>you</em> decide and configure how you want a task's workflow
                 to be.
               </div>

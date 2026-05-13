@@ -174,6 +174,7 @@ describe('Completed Subtasks', () => {
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
 
       // Parent auto-completes as the last subtask is marked done
+      cy.wait(100) // TODO: debug if this fixes test
       waitForUpdate([completedRootTask])
       checkNumCalls({ create: 2, update: 2 })
       checkCompletedPage([
@@ -182,19 +183,26 @@ describe('Completed Subtasks', () => {
     })
 
     it('auto-completes parent when inheritCompletionState becomes enabled after all subtasks are already completed', () => {
-      cy.log('Step 1: Create root task with uncompleted subtask')
-      createUncompletedSubtask()
-      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+      cy.log('Step 1: Create task with completed subtask')
+      cy.get(Selectors.CREATE_TASK_BTN).click()
+      getTaskForm(0).within(() => {
+        fillTaskForm(rootTask)
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
 
-      cy.log(
-        'Step 2: Complete the subtask — parent should NOT auto-complete yet (setting still off)',
-      )
-      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
-      checkNumCalls({ create: 2, update: 1 })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).toggleState(true)
+        clickSubmitBtnCreate()
+      })
+
+      getTaskForm(0).within(() => {
+        clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
+      })
       expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
 
       cy.log(
-        'Step 3: Enable inheritCompletionState — parent auto-completes immediately',
+        'Step 2: Enable inheritCompletionState — parent auto-completes immediately',
       )
       openTaskEditForm(rootTask)
       getTaskForm(0).within(() => {

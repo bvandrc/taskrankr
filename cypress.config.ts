@@ -21,7 +21,7 @@ export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:5000',
     specPattern: [
-      // 'cypress/e2e/create-task.cy.ts',
+      'cypress/e2e/create-task.cy.ts',
       // 'cypress/e2e/create-subtasks.cy.ts',
       // 'cypress/e2e/assign-subtasks.cy.ts',
       // 'cypress/e2e/cancel-task-form.cy.ts',

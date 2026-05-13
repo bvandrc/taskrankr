@@ -128,10 +128,7 @@ export const REVERT_COMPLETION_PATCH = {
   status: TaskStatus.OPEN,
   completedAt: null,
   inProgressStartedAt: null,
-} as const satisfies Pick<
-  Task,
-  'status' | 'completedAt' | 'inProgressStartedAt'
->
+} as const satisfies Partial<Task>
 
 /** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
 export const accumulatedTimeSpent = (
@@ -149,11 +146,12 @@ export const accumulatedTimeSpent = (
 export const inProgressDemotionPatch = (
   task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
   now: number,
-): Pick<Task, 'status' | 'timeSpent' | 'inProgressStartedAt'> => ({
-  status: TaskStatus.PINNED,
-  timeSpent: accumulatedTimeSpent(task, now),
-  inProgressStartedAt: null,
-})
+) =>
+  ({
+    status: TaskStatus.PINNED,
+    timeSpent: accumulatedTimeSpent(task, now),
+    inProgressStartedAt: null,
+  }) as const satisfies Partial<Task>
 
 /**
  * Full patch for transitioning `currentTask` to `newStatus`: timestamp

@@ -4,7 +4,6 @@ import { useLocation } from 'wouter'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/primitives/overlays/Dialog'
@@ -40,9 +39,6 @@ export const WhyDifferentDialog = ({
           <DialogTitle data-testid="text-why-different-title">
             Why TaskRankr?
           </DialogTitle>
-          <DialogDescription className={TEXT_SECTION_STYLE}>
-            What makes this app different from the rest.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 text-sm text-foreground/90 text-left">

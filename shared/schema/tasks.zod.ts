@@ -23,7 +23,7 @@ import { z } from 'zod'
 
 import { getZodSchemaDefaults } from '../utils/zod-utils'
 import { RankField } from './common'
-import type { DrizzleZodDefaultRefine } from './drizzle-utils'
+import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
 import type { UserSettings } from './settings.zod'
 
 // Status constants and types
@@ -73,22 +73,32 @@ export enum Time {
   HIGHEST = 'highest',
 }
 
+export const taskStatusPgEnum = createPgEnum('status', TaskStatus)
+export const subtaskSortModePgEnum = createPgEnum(
+  'subtask_sort_mode',
+  SubtaskSortMode,
+)
+export const priorityPgEnum = createPgEnum('priority', Priority)
+export const easePgEnum = createPgEnum('ease', Ease)
+export const enjoymentPgEnum = createPgEnum('enjoyment', Enjoyment)
+export const timePgEnum = createPgEnum('time', Time)
+
 export const tasks = pgTable('tasks', {
   id: serial('id').primaryKey(),
   userId: varchar('user_id').notNull(), // Owner of the task
   name: text('name').notNull(),
-  status: text('status').default(TaskStatus.OPEN).notNull(),
+  status: taskStatusPgEnum('status').default(TaskStatus.OPEN).notNull(),
   description: text('description'),
-  priority: text('priority'),
-  ease: text('ease'),
-  enjoyment: text('enjoyment'),
-  time: text('time'),
+  priority: priorityPgEnum('priority'),
+  ease: easePgEnum('ease'),
+  enjoyment: enjoymentPgEnum('enjoyment'),
+  time: timePgEnum('time'),
   timeSpent: integer('time_spent').default(0).notNull(), // Cumulative time in milliseconds
   inProgressStartedAt: timestamp('in_progress_started_at'), // When current in-progress session started
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   parentId: integer('parent_id'),
-  subtaskSortMode: text('subtask_sort_mode')
+  subtaskSortMode: subtaskSortModePgEnum('subtask_sort_mode')
     .default(SubtaskSortMode.INHERIT)
     .notNull(),
   subtaskOrder: integer('subtask_order')

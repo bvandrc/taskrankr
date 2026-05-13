@@ -3,13 +3,13 @@
  * Includes per-field visibility/required config (fieldConfig JSONB column).
  */
 
-import { boolean, jsonb, pgTable, text, varchar } from 'drizzle-orm/pg-core'
+import { boolean, jsonb, pgTable, varchar } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { mapValues } from 'es-toolkit'
 import { z } from 'zod'
 
 import { type RankField, SortOption } from './common'
-import type { DrizzleZodDefaultRefine } from './drizzle-utils'
+import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
 
 export const fieldFlagsSchema = z.object({
   visible: z.boolean(),
@@ -55,6 +55,8 @@ export const sanitizeSettings = <T extends Partial<UserSettings>>(
   return settings
 }
 
+export const sortByPgEnum = createPgEnum('sort_by', SortOption)
+
 export const userSettings = pgTable('user_settings', {
   userId: varchar('user_id').primaryKey(),
   autoPinNewTasks: boolean('auto_pin_new_tasks').default(true).notNull(),
@@ -64,7 +66,7 @@ export const userSettings = pgTable('user_settings', {
   alwaysSortPinnedByPriority: boolean('always_sort_pinned_by_priority')
     .default(true)
     .notNull(),
-  sortBy: text('sort_by').default(SortOption.DATE_CREATED).notNull(),
+  sortBy: sortByPgEnum('sort_by').default(SortOption.DATE_CREATED).notNull(),
   fieldConfig: jsonb('field_config')
     .$type<FieldConfig>()
     .default(DEFAULT_FIELD_CONFIG)

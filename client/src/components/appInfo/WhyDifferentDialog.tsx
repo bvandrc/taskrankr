@@ -112,7 +112,7 @@ export const WhyDifferentDialog = ({
                 </span>{' '}
                 More-specific sorting means you can freely jot down random ideas
                 or projects — as "low importance" as they are — without the
-                worry of bogging down your list from what is more important.
+                worry of burying what actually matters.
               </div>
             </li>
 
@@ -128,7 +128,8 @@ export const WhyDifferentDialog = ({
                 un-ordered, where subtasks will inherit the overall sort order
                 of your view (highest priority/greatest ease/etc.). Other
                 features such as "auto-complete when all subtasks complete" let
-                YOU decide and configure how you want a task's workflow to be.
+                <em>you</em> decide and configure how you want a task's workflow
+                to be.
               </div>
             </li>
           </ul>
@@ -141,7 +142,7 @@ export const WhyDifferentDialog = ({
               <InlineLink onClick={goToSettings}>Settings</InlineLink> to see
               what you can customize.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-center">
               If you find any bugs or have feature suggestions, please email me
               at{' '}
               <InlineLink href="mailto:taskrankr@gmail.com">

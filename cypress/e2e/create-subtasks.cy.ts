@@ -48,6 +48,7 @@ describe('Create Subtasks', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
+    cy.log('Open new task form and fill root task')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
       fillTaskForm(rootTask)
@@ -55,6 +56,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create a subtask, check appears in tree', () => {
+    cy.log('Step 1: Add subtask inline and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -72,7 +74,7 @@ describe('Create Subtasks', () => {
     expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
-    // test EDIT
+    cy.log('Step 2: Edit root task, add a second subtask')
     openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask])
@@ -94,6 +96,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create multiple subtasks, check appear in tree', () => {
+    cy.log('Step 1: Add two subtasks inline and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -121,7 +124,7 @@ describe('Create Subtasks', () => {
     expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 0 })
 
-    // test EDIT
+    cy.log('Step 2: Edit root task, add a third subtask')
     openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2])
@@ -143,6 +146,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create nested subtasks, ensure appear in tree', () => {
+    cy.log('Step 1: Add subtask with two nested children inline')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -172,6 +176,7 @@ describe('Create Subtasks', () => {
       clickSubmitBtnCreate()
     })
 
+    cy.log('Step 2: Submit root task and verify nested tree')
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2, subtask3])
       clickSubmitBtnCreate({

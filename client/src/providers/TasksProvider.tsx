@@ -623,6 +623,17 @@ export const TasksProvider = ({
       debugLog.log('task', 'setStatus', { id, status })
 
       if (status === TaskStatus.COMPLETED && updatedTask?.parentId) {
+        console.log('[AC] enter setTaskStatus auto-complete', {
+          id,
+          parentId: updatedTask.parentId,
+          tasksRefLen: tasksRef.current.length,
+          tasksRefIds: tasksRef.current.map((t) => ({
+            id: t.id,
+            parentId: t.parentId,
+            status: t.status,
+            inherit: t.inheritCompletionState,
+          })),
+        })
         // Compute which ancestors to auto-complete synchronously. tasksRef
         // hasn't been flushed yet, so we manually patch in the just-completed
         // task before walking up.
@@ -637,6 +648,14 @@ export const TasksProvider = ({
             snapshot,
             currentParentId,
           )
+          console.log('[AC] walk', {
+            currentParentId,
+            parent: parent && {
+              id: parent.id,
+              status: parent.status,
+              inherit: parent.inheritCompletionState,
+            },
+          })
           if (
             !parent?.inheritCompletionState ||
             parent.status === TaskStatus.COMPLETED
@@ -644,6 +663,13 @@ export const TasksProvider = ({
             break
 
           const thisChildren = getDirectSubtasks(snapshot, parent.id)
+          console.log('[AC] children', {
+            parentId: parent.id,
+            children: thisChildren.map((c) => ({
+              id: c.id,
+              status: c.status,
+            })),
+          })
           if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
             break
 

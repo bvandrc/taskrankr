@@ -119,3 +119,85 @@ export const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
     if (!latest) return completedAt
     return completedAt > latest ? completedAt : latest
   }, null)
+
+/**
+ * Canonical "undo completion" patch: returns a task to OPEN and clears every
+ * status-related timestamp.
+ */
+export const REVERT_COMPLETION_PATCH = {
+  status: TaskStatus.OPEN,
+  completedAt: null,
+  inProgressStartedAt: null,
+} as const satisfies Pick<
+  Task,
+  'status' | 'completedAt' | 'inProgressStartedAt'
+>
+
+/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
+export const accumulatedTimeSpent = (
+  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): number =>
+  task.timeSpent +
+  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
+
+/**
+ * Patch that demotes an IN_PROGRESS task to PINNED, flushing its accumulated
+ * time into timeSpent. Used to enforce the single-IN_PROGRESS invariant when
+ * another task is being moved to IN_PROGRESS.
+ */
+export const inProgressDemotionPatch = (
+  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): Pick<Task, 'status' | 'timeSpent' | 'inProgressStartedAt'> => ({
+  status: TaskStatus.PINNED,
+  timeSpent: accumulatedTimeSpent(task, now),
+  inProgressStartedAt: null,
+})
+
+/**
+ * Full patch for transitioning `currentTask` to `newStatus`: timestamp
+ * side-effects from `statusToStatusPatch`, plus a timeSpent flush when
+ * leaving IN_PROGRESS.
+ */
+export const statusChangeSideEffectsPatch = (
+  newStatus: TaskStatus,
+  currentTask: Pick<Task, 'status' | 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): Pick<Task, 'status' | 'inProgressStartedAt' | 'completedAt'> &
+  Partial<Pick<Task, 'timeSpent'>> => {
+  const patch = statusToStatusPatch(newStatus)
+  if (
+    currentTask.status === TaskStatus.IN_PROGRESS &&
+    newStatus !== TaskStatus.IN_PROGRESS &&
+    currentTask.inProgressStartedAt
+  ) {
+    return { ...patch, timeSpent: accumulatedTimeSpent(currentTask, now) }
+  }
+  return patch
+}
+
+/**
+ * Patch to auto-complete a parent with `inheritCompletionState` enabled, or
+ * null if any child is still incomplete. `completedAt` reflects the latest
+ * child completion so the parent inherits its meaningful "done" timestamp.
+ *
+ * Pass `treatAsCompleted` to count a specific child id as completed regardless
+ * of its current status — useful when computing from a snapshot taken before
+ * the child's write commits.
+ */
+export const autoCompleteParentPatch = (
+  children: Task[],
+  options: { treatAsCompleted?: number } = {},
+): Pick<Task, 'status' | 'completedAt' | 'inProgressStartedAt'> | null => {
+  const allComplete = children.every(
+    (c) =>
+      c.id === options.treatAsCompleted || c.status === TaskStatus.COMPLETED,
+  )
+  if (!allComplete) return null
+  return {
+    status: TaskStatus.COMPLETED,
+    completedAt: getChildrenLatestCompletedAt(children) ?? new Date(),
+    inProgressStartedAt: null,
+  }
+}

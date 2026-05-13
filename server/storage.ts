@@ -20,9 +20,12 @@ import {
   userSettings,
 } from '~/shared/schema'
 import {
+  autoCompleteParentPatch,
   getHasIncomplete,
+  inProgressDemotionPatch,
   mapById,
-  statusToStatusPatch,
+  REVERT_COMPLETION_PATCH,
+  statusChangeSideEffectsPatch,
 } from '~/shared/utils/task-utils'
 import { ERRORS } from './constants'
 import { db } from './db'
@@ -148,29 +151,15 @@ export class DatabaseStorage implements IStorage {
     }
 
     const children = await this.getSubtasks(parentId, userId)
+    const completionPatch = autoCompleteParentPatch(children, {
+      treatAsCompleted: justCompletedChildId,
+    })
+    if (!completionPatch) return
 
-    const allCompleted = children.every(
-      (t) => t.id === justCompletedChildId || t.status === TaskStatus.COMPLETED,
-    )
+    await db.update(tasks).set(completionPatch).where(eq(tasks.id, parentId))
 
-    if (allCompleted) {
-      const completionUpdate: Partial<InsertTask> & {
-        completedAt?: Date | null
-      } = {
-        status: TaskStatus.COMPLETED,
-        completedAt: new Date(),
-        inProgressStartedAt: null,
-      }
-
-      await db.update(tasks).set(completionUpdate).where(eq(tasks.id, parentId))
-
-      if (parent.parentId) {
-        await this.checkInheritCompletionState(
-          parent.parentId,
-          userId,
-          parentId,
-        )
-      }
+    if (parent.parentId) {
+      await this.checkInheritCompletionState(parent.parentId, userId, parentId)
     }
   }
 
@@ -193,11 +182,7 @@ export class DatabaseStorage implements IStorage {
 
     await db
       .update(tasks)
-      .set({
-        status: TaskStatus.OPEN,
-        completedAt: null,
-        inProgressStartedAt: null,
-      })
+      .set(REVERT_COMPLETION_PATCH)
       .where(eq(tasks.id, parentId))
   }
 
@@ -225,38 +210,25 @@ export class DatabaseStorage implements IStorage {
       dbUpdates.hidden = false
     }
 
-    if (isStatusChange) {
-      // Apply timestamp side-effects of the transition (sets/clears
-      // `inProgressStartedAt` and `completedAt`) consistently with the
-      // client.
-      // biome-ignore lint/style/noNonNullAssertion: isStatusChange implies newStatus is defined
-      Object.assign(dbUpdates, statusToStatusPatch(newStatus!))
+    if (newStatus !== undefined && isStatusChange) {
+      const now = Date.now()
+      Object.assign(
+        dbUpdates,
+        statusChangeSideEffectsPatch(newStatus, currentTask, now),
+      )
 
       if (newStatus === TaskStatus.IN_PROGRESS) {
-        // Entering IN_PROGRESS: demote any existing in-progress task,
-        // flushing its accumulated time into timeSpent.
+        // Enforce single-IN_PROGRESS invariant: demote any other in-progress task.
         const allTasks = await this.getTasks(userId)
         const currentInProgress = allTasks.find(
           (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== id,
         )
         if (currentInProgress) {
-          const elapsed = currentInProgress.inProgressStartedAt
-            ? Date.now() - currentInProgress.inProgressStartedAt.getTime()
-            : 0
           await db
             .update(tasks)
-            .set({
-              status: TaskStatus.PINNED,
-              timeSpent: currentInProgress.timeSpent + elapsed,
-              inProgressStartedAt: null,
-            })
+            .set(inProgressDemotionPatch(currentInProgress, now))
             .where(eq(tasks.id, currentInProgress.id))
         }
-      } else if (currentTask.inProgressStartedAt) {
-        // Leaving IN_PROGRESS: flush accumulated time into timeSpent.
-        const elapsed = Date.now() - currentTask.inProgressStartedAt.getTime()
-        dbUpdates.timeSpent =
-          (dbUpdates.timeSpent ?? currentTask.timeSpent) + elapsed
       }
     }
 
@@ -278,11 +250,7 @@ export class DatabaseStorage implements IStorage {
       if (getHasIncomplete(children)) {
         const [reverted] = await db
           .update(tasks)
-          .set({
-            status: TaskStatus.OPEN,
-            completedAt: null,
-            inProgressStartedAt: null,
-          })
+          .set(REVERT_COMPLETION_PATCH)
           .where(eq(tasks.id, id))
           .returning()
         return reverted

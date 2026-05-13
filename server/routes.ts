@@ -15,7 +15,10 @@ import type { Express } from 'express'
 import { TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
-import { getHasIncomplete } from '~/shared/utils/task-utils'
+import {
+  accumulatedTimeSpent,
+  getHasIncomplete,
+} from '~/shared/utils/task-utils'
 import { ERRORS } from './constants'
 import {
   authStorage,
@@ -84,11 +87,13 @@ const router = s.router(contract, {
           return ERRORS.TASK_NOT_FOUND
         }
         if (body.status === TaskStatus.COMPLETED) {
-          const accumulatedTime =
-            (body.timeSpent ?? existing.timeSpent ?? 0) +
-            (existing.inProgressStartedAt
-              ? Date.now() - existing.inProgressStartedAt.getTime()
-              : 0)
+          const accumulatedTime = accumulatedTimeSpent(
+            {
+              timeSpent: body.timeSpent ?? existing.timeSpent,
+              inProgressStartedAt: existing.inProgressStartedAt,
+            },
+            Date.now(),
+          )
           const err = await checkTimeSpentRequired(userId, accumulatedTime)
           if (err) return err
 

@@ -32,17 +32,19 @@ import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
 import {
   buildLocalTask,
   clientKeyMap,
-  statusToStatusPatch,
   withClientKeys,
 } from '@/lib/task-provider-utils'
 import {
+  autoCompleteParentPatch,
   collectDescendantIds,
   getById,
-  getChildrenLatestCompletedAt,
   getDirectSubtasks,
   getHasIncompleteSubtasks,
+  inProgressDemotionPatch,
   mapById,
+  REVERT_COMPLETION_PATCH,
   removeIds,
+  statusChangeSideEffectsPatch,
   updateItem,
 } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
@@ -93,31 +95,18 @@ function reconcileInheritCompletionState<T extends Task>(
       const children = getDirectSubtasks(updated, parent.id)
       if (children.length === 0) continue
 
-      const allChildrenCompleted = children.every(
-        (c) => c.status === TaskStatus.COMPLETED,
-      )
-
-      if (allChildrenCompleted && parent.status !== TaskStatus.COMPLETED) {
-        const latestCompletedAt = getChildrenLatestCompletedAt(children)
-
+      const completePatch = autoCompleteParentPatch(children)
+      if (completePatch && parent.status !== TaskStatus.COMPLETED) {
         updated = updateItem(updated, parent.id, (t) => ({
           ...t,
-          status: TaskStatus.COMPLETED,
-          completedAt: latestCompletedAt ?? new Date(),
-          inProgressStartedAt: null,
+          ...completePatch,
         }))
-
         corrections.push({ id: parent.id, status: TaskStatus.COMPLETED })
         changed = true
-      } else if (
-        !allChildrenCompleted &&
-        parent.status === TaskStatus.COMPLETED
-      ) {
+      } else if (!completePatch && parent.status === TaskStatus.COMPLETED) {
         updated = updateItem(updated, parent.id, (t) => ({
           ...t,
-          status: TaskStatus.OPEN,
-          completedAt: null,
-          inProgressStartedAt: null,
+          ...REVERT_COMPLETION_PATCH,
         }))
         corrections.push({ id: parent.id, status: TaskStatus.OPEN })
         changed = true
@@ -439,9 +428,7 @@ export const TasksProvider = ({
               t.status === TaskStatus.COMPLETED &&
               newTask.status !== TaskStatus.COMPLETED
             ) {
-              changes.status = TaskStatus.OPEN
-              changes.completedAt = null
-              changes.inProgressStartedAt = null
+              Object.assign(changes, REVERT_COMPLETION_PATCH)
             }
             return { ...t, ...changes }
           })
@@ -476,11 +463,7 @@ export const TasksProvider = ({
         updatedTask.status === TaskStatus.COMPLETED &&
         getHasIncompleteSubtasks(tasksRef.current, id)
       ) {
-        updateTaskById(id, () => ({
-          status: TaskStatus.OPEN,
-          completedAt: null,
-          inProgressStartedAt: null,
-        }))
+        updateTaskById(id, () => REVERT_COMPLETION_PATCH)
         enqueue({
           type: SyncOperationType.UPDATE_TASK,
           id,
@@ -495,11 +478,7 @@ export const TasksProvider = ({
           parent.status === TaskStatus.COMPLETED &&
           updatedTask.status !== TaskStatus.COMPLETED
         ) {
-          updateTaskById(parent.id, () => ({
-            status: TaskStatus.OPEN,
-            completedAt: null,
-            inProgressStartedAt: null,
-          }))
+          updateTaskById(parent.id, () => REVERT_COMPLETION_PATCH)
         }
       }
 
@@ -527,17 +506,16 @@ export const TasksProvider = ({
         }
       }
 
+      const now = Date.now()
       const updatedTask = updateTaskById(
         id,
-        () => statusToStatusPatch(status),
-        // Clear IN_PROGRESS status from other tasks when setting a new task to IN_PROGRESS
+        (current) => statusChangeSideEffectsPatch(status, current, now),
+        // Enforce single-IN_PROGRESS invariant: demote any other IN_PROGRESS
+        // task with the same time-flush rule the server applies.
         status === TaskStatus.IN_PROGRESS
           ? (t) =>
               t.status === TaskStatus.IN_PROGRESS
-                ? {
-                    status: TaskStatus.PINNED,
-                    inProgressStartedAt: null,
-                  }
+                ? inProgressDemotionPatch(t, now)
                 : {}
           : undefined,
       )
@@ -560,17 +538,14 @@ export const TasksProvider = ({
             )
               break
 
-            const thisChildren = getDirectSubtasks(updated, parent.id)
-            if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
-              break
-
-            const latestCompletedAt = getChildrenLatestCompletedAt(thisChildren)
+            const completePatch = autoCompleteParentPatch(
+              getDirectSubtasks(updated, parent.id),
+            )
+            if (!completePatch) break
 
             updated = updateItem(updated, parent.id, (t) => ({
               ...t,
-              status: TaskStatus.COMPLETED,
-              completedAt: latestCompletedAt ?? new Date(),
-              inProgressStartedAt: null,
+              ...completePatch,
             }))
             autoCompletedParents.push(parent.id)
 
@@ -604,9 +579,7 @@ export const TasksProvider = ({
 
             updated = updateItem(updated, parent.id, (t) => ({
               ...t,
-              status: TaskStatus.OPEN,
-              completedAt: null,
-              inProgressStartedAt: null,
+              ...REVERT_COMPLETION_PATCH,
             }))
             autoRevertedParents.push(parent.id)
 

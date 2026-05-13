@@ -191,10 +191,13 @@ describe('Completed Subtasks', () => {
       getTaskForm(0).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
         cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
-        clickSubmitBtnUpdate({ updatedTasks: [completedRootTask] })
+        // Don't pass updatedTasks: status flips to COMPLETED in a second enqueued PUT
+        clickSubmitBtnUpdate()
       })
 
-      checkNumCalls({ create: 2, update: 2 })
+      // Two more updates fire: form save (inheritCompletionState: true) + auto-complete (status: COMPLETED)
+      waitForUpdate([completedRootTask, completedRootTask])
+      checkNumCalls({ create: 2, update: 3 })
 
       checkTasksExistBackend([completedRootTask])
       checkCompletedPage([

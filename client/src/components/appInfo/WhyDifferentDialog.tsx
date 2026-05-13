@@ -45,7 +45,7 @@ export const WhyDifferentDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 text-sm text-foreground/90 text-justify">
+        <div className="space-y-4 text-sm text-foreground/90 text-left">
           <p>
             Hi, Blake here. I have tried over 30 to-do list apps, and couldn't
             find a single one that helped me organize my tasks and projects the

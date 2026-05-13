@@ -95,15 +95,15 @@ interface DraftSessionStateValue {
 interface DraftSessionMutationsValue {
   // Draft-aware mutators: route to the draft layer if the id is a draft,
   // otherwise fall through to the real TasksProvider mutator.
-  updateTask: (id: number, updates: UpdateTaskContent) => LocalTask
-  deleteTask: (id: number) => void
+  updateTask: (id: number, updates: UpdateTaskContent) => Promise<LocalTask>
+  deleteTask: (id: number) => Promise<void>
   reorderSubtasks: (parentId: number, orderedIds: number[]) => void
-  setTaskStatus: (id: number, status: TaskStatus) => LocalTask
+  setTaskStatus: (id: number, status: TaskStatus) => Promise<LocalTask>
 
   // Session lifecycle
   createDraftTask: (data: CreateTaskContent) => LocalTask
   assignDraftSubtask: (realTaskId: number, draftParentId: number) => void
-  commitDraftSession: () => void
+  commitDraftSession: () => Promise<void>
   discardDraftSession: () => void
 }
 
@@ -354,15 +354,16 @@ export const DraftSessionProvider = ({
   // ---------------------------------------------------------------------------
 
   const updateTask = useCallback(
-    (id: number, updates: UpdateTaskContent): LocalTask => {
-      if (isDraftIdStable(id)) return updateDraftTask(id, updates)
+    (id: number, updates: UpdateTaskContent): Promise<LocalTask> => {
+      if (isDraftIdStable(id))
+        return Promise.resolve(updateDraftTask(id, updates))
       return realUpdateTask(id, updates)
     },
     [isDraftIdStable, updateDraftTask, realUpdateTask],
   )
 
   const deleteTask = useCallback(
-    (id: number) => {
+    async (id: number): Promise<void> => {
       if (isDraftIdStable(id)) {
         deleteDraftTask(id)
         return
@@ -388,7 +389,7 @@ export const DraftSessionProvider = ({
         }),
       )
 
-      realDeleteTask(id)
+      await realDeleteTask(id)
     },
     [isDraftIdStable, deleteDraftTask, realDeleteTask],
   )
@@ -429,11 +430,10 @@ export const DraftSessionProvider = ({
   )
 
   const setTaskStatus = useCallback(
-    (id: number, status: TaskStatus): LocalTask => {
+    (id: number, status: TaskStatus): Promise<LocalTask> => {
       if (isDraftIdStable(id)) {
-        return updateDraftTask(
-          id,
-          statusToStatusPatch(status) as UpdateTaskContent,
+        return Promise.resolve(
+          updateDraftTask(id, statusToStatusPatch(status) as UpdateTaskContent),
         )
       }
       return realSetTaskStatus(id, status)
@@ -456,7 +456,7 @@ export const DraftSessionProvider = ({
   // Reads draft state via refs so the callback stays stable across draft
   // churn (consumers of `useDraftSessionMutations` don't re-render).
   // ---------------------------------------------------------------------------
-  const commitDraftSession = useCallback(() => {
+  const commitDraftSession = useCallback(async () => {
     const drafts = draftTasksRef.current
     const assignments = draftAssignedParentsRef.current
     const overrides = draftSubtaskOrderOverridesRef.current
@@ -475,7 +475,7 @@ export const DraftSessionProvider = ({
     const resolve = (id: number) => idMap.get(id) ?? id
 
     for (const draft of drafts) {
-      const created = createTask({
+      const created = await createTask({
         ...omit(draft, ['id', 'userId']),
         parentId: draft.parentId != null ? resolve(draft.parentId) : null,
       })
@@ -493,14 +493,14 @@ export const DraftSessionProvider = ({
     }
 
     // Apply assignments: real task -> resolved (draft) parent.
-    assignments.forEach((newParentId, realTaskId) => {
-      realUpdateTask(realTaskId, { parentId: resolve(newParentId) })
-    })
+    for (const [realTaskId, newParentId] of assignments) {
+      await realUpdateTask(realTaskId, { parentId: resolve(newParentId) })
+    }
 
     // Apply real-parent subtaskOrder overrides (resolving any draft ids).
-    overrides.forEach((order, realParentId) => {
+    for (const [realParentId, order] of overrides) {
       realReorderSubtasks(realParentId, order.map(resolve))
-    })
+    }
 
     discardDraftSession()
     debugLog.log('task', 'commitDraftSession:complete', { mapped: idMap.size })

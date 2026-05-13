@@ -81,6 +81,7 @@ describe('Completed Subtasks', () => {
     {
       testTitle: 'complete subtask via New Task Form',
       markSubtaskComplete: () => {
+        cy.log('Step 1: Create root task with subtask pre-marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
           fillTaskForm(rootTask)
@@ -104,9 +105,11 @@ describe('Completed Subtasks', () => {
     {
       testTitle: 'complete subtask via Edit Form',
       markSubtaskComplete: () => {
+        cy.log('Step 1: Create root task with uncompleted subtask')
         createUncompletedSubtask()
         expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
 
+        cy.log('Step 2: Edit subtask, mark as completed')
         openTaskEditForm(subtask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnUpdate({
@@ -118,8 +121,11 @@ describe('Completed Subtasks', () => {
     {
       testTitle: 'complete subtask via Change Status Dialog',
       markSubtaskComplete: () => {
+        cy.log('Step 1: Create root task with uncompleted subtask')
         createUncompletedSubtask()
         expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
+
+        cy.log('Step 2: Complete subtask via status change dialog')
         changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
         checkNumCalls({ create: 2, update: 1 })
       },
@@ -139,6 +145,9 @@ describe('Completed Subtasks', () => {
   context('Auto-hide completed subtasks', () => {
     context('When creating a new root task', () => {
       beforeEach(() => {
+        cy.log(
+          'Create root task with one uncompleted subtask, enable auto-hide',
+        )
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
           fillTaskForm(rootTask)
@@ -175,6 +184,7 @@ describe('Completed Subtasks', () => {
       }
 
       it('via completion checkbox in new subtask form', () => {
+        cy.log('Step 1: Add a second subtask, mark it completed in the form')
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -185,10 +195,12 @@ describe('Completed Subtasks', () => {
           clickSubmitBtnCreate()
         })
 
+        cy.log('Step 2: Submit root task — completed subtask hidden in tree')
         afterEachSafe()
       })
 
       it('via completion checkbox in edit subtask form', () => {
+        cy.log('Step 1: Add a second subtask')
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -198,6 +210,7 @@ describe('Completed Subtasks', () => {
           clickSubmitBtnCreate()
         })
 
+        cy.log('Step 2: Edit the second subtask, mark it completed')
         getTaskForm(0).within(() => {
           checkTaskFormSubtasks([subtask, subtask2])
           cy.get(TaskForm.EDIT_SUBTASK_BTN).last().click()
@@ -208,12 +221,16 @@ describe('Completed Subtasks', () => {
           clickSubmitBtnCreate()
         })
 
+        cy.log('Step 3: Submit root task — completed subtask hidden in tree')
         afterEachSafe()
       })
     })
 
     context('When editing an existing root task', () => {
       it('with subtasks already completed', () => {
+        cy.log(
+          'Step 1: Create root task with one open and one completed subtask',
+        )
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
           fillTaskForm(rootTask)
@@ -245,6 +262,9 @@ describe('Completed Subtasks', () => {
         expandAndCheckTree({ ...rootTask, subtasks })
         checkNumCalls({ create: 3, update: 0 })
 
+        cy.log(
+          'Step 2: Edit root task, enable auto-hide — completed subtask disappears from form',
+        )
         openTaskEditForm(rootTask)
         getTaskForm(0).within(() => {
           checkTaskFormSubtasks(subtasks)

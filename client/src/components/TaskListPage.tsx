@@ -49,11 +49,15 @@ export const TaskListTreeLayout = ({
 export const TaskListPageWrapper = ({
   children,
   isLoading,
-}: React.PropsWithChildren<{ isLoading: boolean }>) => {
+  'data-testid': dataTestId,
+}: React.PropsWithChildren<{ isLoading: boolean; 'data-testid'?: string }>) => {
   if (isLoading) return <Spinner fullScreen />
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-background text-foreground">
+    <div
+      className="flex-1 flex flex-col min-h-0 bg-background text-foreground"
+      data-testid={dataTestId}
+    >
       {children}
     </div>
   )

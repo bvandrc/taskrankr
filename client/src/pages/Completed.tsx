@@ -89,7 +89,10 @@ const Completed = () => {
   )
 
   return (
-    <TaskListPageWrapper isLoading={!isInitialized}>
+    <TaskListPageWrapper
+      isLoading={!isInitialized}
+      data-testid="completed-page"
+    >
       <TaskListPageHeader
         title="Completed Tasks"
         ColumnHeaders={displayedTasks.length > 0 && <ColumnHeaders />}

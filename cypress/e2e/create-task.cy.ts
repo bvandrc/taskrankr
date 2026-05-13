@@ -36,6 +36,7 @@ describe('Task Creation', () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(task)
     clickSubmitBtnCreate({ newTasks: [task] })
+
     expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
   })
@@ -56,10 +57,12 @@ describe('Task Creation', () => {
       enjoyment: null,
     } satisfies CreatedTask
 
+    cy.log('Step 1: Update rank field settings')
     setSettings({ fieldConfig })
     cy.get('@settingsPut.all').should('have.length', isLoggedIn() ? 4 : 0)
     cy.get(Selectors.BACK_BTN).click()
 
+    cy.log('Step 2: Create task using new field config, verify in tree')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(newTask, fieldConfig)
     clickSubmitBtnCreate({ newTasks: [newTask] })
@@ -81,10 +84,14 @@ describe('Task Creation', () => {
       time: null,
     } satisfies CreatedTask
 
+    cy.log('Step 1: Update settings to show only time spent (required)')
     setSettings({ fieldConfig })
     cy.get('@settingsPut.all').should('have.length', isLoggedIn() ? 5 : 0)
     cy.get(Selectors.BACK_BTN).click()
 
+    cy.log(
+      'Step 2: Create completed task — submit blocked until time spent is filled',
+    )
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(taskAllNull, fieldConfig)
     cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()

@@ -12,6 +12,10 @@ const testIdEndsWith = <S extends string>(testid: S) =>
   `[data-testid$="${testid}"]` as const
 
 export const Selectors = {
+  Pages: {
+    HOME: testId('home-page'),
+    COMPLETED: testId('completed-page'),
+  },
   CREATE_TASK_BTN: testId('button-create-task'),
   BACK_BTN: testId('button-back'),
   MENU_BTN: testId('button-menu'),

@@ -35,12 +35,14 @@ import {
   withClientKeys,
 } from '@/lib/task-provider-utils'
 import {
+  accumulatedTimeSpent,
   autoCompleteParentPatch,
   collectDescendantIds,
   getById,
   getDirectSubtasks,
   getHasIncompleteSubtasks,
   inProgressDemotionPatch,
+  isTimeSpentSatisfied,
   mapById,
   REVERT_COMPLETION_PATCH,
   removeIds,
@@ -490,23 +492,33 @@ export const TasksProvider = ({
 
   const setTaskStatus = useCallback(
     (id: number, status: TaskStatus): LocalTask => {
+      const now = Date.now()
+
       if (status === TaskStatus.COMPLETED) {
-        const hasIncompleteSubtasks = getHasIncompleteSubtasks(
-          tasksRef.current,
-          id,
-        )
-        if (hasIncompleteSubtasks) {
+        const task = getById(tasksRef.current, id)
+
+        if (getHasIncompleteSubtasks(tasksRef.current, id)) {
           toast({
             title: 'Cannot complete task',
             description: 'All subtasks must be completed first.',
             variant: 'destructive',
           })
-          const existing = getById(tasksRef.current, id)
-          if (existing) return existing
+          if (task) return task
+        }
+
+        if (
+          task &&
+          !isTimeSpentSatisfied(accumulatedTimeSpent(task, now), settings)
+        ) {
+          toast({
+            title: 'Cannot complete task',
+            description: 'Log time spent before completing this task.',
+            variant: 'destructive',
+          })
+          return task
         }
       }
 
-      const now = Date.now()
       const updatedTask = updateTaskById(
         id,
         (current) => statusChangeSideEffectsPatch(status, current, now),
@@ -602,7 +614,7 @@ export const TasksProvider = ({
       // biome-ignore lint/style/noNonNullAssertion: from Replit. Maybe we should investigate? Throw an error if not defined?
       return updatedTask!
     },
-    [enqueue, updateTaskById],
+    [enqueue, settings, updateTaskById],
   )
 
   const deleteTask = useCallback(

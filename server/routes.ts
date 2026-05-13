@@ -18,6 +18,7 @@ import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
 import {
   accumulatedTimeSpent,
   getHasIncomplete,
+  isTimeSpentSatisfied,
 } from '~/shared/utils/task-utils'
 import { ERRORS } from './constants'
 import {
@@ -37,11 +38,9 @@ const checkTimeSpentRequired = async (
   effectiveTimeMs: number,
 ): Promise<{ status: 400; body: { message: string } } | null> => {
   const userSettings = await storage.getSettings(userId)
-  if (!userSettings.fieldConfig.timeSpent.required) return null
-  if (effectiveTimeMs <= 0) {
-    return ERRORS.TIME_SPENT_REQUIRED
-  }
-  return null
+  return isTimeSpentSatisfied(effectiveTimeMs, userSettings)
+    ? null
+    : ERRORS.TIME_SPENT_REQUIRED
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: is always present
@@ -74,6 +73,10 @@ const router = s.router(contract, {
       middleware: [isAuthenticated],
       handler: async ({ body, req }) => {
         const userId = getUserId(req)
+        if (body.status === TaskStatus.COMPLETED) {
+          const err = await checkTimeSpentRequired(userId, body.timeSpent ?? 0)
+          if (err) return err
+        }
         const task = await storage.createTask({ ...body, userId })
         return { status: 201, body: task }
       },

@@ -1,4 +1,5 @@
 import { type Task, TaskStatus } from '../schema'
+import type { UserSettings } from '../schema/settings.zod'
 
 export * from './id-list-utils'
 export * from './zod-utils'
@@ -127,6 +128,16 @@ export const REVERT_COMPLETION_PATCH = {
   completedAt: null,
   inProgressStartedAt: null,
 } as const satisfies Partial<Task>
+
+/**
+ * True if the timeSpent requirement is met: either not required by settings,
+ * or `effectiveTimeMs` > 0. Callers should compute `effectiveTimeMs` via
+ * `accumulatedTimeSpent` to include any active IN_PROGRESS session.
+ */
+export const isTimeSpentSatisfied = (
+  effectiveTimeMs: number,
+  settings: Pick<UserSettings, 'fieldConfig'>,
+): boolean => !settings.fieldConfig.timeSpent.required || effectiveTimeMs > 0
 
 /** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
 export const accumulatedTimeSpent = (

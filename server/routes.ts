@@ -15,6 +15,7 @@ import type { Express } from 'express'
 import { TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
+import { getHasIncomplete } from '~/shared/utils/task-utils'
 import {
   authStorage,
   isAuthenticated,
@@ -36,6 +37,10 @@ const ERRORS = {
   TIME_SPENT_REQUIRED: {
     status: 400 as const,
     body: { message: 'Time spent must be recorded to complete this task' },
+  },
+  INCOMPLETE_SUBTASKS: {
+    status: 400 as const,
+    body: { message: 'All subtasks must be completed first' },
   },
 } as const
 
@@ -104,6 +109,9 @@ const router = s.router(contract, {
               : 0)
           const err = await checkTimeSpentRequired(userId, accumulatedTime)
           if (err) return err
+
+          const subtasks = await storage.getSubtasks(params.id, userId)
+          if (getHasIncomplete(subtasks)) return ERRORS.INCOMPLETE_SUBTASKS
         }
         const task = await storage.updateTask(params.id, userId, body)
         return { status: 200, body: task }

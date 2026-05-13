@@ -32,6 +32,7 @@ type UpdateTaskArg = Omit<UpdateTask, 'id'>
 export interface IStorage {
   getTasks(userId: string): Promise<Task[]>
   getTask(id: number, userId: string): Promise<Task | undefined>
+  getSubtasks(parentId: number, userId: string): Promise<Task[]>
   createTask(task: InsertTask): Promise<Task>
   updateTask(id: number, userId: string, updates: UpdateTaskArg): Promise<Task>
   deleteTask(id: number, userId: string): Promise<void>
@@ -102,6 +103,13 @@ export class DatabaseStorage implements IStorage {
       .from(tasks)
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
     return task
+  }
+
+  async getSubtasks(parentId: number, userId: string): Promise<Task[]> {
+    return db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.parentId, parentId), eq(tasks.userId, userId)))
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
@@ -200,7 +208,7 @@ export class DatabaseStorage implements IStorage {
   ): Promise<Task> {
     const currentTask = await this.getTask(id, userId)
     if (!currentTask) {
-      throw new Error('Task not found')
+      throw Object.assign(new Error('Task not found'), { status: 404 })
     }
 
     const oldStatus = currentTask.status
@@ -216,17 +224,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (isStatusChange) {
-      // Guard: cannot complete a task with incomplete subtasks
-      if (newStatus === TaskStatus.COMPLETED) {
-        const children = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
-        if (getHasIncomplete(children)) {
-          throw new Error('All subtasks must be completed first')
-        }
-      }
-
       // Apply timestamp side-effects of the transition (sets/clears
       // `inProgressStartedAt` and `completedAt`) consistently with the
       // client.

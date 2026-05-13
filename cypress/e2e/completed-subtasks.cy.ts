@@ -174,7 +174,6 @@ describe('Completed Subtasks', () => {
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
 
       // Parent auto-completes as the last subtask is marked done
-      cy.wait(100) // TODO: debug if this fixes test
       waitForUpdate([completedRootTask])
       checkNumCalls({ create: 2, update: 2 })
       checkCompletedPage([

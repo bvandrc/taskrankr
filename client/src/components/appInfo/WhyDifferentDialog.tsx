@@ -36,7 +36,10 @@ export const WhyDifferentDialog = ({
         data-testid="dialog-why-different"
       >
         <DialogHeader>
-          <DialogTitle data-testid="text-why-different-title">
+          <DialogTitle
+            data-testid="text-why-different-title"
+            className={TEXT_SECTION_STYLE}
+          >
             Why TaskRankr?
           </DialogTitle>
         </DialogHeader>

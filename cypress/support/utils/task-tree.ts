@@ -1,7 +1,7 @@
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
-import { goToCompletedPage } from './navigation'
+import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
@@ -94,6 +94,7 @@ export const changeStatusViaStatusChangeDialog = (
 
 export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
   cy.log('Check task is not in main tree')
+  checkIsAtHomePage()
   flattenTree(completedTasks).forEach((task) => {
     cy.contains(task.name).should('not.exist')
   })

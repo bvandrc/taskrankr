@@ -112,9 +112,7 @@ describe('Completed Subtasks', () => {
         cy.log('Step 2: Edit subtask, mark as completed')
         openTaskEditForm(subtask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        clickSubmitBtnUpdate({
-          updatedTasks: [{ ...subtask, status: TaskStatus.COMPLETED }],
-        })
+        clickSubmitBtnUpdate({ updatedTasks: [completedSubtask] })
         checkNumCalls({ create: 2, update: 1 })
       },
     },

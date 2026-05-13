@@ -24,6 +24,7 @@ import {
   mapById,
   statusToStatusPatch,
 } from '~/shared/utils/task-utils'
+import { ERRORS } from './constants'
 import { db } from './db'
 
 type UpdateTaskArg = Omit<UpdateTask, 'id'>
@@ -31,6 +32,7 @@ type UpdateTaskArg = Omit<UpdateTask, 'id'>
 export interface IStorage {
   getTasks(userId: string): Promise<Task[]>
   getTask(id: number, userId: string): Promise<Task | undefined>
+  getSubtasks(parentId: number, userId: string): Promise<Task[]>
   createTask(task: InsertTask): Promise<Task>
   updateTask(id: number, userId: string, updates: UpdateTaskArg): Promise<Task>
   deleteTask(id: number, userId: string): Promise<void>
@@ -103,6 +105,13 @@ export class DatabaseStorage implements IStorage {
     return task
   }
 
+  async getSubtasks(parentId: number, userId: string): Promise<Task[]> {
+    return await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.parentId, parentId), eq(tasks.userId, userId)))
+  }
+
   async createTask(insertTask: InsertTask): Promise<Task> {
     const [task] = await db.insert(tasks).values(insertTask).returning()
     const created = task
@@ -135,10 +144,7 @@ export class DatabaseStorage implements IStorage {
       return
     }
 
-    const children = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.parentId, parentId), eq(tasks.userId, userId)))
+    const children = await this.getSubtasks(parentId, userId)
 
     const allCompleted = children.every(
       (t) => t.id === justCompletedChildId || t.status === TaskStatus.COMPLETED,
@@ -199,7 +205,9 @@ export class DatabaseStorage implements IStorage {
   ): Promise<Task> {
     const currentTask = await this.getTask(id, userId)
     if (!currentTask) {
-      throw new Error('Task not found')
+      throw Object.assign(new Error(ERRORS.TASK_NOT_FOUND.body.message), {
+        status: ERRORS.TASK_NOT_FOUND.status,
+      })
     }
 
     const oldStatus = currentTask.status
@@ -215,17 +223,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (isStatusChange) {
-      // Guard: cannot complete a task with incomplete subtasks
-      if (newStatus === TaskStatus.COMPLETED) {
-        const children = await db
-          .select()
-          .from(tasks)
-          .where(and(eq(tasks.parentId, id), eq(tasks.userId, userId)))
-        if (getHasIncomplete(children)) {
-          throw new Error('All subtasks must be completed first')
-        }
-      }
-
       // Apply timestamp side-effects of the transition (sets/clears
       // `inProgressStartedAt` and `completedAt`) consistently with the
       // client.

@@ -1,13 +1,4 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../primitives/overlays/AlertDialog'
+import { ConfirmAlertDialog } from '../primitives/overlays/ConfirmAlertDialog'
 
 interface AddSubtaskCompletedConfirmDialogProps {
   open: boolean
@@ -21,33 +12,16 @@ export const AddSubtaskCompletedConfirmDialog = ({
   onOpenChange,
   onConfirm,
 }: AddSubtaskCompletedConfirmDialogProps) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent
-      className="bg-card border-white/10"
-      data-testid="add-subtask-completed-confirm-dialog"
-    >
-      <AlertDialogHeader>
-        <AlertDialogTitle>Task is already completed</AlertDialogTitle>
-        <AlertDialogDescription>
-          Adding a subtask will mark this task as incomplete. This won&apos;t
-          take effect until you save.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-        <AlertDialogCancel
-          className="bg-secondary/50 border-white/5 hover:bg-white/10"
-          data-testid="button-add-subtask-completed-cancel"
-        >
-          Cancel
-        </AlertDialogCancel>
-        <AlertDialogAction
-          onClick={onConfirm}
-          className="bg-primary hover:bg-primary/90 text-white"
-          data-testid="button-add-subtask-completed-confirm"
-        >
-          Add Subtask
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <ConfirmAlertDialog
+    open={open}
+    onOpenChange={onOpenChange}
+    title="Task is already completed"
+    description="Adding a subtask will mark this task as incomplete. This won't take effect until you save."
+    confirmLabel="Add Subtask"
+    confirmClassName="bg-primary hover:bg-primary/90 text-white"
+    onConfirm={onConfirm}
+    testId="add-subtask-completed-confirm-dialog"
+    cancelTestId="button-add-subtask-completed-cancel"
+    confirmTestId="button-add-subtask-completed-confirm"
+  />
 )

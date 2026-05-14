@@ -248,18 +248,14 @@ export const ChangeStatusDialog = ({
                   <span className="text-xs text-muted-foreground">
                     Time Spent
                   </span>
-                  <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-                    <span className="text-xs text-muted-foreground">
-                      Time Spent
-                    </span>
-                    <TimeInput
-                      durationMs={timeSpentMs}
-                      onDurationChange={setTimeSpentMs}
-                      onBlur={onBlur}
-                      disabled={disabled}
-                      className="w-16 h-8 text-center text-sm bg-secondary/30"
-                    />
-                  </div>
+                  <TimeInput
+                    durationMs={timeSpent}
+                    onDurationChange={setTimeSpent}
+                    onBlur={handleTimeBlur}
+                    disabled={timeInputDisabled}
+                    className="w-16 h-8 text-center text-sm bg-secondary/30"
+                    data-testid="time-spent-input"
+                  />
                 </div>
               </SubtaskBlockedTooltip>
             )}

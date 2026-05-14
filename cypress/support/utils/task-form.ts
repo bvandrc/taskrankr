@@ -53,7 +53,19 @@ export const fillTaskFormRankFields = (
  */
 export const fillTaskForm = (
   task: TaskFormData,
-  settings: FieldConfig = DEFAULT_FIELD_CONFIG,
+  {
+    settings = DEFAULT_FIELD_CONFIG,
+    hasIncompleteSubtasks = false,
+  }: {
+    /**
+     * @default DEFAULT_FIELD_CONFIG
+     */
+    settings?: FieldConfig
+    /**
+     * @default false
+     */
+    hasIncompleteSubtasks?: boolean
+  } = {},
 ) => {
   cy.log(`**filling task form... (task: ${task.name})**`)
   checkTasksDontExistBackend([task])
@@ -66,12 +78,18 @@ export const fillTaskForm = (
 
   fillTaskFormRankFields(task, settings)
 
+  const timeSpent = cy
+    .get(TaskForm.TIME_SPENT_INPUT)
+    .should(settings.timeSpent.visible ? 'be.visible' : 'not.exist')
   if (settings.timeSpent.visible) {
-    cy.get(TaskForm.TIME_SPENT_INPUT).should(
-      settings.timeSpent.visible ? 'be.visible' : 'not.exist',
-    )
-    // TODO: test required
+    timeSpent.should(hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled')
   }
+  // TODO: test TIME INPUT required or not
+
+  cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+
   cy.log(`**...task form filled (task: ${task.name})**`)
 }
 

@@ -64,7 +64,7 @@ describe('Task Creation', () => {
 
     cy.log('Step 2: Create task using new field config, verify in tree')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(newTask, fieldConfig)
+    fillTaskForm(newTask, { settings: fieldConfig })
     clickSubmitBtnCreate({ newTasks: [newTask] })
     expandAndCheckTree(newTask)
     checkNumCalls({ create: 1 })
@@ -93,7 +93,7 @@ describe('Task Creation', () => {
       'Step 2: Create completed task — submit blocked until time spent is filled',
     )
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(taskAllNull, fieldConfig)
+    fillTaskForm(taskAllNull, { settings: fieldConfig })
     cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
     cy.get(TaskForm.SUBMIT_BTN).should('be.disabled')
     cy.get(TaskForm.TIME_SPENT_INPUT_HOURS).type('1')

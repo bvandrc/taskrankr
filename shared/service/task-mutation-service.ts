@@ -64,9 +64,7 @@ const accumulatedTimeSpent = (
   task.timeSpent +
   (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
 
-/**
- * Returns a task to OPEN and clears every status-related timestamp.
- */
+/** Reverts a task to OPEN and clears all status-related timestamps. */
 const REVERT_COMPLETION_PATCH = {
   status: TaskStatus.OPEN,
   completedAt: null,
@@ -323,11 +321,11 @@ export class TaskMutationService {
       }
     }
 
-    const now = Date.now()
     const buffer = new MutationBuffer()
 
     if (data.status === TaskStatus.IN_PROGRESS) {
       // Pass 0 as excludeId — no DB task has id 0, and the new task has no id yet.
+      const now = Date.now()
       const otherInProgress = await this.io.getCurrentInProgressTask(0)
       if (otherInProgress) {
         buffer.add(otherInProgress.id, {

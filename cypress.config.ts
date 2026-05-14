@@ -48,7 +48,7 @@ export default defineConfig({
 
       installTerminalReporter(on, {
         outputVerbose: false,
-        compactLogs: 15,
+        compactLogs: 30,
         outputCompactLogs: false, // print all logs to file
         routeTrimLength: 1000, // don't print all GET data
         printLogsToConsole: 'onFail',

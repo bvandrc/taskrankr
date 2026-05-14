@@ -13,8 +13,7 @@
  * vs React state update + sync queue enqueue).
  */
 
-import type { AppError } from '../errors'
-import { ERRORS } from '../errors'
+import { type AppError, ERRORS } from '../constants'
 import type { InsertTask, Task, UserSettings } from '../schema'
 import { TaskStatus } from '../schema'
 import {

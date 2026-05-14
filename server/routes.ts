@@ -13,9 +13,8 @@ import { hoursToSeconds } from 'date-fns'
 import { isNil, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
-import { TestPaths } from '~/shared/constants'
+import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
-import type { AppError } from '~/shared/errors'
 import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
 import { ERRORS } from './constants'
 import {

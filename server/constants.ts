@@ -1,7 +1,6 @@
 import { mapValues } from 'es-toolkit'
 
-import type { AppError } from '~/shared/errors'
-import { ERRORS as BASE_ERRORS } from '~/shared/errors'
+import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
 
 type BaseErrors = typeof BASE_ERRORS
 

@@ -22,13 +22,14 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import {
   filterAndSortTree,
   getTaskStatuses,
+  isEffectivelyHiddenInTree,
+  mapById,
   SORT_ORDER_MAP,
 } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
 import { type FieldConfig, SortOption, TaskStatus } from '~/shared/schema'
-import { isEffectivelyHiddenInTree, mapById } from '~/shared/utils/task-utils'
 
 const SortButtons = ({
   sortBy,

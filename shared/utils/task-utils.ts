@@ -49,56 +49,30 @@ export const getTaskStatuses = (task: Pick<Task, 'status'>) => ({
 })
 
 /**
- * true iff `task` is hidden purely because its parent has `autoHideCompleted`
- * enabled and the task is COMPLETED. (i.e., ignore the user-set `hidden` flag)
- */
-export const isAutoHiddenByParent = (
-  task: Pick<Task, 'status'>,
-  parent: Pick<Task, 'autoHideCompleted'> | undefined,
-): boolean =>
-  Boolean(parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED)
-
-/**
- * true iff `task` should be considered hidden in the UI, accounting for both
- * the user-set `hidden` flag and parent-driven auto-hide of COMPLETED subtasks.
- */
-export const isEffectivelyHiddenInTree = (
-  task: Pick<Task, 'hidden' | 'status' | 'parentId'>,
-  taskById: Map<number, Task>,
-): boolean =>
-  task.hidden ||
-  isAutoHiddenByParent(
-    task,
-    task.parentId != null ? taskById.get(task.parentId) : undefined,
-  )
-
-/**
  * Additional props to change when changing a task's status, including:
  *  - timestamps that accompany the IN_PROGRESS and COMPLETED transitions
  */
-export const statusToStatusPatch = (
-  status: TaskStatus,
-): Pick<Task, 'status' | 'inProgressStartedAt' | 'completedAt'> => {
+export const statusToStatusPatch = (status: TaskStatus) => {
   switch (status) {
     case TaskStatus.IN_PROGRESS:
       return {
         status,
         inProgressStartedAt: new Date(),
         completedAt: null,
-      }
+      } as const satisfies Partial<Task>
     case TaskStatus.COMPLETED:
       return {
         status,
         completedAt: new Date(),
         inProgressStartedAt: null,
-      }
+      } as const satisfies Partial<Task>
     case TaskStatus.PINNED:
     case TaskStatus.OPEN:
       return {
         status,
         inProgressStartedAt: null,
         completedAt: null,
-      }
+      } as const satisfies Partial<Task>
     default:
       throw new Error(`Unhandled status: ${status satisfies never}`)
   }

@@ -1,18 +1,22 @@
-export const ERRORS = {
-  TASK_NOT_FOUND: {
-    status: 404,
-    body: { message: 'Task not found' },
-  },
-  PARENT_NOT_FOUND: {
-    status: 404,
-    body: { message: 'Parent task not found' },
-  },
-  TIME_SPENT_REQUIRED: {
-    status: 400,
-    body: { message: 'Time spent must be recorded to complete this task' },
-  },
-  INCOMPLETE_SUBTASKS: {
-    status: 400,
-    body: { message: 'All subtasks must be completed first' },
-  },
-} as const
+import { mapValues } from 'es-toolkit'
+
+import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
+
+type BaseErrors = typeof BASE_ERRORS
+
+/**
+ * Server-shaped error responses for ts-rest handlers. Each entry mirrors
+ * `shared/errors.ts` but pre-wraps it as `{ status, body: { message } }`.
+ */
+export const ERRORS = mapValues(
+  BASE_ERRORS,
+  ({ status, message }: AppError) => ({
+    status,
+    body: { message },
+  }),
+) as {
+  [K in keyof BaseErrors]: {
+    status: BaseErrors[K]['status']
+    body: { message: BaseErrors[K]['message'] }
+  }
+}

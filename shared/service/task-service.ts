@@ -302,7 +302,7 @@ export class TaskService {
     }
 
     if (newStatus === TaskStatus.COMPLETED && current.parentId !== null) {
-      await this.walkAutoCompleteParent(current.parentId, id, buffer)
+      await this.walkAutoCompleteParent(current.parentId, buffer, id)
     }
 
     if (
@@ -320,8 +320,10 @@ export class TaskService {
   /**
    * Validates and computes side-effects for a new task. Does not include
    * the primary insert (the caller already has the data); only returns
-   * cascade patches on existing tasks (e.g. parent revert when an
-   * inherit-completion parent gains a non-completed child).
+   * cascade patches on existing tasks — parent revert when a non-completed
+   * new task joins an auto-completed parent, IN_PROGRESS demotion when the
+   * new task starts in-progress, and parent auto-complete walk when the new
+   * task arrives already completed.
    */
   async planCreate(data: CreatePayload): Promise<ServicePlan> {
     if (data.status === TaskStatus.COMPLETED) {
@@ -331,15 +333,36 @@ export class TaskService {
       }
     }
 
+    const now = Date.now()
     const buffer = new MutationBuffer()
 
-    if (data.parentId && data.status !== TaskStatus.COMPLETED) {
-      const parent = await this.io.getTask(data.parentId)
-      if (
-        parent?.inheritCompletionState &&
-        parent.status === TaskStatus.COMPLETED
-      ) {
-        buffer.add(data.parentId, REVERT_COMPLETION_PATCH)
+    if (data.status === TaskStatus.IN_PROGRESS) {
+      // The new task has no real id yet — pass 0 so no existing task is
+      // excluded (no DB task can have id 0).
+      const otherInProgress = await this.io.getCurrentInProgressTask(0)
+      if (otherInProgress) {
+        buffer.add(otherInProgress.id, {
+          status: TaskStatus.PINNED,
+          timeSpent: accumulatedTimeSpent(otherInProgress, now),
+          inProgressStartedAt: null,
+        })
+      }
+    }
+
+    if (data.parentId) {
+      if (data.status !== TaskStatus.COMPLETED) {
+        const parent = await this.io.getTask(data.parentId)
+        if (
+          parent?.inheritCompletionState &&
+          parent.status === TaskStatus.COMPLETED
+        ) {
+          buffer.add(data.parentId, REVERT_COMPLETION_PATCH)
+        }
+      } else {
+        // New task arrives completed: walk up to auto-complete ancestors. The
+        // new task is not in the I/O layer yet, so no justCompletedChildId is
+        // passed — getDirectSubtasks won't include it, which is equivalent.
+        await this.walkAutoCompleteParent(data.parentId, buffer)
       }
     }
 
@@ -379,10 +402,16 @@ export class TaskService {
     return { ok: true, mutations: buffer.toArray(), deletedIds }
   }
 
+  /**
+   * `justCompletedChildId` is optional: when called from `planCreate`, the new
+   * task doesn't exist in the I/O layer yet so there is no id to pass — the
+   * sibling list returned by `getDirectSubtasks` simply won't include it, which
+   * is equivalent to treating it as already completed.
+   */
   private async walkAutoCompleteParent(
     parentId: number,
-    justCompletedChildId: number,
     buffer: MutationBuffer,
+    justCompletedChildId?: number,
   ): Promise<void> {
     let currentParentId: number | null = parentId
     let lastCompletedChildId = justCompletedChildId
@@ -424,6 +453,11 @@ export class TaskService {
     }
   }
 
+  /**
+   * BFS over the subtree, then reversed so the result is leaves-first. Callers
+   * that delete by iterating this list will always remove children before their
+   * parent, avoiding dangling-reference windows in the DB.
+   */
   private async collectDescendants(rootId: number): Promise<number[]> {
     const result: number[] = [rootId]
     const queue: number[] = [rootId]
@@ -435,6 +469,6 @@ export class TaskService {
         queue.push(child.id)
       }
     }
-    return result
+    return result.reverse()
   }
 }

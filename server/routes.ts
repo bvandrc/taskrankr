@@ -108,10 +108,10 @@ const router = s.router(contract, {
           const updated = await storage.updateTask(m.id, userId, m.patch)
           if (m.id === params.id) primary = updated
         }
-        if (!primary) {
-          primary = await storage.getTask(params.id, userId)
-          if (!primary) return ERRORS.TASK_NOT_FOUND
-        }
+        // planUpdateInto always adds the target id to the buffer, so primary
+        // is guaranteed to be set when result.ok is true.
+        if (!primary)
+          throw new Error(`planUpdate missing mutation for id ${params.id}`)
         return { status: 200, body: primary }
       },
     },

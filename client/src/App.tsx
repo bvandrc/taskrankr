@@ -12,7 +12,7 @@ import { TooltipProvider } from '@/components/primitives/overlays/Tooltip'
 import { Spinner } from '@/components/primitives/Spinner'
 import { TaskFormDialogProvider } from '@/components/TaskForm/TaskFormDialogProvider'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from '@/hooks/useToasts'
+import { toastInfo } from '@/hooks/useToasts'
 import {
   clearGuestStorage,
   migrateGuestTasksToAuth,
@@ -77,7 +77,7 @@ const AuthenticatedApp = () => {
       const result = migrateGuestTasksToAuth()
       if (result.migratedCount > 0) {
         clearGuestStorage()
-        toast({
+        toastInfo({
           title: 'Tasks imported',
           description: `${result.migratedCount} tasks from guest mode have been added to your account.`,
         })

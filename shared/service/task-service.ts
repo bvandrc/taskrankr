@@ -21,7 +21,6 @@ import {
   getHasIncomplete,
   isTimeSpentSatisfied,
   REVERT_COMPLETION_PATCH,
-  statusToStatusPatch,
 } from '../utils/task-utils'
 
 const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
@@ -156,7 +155,13 @@ export class TaskService {
     if (primary.parentId === null) primary.hidden = false
 
     if (newStatus !== undefined && isStatusChange) {
-      const statusPatch = statusToStatusPatch(newStatus)
+      const isCompleting = newStatus === TaskStatus.COMPLETED
+      const isStarting = newStatus === TaskStatus.IN_PROGRESS
+      const statusPatch: Partial<Task> = {
+        status: newStatus,
+        inProgressStartedAt: isStarting ? new Date() : null,
+        completedAt: isCompleting ? new Date() : null,
+      }
       if (
         current.status === TaskStatus.IN_PROGRESS &&
         newStatus !== TaskStatus.IN_PROGRESS &&

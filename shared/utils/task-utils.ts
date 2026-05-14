@@ -48,36 +48,6 @@ export const getTaskStatuses = (task: Pick<Task, 'status'>) => ({
   isCompleted: task.status === TaskStatus.COMPLETED,
 })
 
-/**
- * Additional props to change when changing a task's status, including:
- *  - timestamps that accompany the IN_PROGRESS and COMPLETED transitions
- */
-export const statusToStatusPatch = (status: TaskStatus) => {
-  switch (status) {
-    case TaskStatus.IN_PROGRESS:
-      return {
-        status,
-        inProgressStartedAt: new Date(),
-        completedAt: null,
-      } as const satisfies Partial<Task>
-    case TaskStatus.COMPLETED:
-      return {
-        status,
-        completedAt: new Date(),
-        inProgressStartedAt: null,
-      } as const satisfies Partial<Task>
-    case TaskStatus.PINNED:
-    case TaskStatus.OPEN:
-      return {
-        status,
-        inProgressStartedAt: null,
-        completedAt: null,
-      } as const satisfies Partial<Task>
-    default:
-      throw new Error(`Unhandled status: ${status satisfies never}`)
-  }
-}
-
 export const getHasIncomplete = (tasks: Task[]): boolean =>
   tasks.some((t) => t.status !== TaskStatus.COMPLETED)
 

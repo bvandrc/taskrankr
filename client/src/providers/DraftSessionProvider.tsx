@@ -43,8 +43,12 @@ import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
 import { debugLog } from '@/lib/debug-logger'
-import { buildLocalTask, statusToStatusPatch } from '@/lib/task-provider-utils'
-import { collectDescendantIds, removeIds } from '@/lib/task-tree-utils'
+import { buildLocalTask } from '@/lib/task-provider-utils'
+import {
+  collectDescendantIds,
+  removeIds,
+  statusToStatusPatch,
+} from '@/lib/task-tree-utils'
 import {
   type CreateTaskContent,
   type UpdateTaskContent,
@@ -432,9 +436,7 @@ export const DraftSessionProvider = ({
   const setTaskStatus = useCallback(
     (id: number, status: TaskStatus): Promise<LocalTask> => {
       if (isDraftIdStable(id)) {
-        return Promise.resolve(
-          updateDraftTask(id, statusToStatusPatch(status) as UpdateTaskContent),
-        )
+        return Promise.resolve(updateDraftTask(id, statusToStatusPatch(status)))
       }
       return realSetTaskStatus(id, status)
     },

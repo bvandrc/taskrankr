@@ -13,7 +13,7 @@ import type {
 } from '@/components/primitives/overlays/Toast'
 import { removeIds } from '~/shared/utils/id-list-utils'
 
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 1500
 
 interface ToasterToast extends Omit<ToastProps, 'title' | 'description'> {
@@ -133,14 +133,13 @@ const dispatch = (action: ToastAction) => {
 
 type Toast = Omit<ToasterToast, 'id'>
 
-export const toast = ({ ...props }: Toast) => {
+const toast = ({ ...props }: Toast) => {
   const id = genId()
 
-  // biome-ignore lint/nursery/noShadow: is fine
-  const update = (props: ToasterToast) =>
+  const update = (updateProps: ToasterToast) =>
     dispatch({
       type: ToastActionType.UPDATE,
-      toast: { ...props, id },
+      toast: { ...updateProps, id },
     })
 
   const dismiss = () => dispatch({ type: ToastActionType.DISMISS, toastId: id })
@@ -163,17 +162,11 @@ export const toast = ({ ...props }: Toast) => {
   }
 }
 
-/** Reads `body.message` from an API error response and fires a destructive toast. */
-export function toastApiError(body: unknown, fallback: string) {
-  const message =
-    body !== null &&
-    typeof body === 'object' &&
-    'message' in body &&
-    typeof (body as { message: unknown }).message === 'string'
-      ? (body as { message: string }).message
-      : fallback
-  toast({ title: 'Error', description: message, variant: 'destructive' })
-}
+export const toastError = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'destructive' })
+
+export const toastInfo = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'default' })
 
 export const useToasts = () => {
   const [state, setState] = useState<State>(memoryState)

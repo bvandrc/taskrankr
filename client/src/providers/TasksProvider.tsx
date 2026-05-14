@@ -35,7 +35,6 @@ import {
   withClientKeys,
 } from '@/lib/task-provider-utils'
 import {
-  autoCompleteParentPatch,
   getById,
   getDirectSubtasks,
   mapById,
@@ -58,7 +57,11 @@ import {
   taskSchema,
   type UpdateTask,
 } from '~/shared/schema'
-import { type MutationPatch, TaskService } from '~/shared/service/task-service'
+import {
+  autoCompleteParentPatch,
+  type MutationPatch,
+  TaskService,
+} from '~/shared/service/task-service'
 
 export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
   /** Preserved across draft → real promotion. */

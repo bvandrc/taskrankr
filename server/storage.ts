@@ -1,12 +1,8 @@
 /**
  * @fileoverview Database access layer implementing the IStorage interface.
  *
- * Pure persistence: every method is a thin wrapper around a single Drizzle
- * statement (or the row-fixup pass in `getTasks`). All cascade orchestration
- * — status side-effects, IN_PROGRESS demotion, parent inherit-completion
- * walks, child cascade, parent time-accumulation on delete — lives in
- * `shared/service/task-service.ts` and is driven by the route handlers via
- * the `TaskService` adapter.
+ * Does not handle any business logic or side-effects; just basic CRUD and queries.
+ * All logic lives in `TaskService` and is orchestrated by the route handlers.
  */
 
 import { and, eq, ne } from 'drizzle-orm'

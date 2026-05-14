@@ -1,6 +1,8 @@
 /**
- * @fileoverview Shared confirmation dialog built on @radix-ui AlertDialog
- * primitives. Renders via an explicit portal so it stacks correctly above any
+ * @fileoverview Generic confirm/cancel alert dialog dialog built on @radix-ui AlertDialog
+ * primitives.
+ *
+ * Renders via an explicit portal so it stacks correctly above any
  * ancestor Dialog (z-[110] > Dialog's z-50).
  */
 
@@ -35,8 +37,7 @@ export interface ConfirmAlertDialogProps {
 }
 
 /**
- * Generic confirm/cancel alert dialog. Use instead of writing a bespoke
- * AlertDialog for each confirmation prompt.
+ * Generic confirm/cancel alert dialog.
  */
 export const ConfirmAlertDialog = ({
   open,

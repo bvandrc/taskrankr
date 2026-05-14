@@ -282,8 +282,8 @@ export const SyncProvider = ({
           acknowledgeSettingsSync(settingsSnapshot)
         } else {
           toastApiError({
-            body: result.body,
             title: 'Failed to sync: settings',
+            body: result.body,
           })
           setLastSyncError('Failed to sync: settings')
         }

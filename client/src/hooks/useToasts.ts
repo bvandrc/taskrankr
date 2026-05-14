@@ -168,12 +168,12 @@ export const toast = ({ ...props }: Toast) => {
  * Uses `body.message` as the description when present, otherwise `fallback`.
  */
 export function toastApiError({
-  body,
   title,
+  body,
   fallback,
 }: {
-  body: unknown
   title: string
+  body: unknown
   fallback?: string
 }) {
   const description =

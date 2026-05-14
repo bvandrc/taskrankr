@@ -411,8 +411,8 @@ export const DraftSessionProvider = ({
       if (!result.ok) {
         const taskName = getById(draftTasksRef.current, id)?.name
         toastApiError({
-          body: result.error,
           title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
+          body: result.error,
         })
         throw new Error(result.error.message)
       }

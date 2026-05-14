@@ -426,8 +426,8 @@ export const TasksProvider = ({
 
       if (!result.ok) {
         toastApiError({
+          title: `Cannot create task "${data.name}"`,
           body: result.error,
-          title: `Cannot create "${data.name}"`,
         })
 
         nextIdRef.current++
@@ -493,8 +493,8 @@ export const TasksProvider = ({
       if (!result.ok) {
         const taskName = getById(tasksRef.current, id)?.name
         toastApiError({
-          body: result.error,
           title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
+          body: result.error,
         })
         // Throw (not return-fallback) so awaiting callers can keep dialogs
         // open / abort follow-on work. Mirrors `createTask`.

@@ -42,7 +42,7 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
-import { toast } from '@/hooks/useToasts'
+import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
 import { makeTaskService } from '@/lib/task-service-adapter'
@@ -409,10 +409,10 @@ export const DraftSessionProvider = ({
     ): Promise<LocalTask> => {
       const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
-        toast({
-          title: errorTitle,
+        const taskName = getById(draftTasksRef.current, id)?.name
+        toastError({
+          title: `${errorTitle}${taskName ? `: "${taskName}"` : ''}`,
           description: result.error.message,
-          variant: 'destructive',
         })
         throw new Error(result.error.message)
       }

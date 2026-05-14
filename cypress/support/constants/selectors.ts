@@ -80,4 +80,8 @@ export const Selectors = {
         testId(`checkbox-${field}-required`),
     },
   },
+  Toasts: {
+    ERROR: testId('toast-destructive'),
+    DEFAULT: testId('toast-default'),
+  },
 } as const

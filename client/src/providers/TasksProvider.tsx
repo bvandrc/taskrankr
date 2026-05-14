@@ -35,7 +35,6 @@ import {
   withClientKeys,
 } from '@/lib/task-provider-utils'
 import {
-  autoCompleteParentPatch,
   getById,
   getDirectSubtasks,
   mapById,
@@ -59,6 +58,7 @@ import {
   type UpdateTask,
 } from '~/shared/schema'
 import {
+  autoCompleteParentPatch,
   type MutationPatch,
   TaskService,
   type TaskServiceIO,

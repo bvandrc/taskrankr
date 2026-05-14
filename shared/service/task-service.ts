@@ -18,12 +18,44 @@ import type { InsertTask, Task, UserSettings } from '../schema'
 import { TaskStatus } from '../schema'
 import {
   accumulatedTimeSpent,
-  autoCompleteParentPatch,
   getHasIncomplete,
   isTimeSpentSatisfied,
   REVERT_COMPLETION_PATCH,
   statusToStatusPatch,
 } from '../utils/task-utils'
+
+const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
+  children.reduce<Date | null>((latest, c) => {
+    const completedAt = c.completedAt ? new Date(c.completedAt) : null
+    if (!completedAt) return latest
+    if (!latest) return completedAt
+    return completedAt > latest ? completedAt : latest
+  }, null)
+
+/**
+ * Patch to auto-complete a parent with `inheritCompletionState` enabled, or
+ * null if any child is still incomplete. `completedAt` reflects the latest
+ * child completion so the parent inherits its meaningful "done" timestamp.
+ *
+ * Pass `treatAsCompleted` to count a specific child id as completed regardless
+ * of its current status — useful when computing from a snapshot taken before
+ * the child's write commits.
+ */
+export const autoCompleteParentPatch = (
+  children: Task[],
+  options: { treatAsCompleted?: number } = {},
+): Partial<Task> | null => {
+  const allComplete = children.every(
+    (c) =>
+      c.id === options.treatAsCompleted || c.status === TaskStatus.COMPLETED,
+  )
+  if (!allComplete) return null
+  return {
+    status: TaskStatus.COMPLETED,
+    completedAt: getChildrenLatestCompletedAt(children) ?? new Date(),
+    inProgressStartedAt: null,
+  }
+}
 
 export type MaybePromise<T> = T | Promise<T>
 

@@ -86,14 +86,6 @@ export const getHasIncompleteSubtasks = (
   taskId: number,
 ): boolean => getHasIncomplete(getDirectSubtasks(allTasks, taskId))
 
-export const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
-  children.reduce<Date | null>((latest, c) => {
-    const completedAt = c.completedAt ? new Date(c.completedAt) : null
-    if (!completedAt) return latest
-    if (!latest) return completedAt
-    return completedAt > latest ? completedAt : latest
-  }, null)
-
 /**
  * Canonical "undo completion" patch: returns a task to OPEN and clears every
  * status-related timestamp.
@@ -103,31 +95,6 @@ export const REVERT_COMPLETION_PATCH = {
   completedAt: null,
   inProgressStartedAt: null,
 } as const satisfies Partial<Task>
-
-/**
- * Patch to auto-complete a parent with `inheritCompletionState` enabled, or
- * null if any child is still incomplete. `completedAt` reflects the latest
- * child completion so the parent inherits its meaningful "done" timestamp.
- *
- * Pass `treatAsCompleted` to count a specific child id as completed regardless
- * of its current status — useful when computing from a snapshot taken before
- * the child's write commits.
- */
-export const autoCompleteParentPatch = (
-  children: Task[],
-  options: { treatAsCompleted?: number } = {},
-) => {
-  const allComplete = children.every(
-    (c) =>
-      c.id === options.treatAsCompleted || c.status === TaskStatus.COMPLETED,
-  )
-  if (!allComplete) return null
-  return {
-    status: TaskStatus.COMPLETED,
-    completedAt: getChildrenLatestCompletedAt(children) ?? new Date(),
-    inProgressStartedAt: null,
-  } as const satisfies Partial<Task>
-}
 
 /**
  * True if the timeSpent requirement is met, if required by settings.

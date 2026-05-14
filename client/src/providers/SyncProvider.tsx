@@ -14,6 +14,7 @@ import {
   useState,
 } from 'react'
 
+import { toast } from '@/hooks/useToast'
 import { debugLog } from '@/lib/debug-logger'
 import { tsr } from '@/lib/ts-rest'
 import { useSettings } from './SettingsProvider'
@@ -33,6 +34,17 @@ const SyncContext = createContext<SyncContextValue | null>(null)
 type SyncProviderProps = React.PropsWithChildren<{
   isAuthenticated: boolean
 }>
+
+function toastApiError(body: unknown, fallback: string) {
+  const message =
+    body !== null &&
+    typeof body === 'object' &&
+    'message' in body &&
+    typeof (body as { message: unknown }).message === 'string'
+      ? (body as { message: string }).message
+      : fallback
+  toast({ title: 'Sync error', description: message, variant: 'destructive' })
+}
 
 export const SyncProvider = ({
   children,
@@ -163,6 +175,7 @@ export const SyncProvider = ({
       let successCount = 0
       for (const op of queueSnapshot) {
         let success = false
+        let errorBody: unknown
 
         switch (op.type) {
           case SyncOperationType.CREATE_TASK: {
@@ -171,6 +184,8 @@ export const SyncProvider = ({
               idMap.set(op.tempId, result.body.id)
               replaceTaskId(op.tempId, result.body.id)
               success = true
+            } else {
+              errorBody = result.body
             }
             break
           }
@@ -184,7 +199,11 @@ export const SyncProvider = ({
               params: { id: realId },
               body: op.data,
             })
-            success = result.status === 200
+            if (result.status === 200) {
+              success = true
+            } else {
+              errorBody = result.body
+            }
             break
           }
           case SyncOperationType.DELETE_TASK: {
@@ -196,7 +215,11 @@ export const SyncProvider = ({
             const result = await tsr.tasks.delete.mutate({
               params: { id: realId },
             })
-            success = result.status === 204
+            if (result.status === 204) {
+              success = true
+            } else {
+              errorBody = result.body
+            }
             break
           }
           case SyncOperationType.REORDER_SUBTASKS: {
@@ -210,7 +233,11 @@ export const SyncProvider = ({
               params: { id: realParentId },
               body: { orderedIds: realOrderedIds },
             })
-            success = result.status === 200
+            if (result.status === 200) {
+              success = true
+            } else {
+              errorBody = result.body
+            }
             break
           }
           default:
@@ -220,6 +247,7 @@ export const SyncProvider = ({
         if (success) {
           successCount++
         } else {
+          toastApiError(errorBody, `Failed to sync: ${op.type}`)
           setLastSyncError(`Failed to sync: ${op.type}`)
           break
         }
@@ -246,10 +274,16 @@ export const SyncProvider = ({
           if (result.status === 200) {
             acknowledgeSettingsSync(settingsSnapshot)
           } else {
+            toastApiError(result.body, 'Failed to sync: settings')
             setLastSyncError('Failed to sync: settings')
           }
         } catch (err) {
           debugLog.log('sync', 'settingsFlush:error', { error: String(err) })
+          toast({
+            title: 'Sync error',
+            description: 'Failed to sync: settings',
+            variant: 'destructive',
+          })
           setLastSyncError('Failed to sync: settings')
         }
       }

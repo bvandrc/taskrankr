@@ -264,17 +264,25 @@ const ImportButton = () => {
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
-        throw new Error('Import failed')
+        const message =
+          result.body !== null &&
+          typeof result.body === 'object' &&
+          'message' in result.body &&
+          typeof (result.body as { message: unknown }).message === 'string'
+            ? (result.body as { message: string }).message
+            : 'Failed to import tasks'
+        toast({
+          title: 'Failed to import tasks',
+          description: message,
+          variant: 'destructive',
+        })
+        return
       }
 
       queryClient.invalidateQueries({ queryKey: QueryKeys.getTasks })
       toast({ title: 'Tasks imported successfully' })
     } catch (err) {
-      if (
-        err instanceof SyntaxError ||
-        err instanceof TypeError ||
-        (err instanceof Error && err.message === 'Import failed')
-      ) {
+      if (err instanceof SyntaxError || err instanceof TypeError) {
         toast({ title: 'Failed to import tasks', variant: 'destructive' })
       } else {
         throw err

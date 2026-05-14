@@ -1,56 +1,28 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../primitives/overlays/AlertDialog'
+  ConfirmAlertDialog,
+  type ConfirmAlertDialogProps,
+} from '../primitives/overlays/ConfirmAlertDialog'
 
-interface TaskFormCancelConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface TaskFormCancelConfirmDialogProps
+  extends Pick<ConfirmAlertDialogProps, 'open' | 'onOpenChange' | 'onConfirm'> {
   subtaskCount: number
-  onDiscard: () => void
 }
 
 export const TaskFormCancelConfirmDialog = ({
   open,
   onOpenChange,
   subtaskCount,
-  onDiscard,
+  onConfirm,
 }: TaskFormCancelConfirmDialogProps) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent
-      className="bg-card border-white/10"
-      data-testid="cancel-confirm-dialog"
-    >
-      <AlertDialogHeader>
-        <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
-        <AlertDialogDescription>
-          You have {subtaskCount} unsaved{' '}
-          {subtaskCount === 1 ? 'subtask' : 'subtasks'}.{' '}
-          {subtaskCount === 1 ? 'It' : 'They'} will be discarded if you cancel
-          this task.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-        <AlertDialogCancel
-          className="bg-secondary/50 border-white/5 hover:bg-white/10"
-          data-testid="button-cancel-deny"
-        >
-          Go Back
-        </AlertDialogCancel>
-        <AlertDialogAction
-          onClick={onDiscard}
-          className="bg-destructive hover:bg-destructive/90 text-white"
-          data-testid="button-cancel-confirm"
-        >
-          Cancel and Discard Subtasks
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <ConfirmAlertDialog
+    open={open}
+    onOpenChange={onOpenChange}
+    title="Are you sure you want to cancel?"
+    description={`You have ${subtaskCount} unsaved ${subtaskCount === 1 ? 'subtask' : 'subtasks'}. ${subtaskCount === 1 ? 'It' : 'They'} will be discarded if you cancel this task.`}
+    cancelLabel="Go Back"
+    confirmLabel="Cancel and Discard Subtasks"
+    confirmBtnVariant="danger"
+    onConfirm={onConfirm}
+    data-testid="cancel-task-form-confirm-dialog"
+  />
 )

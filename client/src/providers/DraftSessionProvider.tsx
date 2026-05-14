@@ -42,7 +42,7 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
-import { toast } from '@/hooks/useToast'
+import { toast } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
 import { makeTaskService } from '@/lib/task-service-adapter'

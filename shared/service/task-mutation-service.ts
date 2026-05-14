@@ -309,12 +309,10 @@ export class TaskMutationService {
       await this.walkAutoCompleteParent(current.parentId, buffer, id)
       console.log(
         '[resolveUpdate] after walkAutoCompleteParent, buffer:',
-        buffer
-          .toArray()
-          .map((m) => ({
-            id: m.id,
-            status: (m.patch as { status?: string }).status,
-          })),
+        buffer.toArray().map((m) => ({
+          id: m.id,
+          status: (m.patch as { status?: string }).status,
+        })),
       )
     }
 

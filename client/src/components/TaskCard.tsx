@@ -183,6 +183,9 @@ const getTotalAccumulatedTime = (
   return total
 }
 
+const getSubtaskTimeMs = (subtasks: TaskWithSubtasks['subtasks']): number =>
+  subtasks.reduce((sum, s) => sum + getTotalAccumulatedTime(s), 0)
+
 const CompletedTimeDisplay = ({
   completedAt,
 }: Pick<TaskWithSubtasks, 'completedAt'>) =>
@@ -408,6 +411,7 @@ export const TaskCard = ({
         taskName={task.name}
         status={task.status}
         timeSpent={getTotalAccumulatedTime(task)}
+        subtaskTimeMs={getSubtaskTimeMs(task.subtasks)}
         isSubtask={!!task.parentId}
         isHidden={task.hidden}
         showToggleHidden={!isAutoHiddenByParent(task, parent)}

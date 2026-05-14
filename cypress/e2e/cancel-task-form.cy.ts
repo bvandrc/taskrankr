@@ -157,7 +157,7 @@ describe('Task Form Cancellation', () => {
 
         cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
           .should('be.visible')
-          .should('contain.text', '2 unsaved subtasks')
+          .should('contain.text', '2 unsaved subtask')
         cy.get(ConfirmDialog.DENY_BTN).click()
 
         getTaskForm(0).within(() => {
@@ -171,7 +171,7 @@ describe('Task Form Cancellation', () => {
         )
         cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
           .should('be.visible')
-          .should('contain.text', '2 unsaved subtasks')
+          .should('contain.text', '2 unsaved subtask')
         cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })

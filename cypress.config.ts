@@ -14,7 +14,7 @@ const processResultsDir = (resultsDir: string) =>
     : resultsDir
 
 export default defineConfig({
-  video: false,
+  video: true,
   screenshotOnRunFailure: true,
   fixturesFolder: false,
   animationDistanceThreshold: 3,

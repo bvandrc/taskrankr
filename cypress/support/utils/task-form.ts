@@ -98,11 +98,15 @@ export const fillTaskForm = (
   cy.log(`**...task form filled (task: ${task.name})**`)
 }
 
-type SubmitBtnArgs = { newTasks?: CreatedTask[]; updatedTasks?: CreatedTask[] }
+type SubmitBtnArgs = {
+  newTasks?: CreatedTask[]
+  updatedTasks?: CreatedTask[]
+  confirmDialog?: string
+}
 
 const clickSubmitBtn = (
   submitBtnText: string,
-  { newTasks, updatedTasks }: SubmitBtnArgs = {},
+  { newTasks, updatedTasks, confirmDialog }: SubmitBtnArgs = {},
 ) => {
   if (newTasks) {
     checkTasksDontExistBackend(newTasks)
@@ -112,6 +116,10 @@ const clickSubmitBtn = (
     .should('not.be.disabled')
     .click()
     .then(($btn) => {
+      if (confirmDialog) {
+        cy.get(confirmDialog).should('be.visible')
+        cy.get(Selectors.ConfirmDialog.CONFIRM_BTN).click()
+      }
       newTasks && waitForCreate(newTasks)
       updatedTasks && waitForUpdate(updatedTasks)
       // this form should disapper after submit

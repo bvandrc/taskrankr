@@ -84,8 +84,6 @@ export const Selectors = {
   },
   SaveOpenSubtasksConfirmDialog: {
     DIALOG: testId('save-open-subtasks-confirm-dialog'),
-    CONFIRM_BTN: testId('confirm-btn'),
-    CANCEL_BTN: testId('cancel-btn'),
   },
   Toasts: {
     ERROR: testId('toast-danger'),

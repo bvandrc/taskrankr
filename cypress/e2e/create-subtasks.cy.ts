@@ -20,7 +20,7 @@ import {
 
 import { TaskStatus } from '~/shared/schema'
 
-const { TaskForm } = Selectors
+const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
 describe('Create Subtasks', () => {
   const rootTask = {
@@ -43,6 +43,16 @@ describe('Create Subtasks', () => {
   const subtask3 = {
     ...subtask,
     name: 'E2E Subtask 3',
+  } as const satisfies CreatedTask
+
+  const completedRootTask = {
+    ...rootTask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
+  const completedSubtask = {
+    ...subtask,
+    status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
   beforeEach(() => {
@@ -193,109 +203,74 @@ describe('Create Subtasks', () => {
 
     // TODO: test EDIT
   })
-})
 
-const { SaveOpenSubtasksConfirmDialog } = Selectors
-
-describe('Adding subtasks to a completed task', () => {
-  beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-  })
-
-  it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
-    const completedTask = {
-      ...DefaultTask,
-      name: 'E2E Completed Task - Open Subtask Test',
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
-
-    const openSubtask = {
-      ...DefaultTask,
-      name: 'E2E Open Subtask of Completed Task',
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
-
-    cy.log('Create a completed root task')
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(completedTask)
-    cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-    clickSubmitBtnCreate({ newTasks: [completedTask] })
-
-    cy.log('Navigate to completed page and open the edit form')
-    goToCompletedPage()
-    openTaskEditForm(completedTask)
-
-    cy.log('Add an open subtask')
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
-    getTaskForm(1).within(() => {
-      fillTaskForm(openSubtask)
-      clickSubmitBtnCreate()
-    })
-
-    cy.log('Click Save — dialog warns that the parent will be re-opened')
-    cy.get(TaskForm.SUBMIT_BTN).should('have.text', 'Save').click()
-    cy.get(SaveOpenSubtasksConfirmDialog.DIALOG).should('be.visible')
-    cy.get(SaveOpenSubtasksConfirmDialog.CONFIRM_BTN).click()
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
-
-    cy.log('Navigate home — parent is now open and subtask is visible')
-    cy.get(Selectors.MENU_BTN).click()
-    cy.get(Selectors.Menu.HOME).click()
-    cy.get(Selectors.Pages.HOME).should('be.visible')
-    expandAndCheckTree({
-      ...completedTask,
-      status: TaskStatus.OPEN,
-      subtasks: [openSubtask],
-    })
-  })
-
-  it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
-    const completedTask = {
-      ...DefaultTask,
-      name: 'E2E Completed Task - Completed Subtask Test',
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
-
-    const completedSubtask = {
-      ...DefaultTask,
-      name: 'E2E Completed Subtask of Completed Task',
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
-
-    cy.log('Create a completed root task')
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(completedTask)
-    cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-    clickSubmitBtnCreate({ newTasks: [completedTask] })
-
-    cy.log('Navigate to completed page and open the edit form')
-    goToCompletedPage()
-    openTaskEditForm(completedTask)
-
-    cy.log('Add a completed subtask')
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
-    getTaskForm(1).within(() => {
-      fillTaskForm(completedSubtask)
+  context('Adding subtasks to a completed task', () => {
+    it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      clickSubmitBtnCreate()
+      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
+
+      cy.log('Navigate to completed page and open the edit form')
+      goToCompletedPage()
+      openTaskEditForm(completedRootTask)
+
+      cy.log('Add an open subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        clickSubmitBtnCreate()
+      })
+
+      cy.log('Click Save — dialog warns that the parent will be re-opened')
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          updatedTasks: [rootTask],
+          newTasks: [subtask],
+          confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
+        })
+      })
+
+      cy.log('Navigate home — parent is now open and subtask is visible')
+      // TODO: refactor to check not on completed page anymore
+      cy.get(Selectors.MENU_BTN).click()
+      cy.get(Selectors.Menu.HOME).click()
+      cy.get(Selectors.Pages.HOME).should('be.visible')
+      expandAndCheckTree({
+        ...completedRootTask,
+        status: TaskStatus.OPEN,
+        subtasks: [subtask],
+      })
     })
 
-    cy.log('Click Save — no dialog should appear, form closes immediately')
-    cy.get(TaskForm.SUBMIT_BTN).should('have.text', 'Save').click()
-    cy.get(SaveOpenSubtasksConfirmDialog.DIALOG).should('not.exist')
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
+    it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
+      cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
 
-    cy.log(
-      'Completed page still shows parent task with its new completed subtask',
-    )
-    expandAndCheckTree({
-      ...completedTask,
-      subtasks: [completedSubtask],
+      cy.log('Navigate to completed page and open the edit form')
+      goToCompletedPage()
+      openTaskEditForm(completedRootTask)
+
+      cy.log('Add a completed subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(completedSubtask)
+        cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          updatedTasks: [completedRootTask],
+          newTasks: [completedSubtask],
+        })
+      })
+
+      cy.log(
+        'Completed page still shows parent task with its new completed subtask',
+      )
+      expandAndCheckTree({ ...completedRootTask, subtasks: [completedSubtask] })
     })
   })
 })

@@ -5,7 +5,10 @@ import {
   type CreatedTask,
   checkNumCalls,
 } from '@cypress/support/utils/intercepts'
-import { goToCompletedPage } from '@cypress/support/utils/navigation'
+import {
+  goToCompletedPage,
+  goToHomePage,
+} from '@cypress/support/utils/navigation'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
@@ -232,10 +235,9 @@ describe('Create Subtasks', () => {
       })
 
       cy.log('Navigate home — parent is now open and subtask is visible')
-      // TODO: refactor to check not on completed page anymore
-      cy.get(Selectors.MENU_BTN).click()
-      cy.get(Selectors.Menu.HOME).click()
-      cy.get(Selectors.Pages.HOME).should('be.visible')
+      cy.contains(rootTask.name).should('not.exist')
+      cy.contains(subtask.name).should('not.exist')
+      goToHomePage()
       expandAndCheckTree({
         ...completedRootTask,
         status: TaskStatus.OPEN,

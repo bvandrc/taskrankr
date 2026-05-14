@@ -34,13 +34,8 @@ import {
   clientKeyMap,
   withClientKeys,
 } from '@/lib/task-provider-utils'
-import {
-  getById,
-  getDirectSubtasks,
-  mapById,
-  removeIds,
-  updateItem,
-} from '@/lib/task-tree-utils'
+import { makeTaskService } from '@/lib/task-service-adapter'
+import { getById, mapById, removeIds, updateItem } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import {
   type SyncOperation,
@@ -361,22 +356,11 @@ export const TasksProvider = ({
     settingsRef.current = settings
   }, [settings])
 
-  // Stable `TaskMutationService` instance whose I/O adapter reads from `tasksRef` /
-  // `settingsRef` so it always sees the freshest in-memory state.
-  const service = useMemo(
-    () =>
-      new TaskMutationService({
-        getTask: (id) => getById(tasksRef.current, id) ?? null,
-        getDirectSubtasks: (parentId) =>
-          getDirectSubtasks(tasksRef.current, parentId),
-        getCurrentInProgressTask: (excludeId) =>
-          tasksRef.current.find(
-            (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
-          ) ?? null,
-        getSettings: () => settingsRef.current,
-      }),
-    [],
-  )
+  /**
+   * Stable `TaskMutationService` instance whose I/O adapter always sees the
+   * freshest in-memory state.
+   */
+  const service = useMemo(() => makeTaskService(tasksRef, settingsRef), [])
 
   /**
    * Applies the service's mutations atomically and eagerly syncs `tasksRef`

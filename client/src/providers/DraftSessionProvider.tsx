@@ -45,12 +45,8 @@ import type { EmptyObject } from 'type-fest'
 import { toast } from '@/hooks/useToast'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
-import {
-  collectDescendantIds,
-  getById,
-  getDirectSubtasks,
-  removeIds,
-} from '@/lib/task-tree-utils'
+import { makeTaskService } from '@/lib/task-service-adapter'
+import { collectDescendantIds, getById, removeIds } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import {
   type CreateTaskContent,
@@ -60,10 +56,7 @@ import {
 } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
 import { SubtaskSortMode, type Task, TaskStatus } from '~/shared/schema'
-import {
-  type MutationPatch,
-  TaskMutationService,
-} from '~/shared/service/task-mutation-service'
+import type { MutationPatch } from '~/shared/service/task-mutation-service'
 
 /**
  * Returns a new Map by applying `rewrite` to each entry:
@@ -240,17 +233,7 @@ export const DraftSessionProvider = ({
    * both during the dialog session. Real-task mutations are dropped — see `applyDraftMutations`.
    */
   const draftService = useMemo(
-    () =>
-      new TaskMutationService({
-        getTask: (id) => getById(tasksWithDraftsRef.current, id) ?? null,
-        getDirectSubtasks: (parentId) =>
-          getDirectSubtasks(tasksWithDraftsRef.current, parentId),
-        getCurrentInProgressTask: (excludeId) =>
-          tasksWithDraftsRef.current.find(
-            (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
-          ) ?? null,
-        getSettings: () => settingsRef.current,
-      }),
+    () => makeTaskService(tasksWithDraftsRef, settingsRef),
     [],
   )
 

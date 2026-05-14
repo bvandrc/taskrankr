@@ -264,12 +264,14 @@ export const ChangeStatusDialog = ({
             </SubtaskBlockedTooltip>
 
             {showTimeSpentInput && (
-              <TimeSpentInput
-                onBlur={handleTimeBlur}
-                timeSpentMs={timeSpent}
-                setTimeSpentMs={setTimeSpent}
-                disabled={timeInputDisabled}
-              />
+              <SubtaskBlockedTooltip blocked={timeInputDisabled}>
+                <TimeSpentInput
+                  onBlur={handleTimeBlur}
+                  timeSpentMs={timeSpent}
+                  setTimeSpentMs={setTimeSpent}
+                  disabled={timeInputDisabled}
+                />
+              </SubtaskBlockedTooltip>
             )}
 
             {needsTimeSpent && (

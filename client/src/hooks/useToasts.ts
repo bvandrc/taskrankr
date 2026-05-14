@@ -63,7 +63,6 @@ const addToRemoveQueue = (toastId: string) => {
 }
 
 const reducer = (state: State, action: ToastAction): State => {
-  // biome-ignore lint/style/useDefaultSwitchClause: is exhaustive for the type
   switch (action.type) {
     case ToastActionType.ADD:
       return {
@@ -115,6 +114,9 @@ const reducer = (state: State, action: ToastAction): State => {
         ...state,
         toasts: removeIds(state.toasts, [action.toastId]),
       }
+
+    default:
+      throw new Error(`Unknown action type: ${action satisfies never}`)
   }
 }
 

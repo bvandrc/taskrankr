@@ -43,7 +43,7 @@ type ToastAction =
   | { type: ToastActionType.DISMISS; toastId?: ToasterToast['id'] }
   | { type: ToastActionType.REMOVE; toastId?: ToasterToast['id'] }
 
-interface State {
+type State = {
   toasts: ToasterToast[]
 }
 

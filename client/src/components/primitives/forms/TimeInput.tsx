@@ -19,6 +19,7 @@ type TimeInputProps = {
   durationMs: number
   onDurationChange: (durationMs: number) => void
   onBlur?: () => void
+  disabled?: boolean
   className?: string
   'data-testid'?: string
 }
@@ -27,6 +28,7 @@ export const TimeInput = ({
   durationMs,
   onDurationChange,
   onBlur,
+  disabled,
   className = 'w-16 h-8 text-center text-sm',
   'data-testid': testId = 'time-input',
 }: TimeInputProps) => {
@@ -56,6 +58,7 @@ export const TimeInput = ({
           }}
           onFocus={handleFocus}
           onBlur={onBlur}
+          disabled={disabled}
           className={className}
           data-testid={`${testId}-hours`}
         />
@@ -74,6 +77,7 @@ export const TimeInput = ({
           }}
           onFocus={handleFocus}
           onBlur={onBlur}
+          disabled={disabled}
           className={className}
           data-testid={`${testId}-minutes`}
         />

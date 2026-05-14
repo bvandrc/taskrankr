@@ -553,8 +553,6 @@ export const TasksProvider = ({
       errorTitle: string,
     ): Promise<LocalTask> => {
       const result = await service.planUpdate(id, updates)
-      // biome-ignore lint/style/noNonNullAssertion: callers hold a valid id
-      const fallback = (): LocalTask => getById(tasksRef.current, id)!
 
       if (!result.ok) {
         toast({
@@ -562,7 +560,9 @@ export const TasksProvider = ({
           description: result.error.message,
           variant: 'destructive',
         })
-        return fallback()
+        // Throw (not return-fallback) so awaiting callers can keep dialogs
+        // open / abort follow-on work. Mirrors `createTask`.
+        throw new Error(result.error.message)
       }
 
       applyMutations(result.mutations)
@@ -573,11 +573,10 @@ export const TasksProvider = ({
       })
       enqueueCascadeOps(result.mutations, id)
 
-      const primaryPatch = result.mutations.find((m) => m.id === id)?.patch
-      const original = getById(tasksRef.current, id)
-      return original
-        ? ({ ...original, ...(primaryPatch ?? {}) } as LocalTask)
-        : fallback()
+      // `applyMutations` already wrote to `tasksRef`, so the looked-up task
+      // already reflects the primary patch.
+      // biome-ignore lint/style/noNonNullAssertion: planUpdate succeeded ⇒ id exists
+      return getById(tasksRef.current, id)!
     },
     [applyMutations, enqueue, enqueueCascadeOps, service],
   )

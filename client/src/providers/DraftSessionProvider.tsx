@@ -229,17 +229,12 @@ export const DraftSessionProvider = ({
     draftSubtaskOrderOverrides,
   ])
 
-  /**
-   * Ref so the draft service adapter (created once) can always read the
-   * freshest merged view without re-instantiating.
-   */
   const tasksWithDraftsRef = useRef(tasksWithDrafts)
   tasksWithDraftsRef.current = tasksWithDrafts
 
   /**
-   * Draft-scoped `TaskService`: reads from the merged real+draft view so its
-   * CRUD guards and intra-draft cascades work correctly during the dialog session.
-   * Mutations emitted on real tasks are dropped — see `applyDraftMutations`.
+   * Reads from the merged real+draft view so guards and cascades work across
+   * both during the dialog session. Real-task mutations are dropped — see `applyDraftMutations`.
    */
   const draftService = useMemo(
     () =>
@@ -257,13 +252,9 @@ export const DraftSessionProvider = ({
   )
 
   /**
-   * Writes the planned mutations to draft state. Returns `false` if the plan
-   * touches any real task — applying just the draft-side patches would leave
-   * a partial cascade (e.g. draft child marked completed but its real
-   * inheritCompletionState ancestor not auto-completed). Callers fall back to
-   * writing only the user-intent patch in that case. Real-task cascades
-   * cannot leak out of an uncommitted dialog session by design;
-   * full-fidelity replay-on-commit is an explicit follow-up.
+   * Applies service mutations to draft state. Returns `false` if any patch targets
+   * a real task — a partial cascade is worse than none, so callers fall back to the
+   * raw user-intent patch instead.
    */
   const applyDraftMutations = useCallback(
     (mutations: MutationPatch[]): boolean => {
@@ -423,13 +414,7 @@ export const DraftSessionProvider = ({
   // remain referentially stable across draft churn.
   // ---------------------------------------------------------------------------
 
-  /**
-   * Validates `updates` for a draft target via the draft-scoped TaskService,
-   * then writes the resulting plan to draft state. On guard failure (e.g.
-   * INCOMPLETE_SUBTASKS, TIME_SPENT_REQUIRED), surfaces a toast and throws so
-   * awaiting callers can keep dialogs open. Mirrors the real `runUpdate` in
-   * `TasksProvider`.
-   */
+  /** Draft-layer equivalent of `runUpdate` in `TasksProvider`: toasts + throws on guard failure. */
   const runDraftUpdate = useCallback(
     async (
       id: number,
@@ -445,11 +430,7 @@ export const DraftSessionProvider = ({
         })
         throw new Error(result.error.message)
       }
-      // Apply the planned mutations atomically; fall back to writing just the
-      // user-intent patch when the plan would partially cascade onto real
-      // tasks (see `applyDraftMutations`). The guard check above has already
-      // run, so the fallback is safe — only cascades are forfeited, not
-      // validation.
+      // Fall back to raw patch if the plan touches real tasks (see `applyDraftMutations`).
       const applied = applyDraftMutations(result.mutations)
       if (!applied) updateDraftTask(id, updates)
       return getById(draftTasksRef.current, id) ?? ({ ...updates } as LocalTask)

@@ -37,13 +37,7 @@ const getUserId = (req: { user?: UserSession }): string => {
   return userId
 }
 
-/**
- * Each route declares only the subset of error statuses it can return; these
- * helpers narrow the shared `AppError` to the ts-rest response shape allowed
- * by that route. An unexpected code throws — service contracts diverging
- * from route contracts is a programming error, not a runtime one.
- */
-
+/** Narrows a service `AppError` to the ts-rest response shape declared by a route. Throws on unexpected codes. */
 const makeErrorHandler =
   <K extends keyof typeof ERRORS>(label: string, allowed: K[]) =>
   (e: AppError): (typeof ERRORS)[K] => {

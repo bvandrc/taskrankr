@@ -51,9 +51,6 @@ const autoCompleteParentPatch = (
   }
 }
 
-/**
- * True if the timeSpent requirement is met, if required by settings.
- */
 const isTimeSpentSatisfied = (
   timeSpentMs: number,
   settings: Pick<UserSettings, 'fieldConfig'>,
@@ -129,13 +126,9 @@ export class TaskService {
   ) {}
 
   /**
-   * Walks the entire task list until a fixed point, auto-completing
-   * `inheritCompletionState` parents when all their children are completed and
-   * auto-reverting them when any child is not. Returns the corrected list and
-   * the status changes so callers can enqueue sync operations.
-   *
-   * This is a pure, synchronous, snapshot-based operation — it needs no I/O
-   * adapter and is therefore a static method.
+   * Fixes up `inheritCompletionState` parents to a fixed point — auto-completing
+   * when all children are done, reverting when any child is not. Returns the
+   * status corrections so callers can enqueue sync ops.
    */
   static reconcileInheritCompletionState<T extends Task>(
     tasks: T[],
@@ -186,10 +179,7 @@ export class TaskService {
     return { ok: true, mutations: buffer.toArray() }
   }
 
-  /**
-   * Recursive core: writes patches into the shared `buffer` so cascade walks
-   * (ancestor + descendant) all observe one coherent in-flight state.
-   */
+  /** Recursive core used by `planUpdate`; shares a buffer so all cascade steps observe one coherent in-flight state. */
   private async planUpdateInto(
     id: number,
     updates: Partial<Task>,
@@ -318,12 +308,8 @@ export class TaskService {
   }
 
   /**
-   * Validates and computes side-effects for a new task. Does not include
-   * the primary insert (the caller already has the data); only returns
-   * cascade patches on existing tasks — parent revert when a non-completed
-   * new task joins an auto-completed parent, IN_PROGRESS demotion when the
-   * new task starts in-progress, and parent auto-complete walk when the new
-   * task arrives already completed.
+   * Returns cascade patches for a new task: IN_PROGRESS demotion, parent revert,
+   * or parent auto-complete walk. Does not include the primary insert.
    */
   async planCreate(data: CreatePayload): Promise<ServicePlan> {
     if (data.status === TaskStatus.COMPLETED) {
@@ -337,8 +323,7 @@ export class TaskService {
     const buffer = new MutationBuffer()
 
     if (data.status === TaskStatus.IN_PROGRESS) {
-      // The new task has no real id yet — pass 0 so no existing task is
-      // excluded (no DB task can have id 0).
+      // Pass 0 as excludeId — no DB task has id 0, and the new task has no id yet.
       const otherInProgress = await this.io.getCurrentInProgressTask(0)
       if (otherInProgress) {
         buffer.add(otherInProgress.id, {
@@ -359,9 +344,8 @@ export class TaskService {
           buffer.add(data.parentId, REVERT_COMPLETION_PATCH)
         }
       } else {
-        // New task arrives completed: walk up to auto-complete ancestors. The
-        // new task is not in the I/O layer yet, so no justCompletedChildId is
-        // passed — getDirectSubtasks won't include it, which is equivalent.
+        // No justCompletedChildId: the new task isn't in the I/O layer yet,
+        // so getDirectSubtasks won't include it — equivalent to completed.
         await this.walkAutoCompleteParent(data.parentId, buffer)
       }
     }
@@ -402,12 +386,6 @@ export class TaskService {
     return { ok: true, mutations: buffer.toArray(), deletedIds }
   }
 
-  /**
-   * `justCompletedChildId` is optional: when called from `planCreate`, the new
-   * task doesn't exist in the I/O layer yet so there is no id to pass — the
-   * sibling list returned by `getDirectSubtasks` simply won't include it, which
-   * is equivalent to treating it as already completed.
-   */
   private async walkAutoCompleteParent(
     parentId: number,
     buffer: MutationBuffer,
@@ -453,11 +431,7 @@ export class TaskService {
     }
   }
 
-  /**
-   * BFS over the subtree, then reversed so the result is leaves-first. Callers
-   * that delete by iterating this list will always remove children before their
-   * parent, avoiding dangling-reference windows in the DB.
-   */
+  /** Leaves-first so callers can delete by iterating without dangling-parent windows. */
   private async collectDescendants(rootId: number): Promise<number[]> {
     const result: number[] = [rootId]
     const queue: number[] = [rootId]

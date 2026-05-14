@@ -27,29 +27,6 @@ import {
 import { SubtaskBlockedTooltip } from './SubtaskBlockedTooltip'
 import { VisibilityToggleButton } from './VisibilityToggleButton'
 
-const TimeSpentInput = ({
-  onBlur,
-  timeSpentMs,
-  setTimeSpentMs,
-  disabled,
-}: {
-  onBlur: () => void
-  timeSpentMs: number
-  setTimeSpentMs: (ms: number) => void
-  disabled?: boolean
-}) => (
-  <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-    <span className="text-xs text-muted-foreground">Time Spent</span>
-    <TimeInput
-      durationMs={timeSpentMs}
-      onDurationChange={setTimeSpentMs}
-      onBlur={onBlur}
-      disabled={disabled}
-      className="w-16 h-8 text-center text-sm bg-secondary/30"
-    />
-  </div>
-)
-
 const DeleteButton = ({
   taskName,
   onConfirm,
@@ -93,38 +70,6 @@ interface ChangeStatusButtonProps {
   'data-testid': string
 }
 
-const CompletedCheckbox = ({
-  isCompleted,
-  disabled,
-  hasIncompleteSubtasks,
-  onSetStatus,
-}: {
-  isCompleted: boolean
-  disabled: boolean
-  hasIncompleteSubtasks?: boolean
-  onSetStatus: (status: TaskStatus) => void
-}) => (
-  <SubtaskBlockedTooltip blocked={!isCompleted && !!hasIncompleteSubtasks}>
-    <AlertDialogAction
-      onClick={() =>
-        onSetStatus(isCompleted ? TaskStatus.OPEN : TaskStatus.COMPLETED)
-      }
-      disabled={disabled}
-      className={cn(
-        'w-full h-11 text-base font-semibold',
-        isCompleted
-          ? 'bg-primary hover:bg-primary/90 text-white'
-          : disabled
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-emerald-600 hover:bg-emerald-700 text-white',
-      )}
-      data-testid="button-complete-task"
-    >
-      {isCompleted ? 'Restore Task to Open' : 'Complete Task'}
-    </AlertDialogAction>
-  </SubtaskBlockedTooltip>
-)
-
 const ChangeStatusButton = ({
   icon: Icon,
   label,
@@ -159,6 +104,63 @@ interface ChangeStatusDialogProps {
   onDelete: () => void
   onToggleHidden?: () => void
 }
+
+const TimeSpentInput = ({
+  onBlur,
+  timeSpentMs,
+  setTimeSpentMs,
+  disabled = false,
+}: {
+  onBlur: () => void
+  timeSpentMs: number
+  setTimeSpentMs: (ms: number) => void
+  disabled?: boolean
+}) => (
+  <SubtaskBlockedTooltip blocked={disabled}>
+    <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+      <span className="text-xs text-muted-foreground">Time Spent</span>
+      <TimeInput
+        durationMs={timeSpentMs}
+        onDurationChange={setTimeSpentMs}
+        onBlur={onBlur}
+        disabled={disabled}
+        className="w-16 h-8 text-center text-sm bg-secondary/30"
+      />
+    </div>
+  </SubtaskBlockedTooltip>
+)
+
+const CompletedCheckbox = ({
+  isCompleted,
+  disabled,
+  hasIncompleteSubtasks,
+  onSetStatus,
+}: {
+  isCompleted: boolean
+  disabled: boolean
+  hasIncompleteSubtasks?: boolean
+  onSetStatus: (status: TaskStatus) => void
+}) => (
+  <SubtaskBlockedTooltip blocked={!isCompleted && !!hasIncompleteSubtasks}>
+    <AlertDialogAction
+      onClick={() =>
+        onSetStatus(isCompleted ? TaskStatus.OPEN : TaskStatus.COMPLETED)
+      }
+      disabled={disabled}
+      className={cn(
+        'w-full h-11 text-base font-semibold',
+        isCompleted
+          ? 'bg-primary hover:bg-primary/90 text-white'
+          : disabled
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-emerald-600 hover:bg-emerald-700 text-white',
+      )}
+      data-testid="button-complete-task"
+    >
+      {isCompleted ? 'Restore Task to Open' : 'Complete Task'}
+    </AlertDialogAction>
+  </SubtaskBlockedTooltip>
+)
 
 export const ChangeStatusDialog = ({
   open,
@@ -279,14 +281,12 @@ export const ChangeStatusDialog = ({
             />
 
             {showTimeSpentInput && (
-              <SubtaskBlockedTooltip blocked={timeInputDisabled}>
-                <TimeSpentInput
-                  onBlur={handleTimeBlur}
-                  timeSpentMs={timeSpent}
-                  setTimeSpentMs={setTimeSpent}
-                  disabled={timeInputDisabled}
-                />
-              </SubtaskBlockedTooltip>
+              <TimeSpentInput
+                onBlur={handleTimeBlur}
+                timeSpentMs={timeSpent}
+                setTimeSpentMs={setTimeSpent}
+                disabled={timeInputDisabled}
+              />
             )}
 
             {needsTimeSpent && (

@@ -409,8 +409,9 @@ export const DraftSessionProvider = ({
     ): Promise<LocalTask> => {
       const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
+        const taskName = getById(draftTasksRef.current, id)?.name
         toast({
-          title: errorTitle,
+          title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
           description: result.error.message,
           variant: 'destructive',
         })

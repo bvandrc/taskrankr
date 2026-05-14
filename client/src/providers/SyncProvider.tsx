@@ -16,10 +16,11 @@ import {
 
 import { toast, toastApiError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
+import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
 import { useSettings } from './SettingsProvider'
 import { SyncOperationType, useTaskSyncQueue } from './TaskSyncQueueProvider'
-import { useTaskMutations } from './TasksProvider'
+import { useTaskMutations, useTasks } from './TasksProvider'
 
 interface SyncContextValue {
   isSyncing: boolean
@@ -44,6 +45,10 @@ export const SyncProvider = ({
   const [lastSyncError, setLastSyncError] = useState<string | null>(null)
   const isSyncingRef = useRef(false)
   const hasLoadedServerData = useRef(false)
+
+  const { tasks } = useTasks()
+  const tasksRef = useRef(tasks)
+  tasksRef.current = tasks
 
   const {
     isInitialized: tasksInitialized,
@@ -236,7 +241,22 @@ export const SyncProvider = ({
         if (success) {
           successCount++
         } else {
-          toastApiError(errorBody, `Failed to sync: ${op.type}`)
+          const taskName = (() => {
+            switch (op.type) {
+              case SyncOperationType.CREATE_TASK:
+                return op.data.name
+              case SyncOperationType.UPDATE_TASK:
+                return getById(tasksRef.current, resolveId(op.id))?.name
+              case SyncOperationType.DELETE_TASK:
+                return getById(tasksRef.current, resolveId(op.id))?.name
+              case SyncOperationType.REORDER_SUBTASKS:
+                return getById(tasksRef.current, resolveId(op.parentId))?.name
+              default:
+                return undefined
+            }
+          })()
+          const title = taskName ? `Sync error: "${taskName}"` : 'Sync error'
+          toastApiError(errorBody, title)
           setLastSyncError(`Failed to sync: ${op.type}`)
           break
         }

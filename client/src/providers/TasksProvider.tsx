@@ -426,7 +426,7 @@ export const TasksProvider = ({
 
       if (!result.ok) {
         toast({
-          title: 'Cannot create task',
+          title: `Cannot create "${data.name}"`,
           description: result.error.message,
           variant: 'destructive',
         })
@@ -491,8 +491,9 @@ export const TasksProvider = ({
       const result = await service.resolveUpdate(id, updates)
 
       if (!result.ok) {
+        const taskName = getById(tasksRef.current, id)?.name
         toast({
-          title: errorTitle,
+          title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
           description: result.error.message,
           variant: 'destructive',
         })

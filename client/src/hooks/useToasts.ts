@@ -163,16 +163,19 @@ export const toast = ({ ...props }: Toast) => {
   }
 }
 
-/** Reads `body.message` from an API error response and fires a destructive toast. */
-export function toastApiError(body: unknown, fallback: string) {
-  const message =
+/**
+ * Fires a destructive toast for an API error response.
+ * Uses `body.message` as the description when present, otherwise `fallback`.
+ */
+export function toastApiError(body: unknown, title: string, fallback?: string) {
+  const description =
     body !== null &&
     typeof body === 'object' &&
     'message' in body &&
     typeof (body as { message: unknown }).message === 'string'
       ? (body as { message: string }).message
       : fallback
-  toast({ title: 'Error', description: message, variant: 'destructive' })
+  toast({ title, description, variant: 'destructive' })
 }
 
 export const useToasts = () => {

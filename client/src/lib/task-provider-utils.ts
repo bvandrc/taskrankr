@@ -8,8 +8,6 @@ import type { z } from 'zod'
 import type { LocalTask } from '@/types'
 import { allRankFieldsNull, type Task, taskSchema } from '~/shared/schema'
 
-export { statusToStatusPatch } from '~/shared/utils/task-utils'
-
 /**
  * Parses through `taskSchema` after applying the caller-supplied id and status
  * on top of `allRankFieldsNull` defaults. Assigns a fresh `clientKey` if one

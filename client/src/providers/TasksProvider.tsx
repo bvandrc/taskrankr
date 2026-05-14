@@ -32,7 +32,6 @@ import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
 import {
   buildLocalTask,
   clientKeyMap,
-  statusToStatusPatch,
   withClientKeys,
 } from '@/lib/task-provider-utils'
 import {
@@ -43,6 +42,7 @@ import {
   getHasIncompleteSubtasks,
   mapById,
   removeIds,
+  statusToStatusPatch,
   updateItem,
 } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
@@ -52,6 +52,7 @@ import {
   useTaskSyncQueue,
 } from '@/providers/TaskSyncQueueProvider'
 import type { LocalTask } from '@/types'
+import { ERRORS } from '~/shared/constants'
 import {
   type CreateTask,
   SubtaskSortMode,
@@ -596,7 +597,7 @@ export const TasksProvider = ({
         if (hasIncompleteSubtasks) {
           toast({
             title: 'Cannot complete task',
-            description: 'All subtasks must be completed first.',
+            description: ERRORS.INCOMPLETE_SUBTASKS.message,
             variant: 'destructive',
           })
           const existing = getById(tasksRef.current, id)

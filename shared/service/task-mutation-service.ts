@@ -298,7 +298,16 @@ export class TaskMutationService {
     }
 
     if (newStatus === TaskStatus.COMPLETED && current.parentId !== null) {
+      const parentForLog = await this.io.getTask(current.parentId)
+      console.log('[resolveUpdate] completing task, parent lookup:', {
+        taskId: id,
+        parentId: current.parentId,
+        parentFound: !!parentForLog,
+        parentInheritCompletionState: parentForLog?.inheritCompletionState,
+        parentStatus: parentForLog?.status,
+      })
       await this.walkAutoCompleteParent(current.parentId, buffer, id)
+      console.log('[resolveUpdate] after walkAutoCompleteParent, buffer:', buffer.toArray().map(m => ({ id: m.id, status: (m.patch as {status?: string}).status })))
     }
 
     if (

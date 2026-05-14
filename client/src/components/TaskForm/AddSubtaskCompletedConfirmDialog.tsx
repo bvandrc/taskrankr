@@ -21,7 +21,7 @@ export const AddSubtaskCompletedConfirmDialog = ({
     title="Task is already completed"
     description="Adding a subtask will mark this task as incomplete. This won't take effect until you save."
     confirmLabel="Add Subtask"
-    confirmBtnClassName="bg-primary hover:bg-primary/90 text-white"
+    confirmBtnVariant="default"
     onConfirm={onConfirm}
     data-testid="add-subtask-completed-confirm-dialog"
   />

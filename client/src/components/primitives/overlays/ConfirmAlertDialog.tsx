@@ -7,8 +7,10 @@
  */
 
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
+import type { VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
+import { buttonVariants } from '../Button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +34,11 @@ export interface ConfirmAlertDialogProps {
   cancelLabel?: string
   confirmLabel: string
   onConfirm: () => void
-  confirmBtnClassName?: string
+  /**
+   * Maps to the Button component's variant system. Defaults to `'default'`
+   * (primary colour). Use `'destructive'` for irreversible actions.
+   */
+  confirmBtnVariant?: VariantProps<typeof buttonVariants>['variant']
   'data-testid'?: string
 }
 
@@ -47,7 +53,7 @@ export const ConfirmAlertDialog = ({
   cancelLabel = 'Cancel',
   confirmLabel,
   onConfirm,
-  confirmBtnClassName,
+  confirmBtnVariant = 'default',
   'data-testid': testId,
 }: ConfirmAlertDialogProps) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -76,7 +82,7 @@ export const ConfirmAlertDialog = ({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={confirmBtnClassName}
+            className={buttonVariants({ variant: confirmBtnVariant })}
             data-testid="confirm-btn"
           >
             {confirmLabel}

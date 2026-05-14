@@ -42,13 +42,16 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
+import { toast } from '@/hooks/useToast'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
 import {
   collectDescendantIds,
+  getById,
+  getDirectSubtasks,
   removeIds,
-  statusToStatusPatch,
 } from '@/lib/task-tree-utils'
+import { useSettings } from '@/providers/SettingsProvider'
 import {
   type CreateTaskContent,
   type UpdateTaskContent,
@@ -56,7 +59,12 @@ import {
   useTasks,
 } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
-import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
+import { SubtaskSortMode, type Task, TaskStatus } from '~/shared/schema'
+import {
+  type MutationPatch,
+  TaskService,
+  type TaskServiceIO,
+} from '~/shared/service/task-service'
 
 /**
  * Returns a new Map by applying `rewrite` to each entry:
@@ -121,6 +129,7 @@ export const DraftSessionProvider = ({
   children,
 }: React.PropsWithChildren<EmptyObject>) => {
   const { tasks } = useTasks()
+  const { settings } = useSettings()
   const {
     createTask,
     updateTask: realUpdateTask,
@@ -133,6 +142,8 @@ export const DraftSessionProvider = ({
   // across draft churn. Mirrors `TasksProvider`'s tasksRef pattern.
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   const [draftTasks, setDraftTasks] = useState<LocalTask[]>([])
   // realTaskId -> draft parent id for the duration of the session.
@@ -221,6 +232,62 @@ export const DraftSessionProvider = ({
     draftAssignedParents,
     draftSubtaskOrderOverrides,
   ])
+
+  // Ref so the draft service adapter (created once) can always read the
+  // freshest merged view without re-instantiating.
+  const tasksWithDraftsRef = useRef(tasksWithDrafts)
+  tasksWithDraftsRef.current = tasksWithDrafts
+
+  // Draft-scoped `TaskService`: reads from the merged real+draft view so its
+  // guards (INCOMPLETE_SUBTASKS, TIME_SPENT_REQUIRED) and intra-draft
+  // cascades (auto-complete walk among drafts, IN_PROGRESS demotion of
+  // sibling drafts) work correctly during the dialog session. Mutations
+  // emitted on real tasks are dropped — see `applyDraftMutations`.
+  const draftService = useMemo(() => {
+    const io: TaskServiceIO = {
+      getTask: (id) => getById(tasksWithDraftsRef.current, id) ?? null,
+      getDirectSubtasks: (parentId) =>
+        getDirectSubtasks(tasksWithDraftsRef.current, parentId),
+      getCurrentInProgressTask: (excludeId) =>
+        tasksWithDraftsRef.current.find(
+          (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
+        ) ?? null,
+      getSettings: () => settingsRef.current,
+    }
+    return new TaskService(io)
+  }, [])
+
+  /**
+   * Writes the planned mutations to draft state. Returns `false` if the plan
+   * touches any real task — applying just the draft-side patches would leave
+   * a partial cascade (e.g. draft child marked completed but its real
+   * inheritCompletionState ancestor not auto-completed). Callers fall back to
+   * writing only the user-intent patch in that case. Real-task cascades
+   * cannot leak out of an uncommitted dialog session by design;
+   * full-fidelity replay-on-commit is an explicit follow-up.
+   */
+  const applyDraftMutations = useCallback(
+    (mutations: MutationPatch[]): boolean => {
+      const draftIds = draftTaskIdsRef.current
+      const draftPatches = new Map<number, Partial<Task>>()
+      for (const m of mutations) {
+        if (!draftIds.has(m.id)) return false
+        draftPatches.set(m.id, m.patch)
+      }
+      if (draftPatches.size === 0) return true
+      setDraftTasks((prev) =>
+        prev.map(
+          (t): LocalTask =>
+            draftPatches.has(t.id)
+              ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
+                { ...t, ...draftPatches.get(t.id)! }
+              : t,
+        ),
+      )
+      return true
+    },
+    [],
+  )
 
   // ---------------------------------------------------------------------------
   // Draft-layer primitives. All callbacks below have empty / stable-only deps
@@ -357,13 +424,47 @@ export const DraftSessionProvider = ({
   // remain referentially stable across draft churn.
   // ---------------------------------------------------------------------------
 
+  /**
+   * Validates `updates` for a draft target via the draft-scoped TaskService,
+   * then writes the resulting plan to draft state. On guard failure (e.g.
+   * INCOMPLETE_SUBTASKS, TIME_SPENT_REQUIRED), surfaces a toast and throws so
+   * awaiting callers can keep dialogs open. Mirrors the real `runUpdate` in
+   * `TasksProvider`.
+   */
+  const runDraftUpdate = useCallback(
+    async (
+      id: number,
+      updates: UpdateTaskContent,
+      errorTitle: string,
+    ): Promise<LocalTask> => {
+      const result = await draftService.planUpdate(id, updates)
+      if (!result.ok) {
+        toast({
+          title: errorTitle,
+          description: result.error.message,
+          variant: 'destructive',
+        })
+        throw new Error(result.error.message)
+      }
+      // Apply the planned mutations atomically; fall back to writing just the
+      // user-intent patch when the plan would partially cascade onto real
+      // tasks (see `applyDraftMutations`). The guard check above has already
+      // run, so the fallback is safe — only cascades are forfeited, not
+      // validation.
+      const applied = applyDraftMutations(result.mutations)
+      if (!applied) updateDraftTask(id, updates)
+      return getById(draftTasksRef.current, id) ?? ({ ...updates } as LocalTask)
+    },
+    [draftService, applyDraftMutations, updateDraftTask],
+  )
+
   const updateTask = useCallback(
     (id: number, updates: UpdateTaskContent): Promise<LocalTask> => {
       if (isDraftIdStable(id))
-        return Promise.resolve(updateDraftTask(id, updates))
+        return runDraftUpdate(id, updates, 'Cannot update task')
       return realUpdateTask(id, updates)
     },
-    [isDraftIdStable, updateDraftTask, realUpdateTask],
+    [isDraftIdStable, runDraftUpdate, realUpdateTask],
   )
 
   const deleteTask = useCallback(
@@ -435,12 +536,11 @@ export const DraftSessionProvider = ({
 
   const setTaskStatus = useCallback(
     (id: number, status: TaskStatus): Promise<LocalTask> => {
-      if (isDraftIdStable(id)) {
-        return Promise.resolve(updateDraftTask(id, statusToStatusPatch(status)))
-      }
+      if (isDraftIdStable(id))
+        return runDraftUpdate(id, { status }, 'Cannot complete task')
       return realSetTaskStatus(id, status)
     },
-    [isDraftIdStable, updateDraftTask, realSetTaskStatus],
+    [isDraftIdStable, runDraftUpdate, realSetTaskStatus],
   )
 
   // ---------------------------------------------------------------------------

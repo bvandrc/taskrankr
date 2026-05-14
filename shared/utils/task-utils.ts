@@ -152,3 +152,11 @@ export const autoCompleteParentPatch = (
     inProgressStartedAt: null,
   } as const satisfies Partial<Task>
 }
+
+/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
+export const accumulatedTimeSpent = (
+  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): number =>
+  task.timeSpent +
+  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)

@@ -18,6 +18,7 @@ import { ERRORS } from '../errors'
 import type { InsertTask, Task, UserSettings } from '../schema'
 import { TaskStatus } from '../schema'
 import {
+  accumulatedTimeSpent,
   autoCompleteParentPatch,
   getHasIncomplete,
   REVERT_COMPLETION_PATCH,
@@ -33,14 +34,6 @@ const isTimeSpentSatisfied = (
   timeSpentMs: number,
   settings: Pick<UserSettings, 'fieldConfig'>,
 ): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
-
-/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
-const accumulatedTimeSpent = (
-  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-): number =>
-  task.timeSpent +
-  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
 
 export interface TaskServiceIO {
   getTask(id: number): MaybePromise<Task | null | undefined>

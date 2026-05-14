@@ -410,10 +410,10 @@ export const DraftSessionProvider = ({
       const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
         const taskName = getById(draftTasksRef.current, id)?.name
-        toastApiError(
-          result.error,
-          taskName ? `${errorTitle} "${taskName}"` : errorTitle,
-        )
+        toastApiError({
+          body: result.error,
+          title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
+        })
         throw new Error(result.error.message)
       }
       // Fall back to raw patch if the plan touches real tasks (see `applyDraftMutations`).

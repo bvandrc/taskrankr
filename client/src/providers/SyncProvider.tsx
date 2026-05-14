@@ -256,7 +256,7 @@ export const SyncProvider = ({
             }
           })()
           const title = taskName ? `Sync error: "${taskName}"` : 'Sync error'
-          toastApiError(errorBody, title)
+          toastApiError({ body: errorBody, title })
           setLastSyncError(`Failed to sync: ${op.type}`)
           break
         }
@@ -282,7 +282,10 @@ export const SyncProvider = ({
         if (result.status === 200) {
           acknowledgeSettingsSync(settingsSnapshot)
         } else {
-          toastApiError(result.body, 'Failed to sync: settings')
+          toastApiError({
+            body: result.body,
+            title: 'Failed to sync: settings',
+          })
           setLastSyncError('Failed to sync: settings')
         }
       }

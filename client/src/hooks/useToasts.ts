@@ -167,7 +167,15 @@ export const toast = ({ ...props }: Toast) => {
  * Fires a destructive toast for an API error response.
  * Uses `body.message` as the description when present, otherwise `fallback`.
  */
-export function toastApiError(body: unknown, title: string, fallback?: string) {
+export function toastApiError({
+  body,
+  title,
+  fallback,
+}: {
+  body: unknown
+  title: string
+  fallback?: string
+}) {
   const description =
     body !== null &&
     typeof body === 'object' &&

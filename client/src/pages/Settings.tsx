@@ -263,7 +263,7 @@ const ImportButton = () => {
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
-        toastApiError(result.body, 'Failed to import tasks')
+        toastApiError({ body: result.body, title: 'Failed to import tasks' })
         return
       }
 

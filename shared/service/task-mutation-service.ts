@@ -128,14 +128,9 @@ export class TaskMutationService {
    * when all children are done, reverting when any child is not. Returns the
    * status corrections so callers can enqueue sync ops.
    */
-  static reconcileInheritCompletionState<T extends Task>(
-    tasks: T[],
-  ): {
-    tasks: T[]
-    corrections: { id: number; status: TaskStatus }[]
-  } {
+  static reconcileInheritCompletionState<T extends Task>(tasks: T[]) {
     const corrections: { id: number; status: TaskStatus }[] = []
-    let updated = tasks
+    let updated: T[] = tasks
     let changed = true
 
     while (changed) {

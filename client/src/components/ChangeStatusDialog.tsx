@@ -27,29 +27,6 @@ import {
 import { SubtaskBlockedTooltip } from './SubtaskBlockedTooltip'
 import { VisibilityToggleButton } from './VisibilityToggleButton'
 
-const TimeSpentInput = ({
-  onBlur,
-  timeSpentMs,
-  setTimeSpentMs,
-  disabled,
-}: {
-  onBlur: () => void
-  timeSpentMs: number
-  setTimeSpentMs: (ms: number) => void
-  disabled?: boolean
-}) => (
-  <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-    <span className="text-xs text-muted-foreground">Time Spent</span>
-    <TimeInput
-      durationMs={timeSpentMs}
-      onDurationChange={setTimeSpentMs}
-      onBlur={onBlur}
-      disabled={disabled}
-      className="w-16 h-8 text-center text-sm bg-secondary/30"
-    />
-  </div>
-)
-
 const DeleteButton = ({
   taskName,
   onConfirm,
@@ -239,6 +216,7 @@ export const ChangeStatusDialog = ({
               </>
             )}
 
+            {/** Complete/ Restore to Open button */}
             <SubtaskBlockedTooltip
               blocked={!isCompleted && !!hasIncompleteSubtasks}
             >
@@ -263,14 +241,26 @@ export const ChangeStatusDialog = ({
               </AlertDialogAction>
             </SubtaskBlockedTooltip>
 
+            {/** Time Spent input */}
             {showTimeSpentInput && (
               <SubtaskBlockedTooltip blocked={timeInputDisabled}>
-                <TimeSpentInput
-                  onBlur={handleTimeBlur}
-                  timeSpentMs={timeSpent}
-                  setTimeSpentMs={setTimeSpent}
-                  disabled={timeInputDisabled}
-                />
+                <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+                  <span className="text-xs text-muted-foreground">
+                    Time Spent
+                  </span>
+                  <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+                    <span className="text-xs text-muted-foreground">
+                      Time Spent
+                    </span>
+                    <TimeInput
+                      durationMs={timeSpentMs}
+                      onDurationChange={setTimeSpentMs}
+                      onBlur={onBlur}
+                      disabled={disabled}
+                      className="w-16 h-8 text-center text-sm bg-secondary/30"
+                    />
+                  </div>
+                </div>
               </SubtaskBlockedTooltip>
             )}
 

@@ -105,31 +105,6 @@ interface ChangeStatusDialogProps {
   onToggleHidden?: () => void
 }
 
-const TimeSpentInput = ({
-  onBlur,
-  timeSpentMs,
-  setTimeSpentMs,
-  disabled = false,
-}: {
-  onBlur: () => void
-  timeSpentMs: number
-  setTimeSpentMs: (ms: number) => void
-  disabled?: boolean
-}) => (
-  <SubtaskBlockedTooltip blocked={disabled}>
-    <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-      <span className="text-xs text-muted-foreground">Time Spent</span>
-      <TimeInput
-        durationMs={timeSpentMs}
-        onDurationChange={setTimeSpentMs}
-        onBlur={onBlur}
-        disabled={disabled}
-        className="w-16 h-8 text-center text-sm bg-secondary/30"
-      />
-    </div>
-  </SubtaskBlockedTooltip>
-)
-
 export const ChangeStatusDialog = ({
   open,
   onOpenChange,
@@ -266,13 +241,22 @@ export const ChangeStatusDialog = ({
               </AlertDialogAction>
             </SubtaskBlockedTooltip>
 
+            {/** Time Spent input */}
             {showTimeSpentInput && (
-              <TimeSpentInput
-                onBlur={handleTimeBlur}
-                timeSpentMs={timeSpent}
-                setTimeSpentMs={setTimeSpent}
-                disabled={timeInputDisabled}
-              />
+              <SubtaskBlockedTooltip blocked={timeInputDisabled}>
+                <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+                  <span className="text-xs text-muted-foreground">
+                    Time Spent
+                  </span>
+                  <TimeInput
+                    durationMs={timeSpent}
+                    onDurationChange={setTimeSpent}
+                    onBlur={handleTimeBlur}
+                    disabled={timeInputDisabled}
+                    className="w-16 h-8 text-center text-sm bg-secondary/30"
+                  />
+                </div>
+              </SubtaskBlockedTooltip>
             )}
 
             {needsTimeSpent && (

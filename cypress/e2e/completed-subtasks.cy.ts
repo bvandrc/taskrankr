@@ -4,7 +4,6 @@ import { checkTasksExistBackend, isLoggedIn } from '@cypress/support/utils'
 import {
   type CreatedTask,
   checkNumCalls,
-  waitForUpdate,
 } from '@cypress/support/utils/intercepts'
 import { goToCompletedPage } from '@cypress/support/utils/navigation'
 import {
@@ -171,10 +170,10 @@ describe('Completed Subtasks', () => {
 
       cy.log('Step 2: Complete subtask — parent auto-completes')
       expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
-      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
+      changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
+        sideEffects: [completedRootTask], // Parent auto-completes as the last subtask is marked done
+      })
 
-      // Parent auto-completes as the last subtask is marked done
-      waitForUpdate([completedRootTask])
       checkNumCalls({ create: 2, update: 2 }) // one from status change, one from parent auto-completing
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
@@ -260,8 +259,9 @@ describe('Completed Subtasks', () => {
       cy.log(
         'Step 3: Complete subtask2 — subtask and rootTask both auto-complete',
       )
-      changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED)
-      waitForUpdate([completedRootTask, completedSubtask])
+      changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED, {
+        sideEffects: [completedSubtask, completedRootTask], // Parent and grandparent auto-completes as the last subtask is marked done
+      })
       checkNumCalls({ create: 3, update: 4 })
       checkCompletedPage([
         {

@@ -541,9 +541,14 @@ const TaskFormDialogProviderInner = ({
           }
         }}
         title="Saving will re-open this task"
-        description={`${incompleteDraftSubtaskCount} open ${incompleteDraftSubtaskCount === 1 ? 'subtask has' : 'subtasks have'} been added. This task will be marked incomplete on save.`}
+        description={
+          <>
+            {incompleteDraftSubtaskCount} open subtask(s) have been added, so
+            this task will be changed to <strong>incomplete</strong> on save.
+          </>
+        }
         cancelLabel="Go Back"
-        confirmLabel="Save Anyway"
+        confirmLabel="OK"
         onConfirm={() => {
           setShowSaveOpenSubtasksConfirm(false)
           const data = pendingSaveFormData

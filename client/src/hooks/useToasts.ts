@@ -62,7 +62,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: State, action: ToastAction): State => {
+const reducer = (state: State, action: ToastAction): State => {
   // biome-ignore lint/style/useDefaultSwitchClause: is exhaustive for the type
   switch (action.type) {
     case ToastActionType.ADD:

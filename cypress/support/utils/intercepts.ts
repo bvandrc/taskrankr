@@ -3,6 +3,24 @@ import { ApiPaths } from '../constants'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { isLoggedIn } from './test-runner'
 
+/** helper function */
+function maybeWaitForIntercept(
+  alias: string,
+  count: number,
+  expectedStatus: number,
+): void {
+  const loggedIn = isLoggedIn()
+  loggedIn &&
+    cy.wait(Array(count).fill(alias)).then((interceptions) => {
+      interceptions.forEach((interception, index) => {
+        expect(
+          interception.response?.statusCode,
+          `interception #${index} statusCode`,
+        ).to.equal(expectedStatus)
+      })
+    })
+}
+
 export const interceptCreate = () => {
   cy.intercept('POST', ApiPaths.CREATE_TASK).as('createTask')
 }
@@ -10,8 +28,7 @@ export const interceptCreate = () => {
 export type CreatedTask = Pick<Task, 'name' | 'status' | RankField>
 
 export function waitForCreate(tasks: CreatedTask[]): void {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@createTask'))
+  maybeWaitForIntercept('@createTask', tasks.length, 201)
   checkTasksExistBackend(tasks)
 }
 
@@ -20,8 +37,7 @@ export const interceptDelete = () => {
 }
 
 export const waitForDelete = (tasks: Pick<Task, 'name'>[]) => {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@deleteTask'))
+  maybeWaitForIntercept('@deleteTask', tasks.length, 204)
   checkTasksDontExistBackend(tasks)
 }
 
@@ -30,8 +46,7 @@ export const interceptUpdate = () => {
 }
 
 export const waitForUpdate = (tasks: CreatedTask[]) => {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@updateTask'))
+  maybeWaitForIntercept('@updateTask', tasks.length, 200)
   checkTasksExistBackend(tasks)
 }
 

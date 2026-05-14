@@ -19,7 +19,7 @@ export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
 
   loggedIn &&
     getSettings().then((currentSettings) => {
-      expect(currentSettings).to.deep.include(settings)
+      expect(currentSettings).to.include(settings)
     })
 }
 

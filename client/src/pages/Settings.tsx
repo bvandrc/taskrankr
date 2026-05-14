@@ -36,7 +36,7 @@ import {
 } from '@/components/primitives/overlays/AlertDialog'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
+import { toast, toastApiError } from '@/hooks/useToasts'
 import { APP_VERSION } from '@/lib/changelog'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { Routes } from '@/lib/constants'
@@ -247,7 +247,6 @@ const ExportButton = () => {
 }
 
 const ImportButton = () => {
-  const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isImporting, setIsImporting] = useState(false)
 
@@ -264,17 +263,14 @@ const ImportButton = () => {
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
-        throw new Error('Import failed')
+        toastApiError(result.body, 'Failed to import tasks')
+        return
       }
 
       queryClient.invalidateQueries({ queryKey: QueryKeys.getTasks })
       toast({ title: 'Tasks imported successfully' })
     } catch (err) {
-      if (
-        err instanceof SyntaxError ||
-        err instanceof TypeError ||
-        (err instanceof Error && err.message === 'Import failed')
-      ) {
+      if (err instanceof SyntaxError || err instanceof TypeError) {
         toast({ title: 'Failed to import tasks', variant: 'destructive' })
       } else {
         throw err
@@ -312,8 +308,6 @@ const ImportButton = () => {
 }
 
 const ClearLocalStorageConfirmDialog = () => {
-  const { toast } = useToast()
-
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

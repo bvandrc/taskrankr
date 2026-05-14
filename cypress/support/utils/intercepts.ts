@@ -3,35 +3,52 @@ import { ApiPaths } from '../constants'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { isLoggedIn } from './test-runner'
 
-export const interceptCreate = () => {
-  cy.intercept('POST', ApiPaths.CREATE_TASK).as('createTask')
+/** helper function */
+export function maybeWaitForIntercept(
+  alias: string,
+  count: number,
+  expectedStatus: number,
+): void {
+  const loggedIn = isLoggedIn()
+  loggedIn &&
+    cy.wait(Array(count).fill(alias)).then((interceptionResult) => {
+      // if only 1 alias is passed, is not an array.
+      const interceptions = Array.isArray(interceptionResult)
+        ? interceptionResult
+        : [interceptionResult]
+
+      interceptions.forEach((interception, index) => {
+        expect(
+          interception.response?.statusCode,
+          `interception #${index} statusCode`,
+        ).to.equal(expectedStatus)
+      })
+    })
 }
+
+export const interceptCreate = () =>
+  cy.intercept('POST', ApiPaths.CREATE_TASK).as('createTask')
 
 export type CreatedTask = Pick<Task, 'name' | 'status' | RankField>
 
 export function waitForCreate(tasks: CreatedTask[]): void {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@createTask'))
+  maybeWaitForIntercept('@createTask', tasks.length, 201)
   checkTasksExistBackend(tasks)
 }
 
-export const interceptDelete = () => {
+export const interceptDelete = () =>
   cy.intercept('DELETE', ApiPaths.DELETE_TASK).as('deleteTask')
-}
 
 export const waitForDelete = (tasks: Pick<Task, 'name'>[]) => {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@deleteTask'))
+  maybeWaitForIntercept('@deleteTask', tasks.length, 204)
   checkTasksDontExistBackend(tasks)
 }
 
-export const interceptUpdate = () => {
+export const interceptUpdate = () =>
   cy.intercept('PUT', ApiPaths.UPDATE_TASK).as('updateTask')
-}
 
 export const waitForUpdate = (tasks: CreatedTask[]) => {
-  const loggedIn = isLoggedIn()
-  loggedIn && cy.wait(Array(tasks.length).fill('@updateTask'))
+  maybeWaitForIntercept('@updateTask', tasks.length, 200)
   checkTasksExistBackend(tasks)
 }
 

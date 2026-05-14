@@ -25,7 +25,7 @@ import {
 } from 'react'
 import { omit } from 'es-toolkit'
 
-import { toast } from '@/hooks/useToast'
+import { toast } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { createDemoTasks } from '@/lib/demo-tasks'
 import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'

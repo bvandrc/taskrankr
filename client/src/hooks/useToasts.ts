@@ -1,5 +1,8 @@
 /**
- * @fileoverview Toast notification hook and state management.
+ * @fileoverview Toast notification state management.
+ * - `toast` — fire a toast from anywhere (including non-component code).
+ * - `toastApiError` — fire a destructive toast from an API error response body.
+ * - `useToasts` — subscribe to the active toast list (used by `Toaster`).
  */
 
 import { useEffect, useState } from 'react'
@@ -40,7 +43,7 @@ type ToastAction =
   | { type: ToastActionType.DISMISS; toastId?: ToasterToast['id'] }
   | { type: ToastActionType.REMOVE; toastId?: ToasterToast['id'] }
 
-interface State {
+type State = {
   toasts: ToasterToast[]
 }
 
@@ -59,8 +62,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: State, action: ToastAction): State => {
-  // biome-ignore lint/style/useDefaultSwitchClause: is exhaustive for the type
+const reducer = (state: State, action: ToastAction): State => {
   switch (action.type) {
     case ToastActionType.ADD:
       return {
@@ -112,6 +114,9 @@ export const reducer = (state: State, action: ToastAction): State => {
         ...state,
         toasts: removeIds(state.toasts, [action.toastId]),
       }
+
+    default:
+      throw new Error(`Unknown action type: ${action satisfies never}`)
   }
 }
 
@@ -158,7 +163,19 @@ export const toast = ({ ...props }: Toast) => {
   }
 }
 
-export const useToast = () => {
+/** Reads `body.message` from an API error response and fires a destructive toast. */
+export function toastApiError(body: unknown, fallback: string) {
+  const message =
+    body !== null &&
+    typeof body === 'object' &&
+    'message' in body &&
+    typeof (body as { message: unknown }).message === 'string'
+      ? (body as { message: string }).message
+      : fallback
+  toast({ title: 'Error', description: message, variant: 'destructive' })
+}
+
+export const useToasts = () => {
   const [state, setState] = useState<State>(memoryState)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: added by Replit
@@ -172,10 +189,5 @@ export const useToast = () => {
     }
   }, [state])
 
-  return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) =>
-      dispatch({ type: ToastActionType.DISMISS, toastId }),
-  }
+  return state
 }

@@ -1,4 +1,4 @@
-import { type Task, TaskStatus, type UserSettings } from '../schema'
+import { type Task, TaskStatus } from '../schema'
 
 export * from './id-list-utils'
 export * from './zod-utils'
@@ -55,29 +55,3 @@ export const getHasIncompleteSubtasks = (
   allTasks: Task[],
   taskId: number,
 ): boolean => getHasIncomplete(getDirectSubtasks(allTasks, taskId))
-
-/**
- * Canonical "undo completion" patch: returns a task to OPEN and clears every
- * status-related timestamp.
- */
-export const REVERT_COMPLETION_PATCH = {
-  status: TaskStatus.OPEN,
-  completedAt: null,
-  inProgressStartedAt: null,
-} as const satisfies Partial<Task>
-
-/**
- * True if the timeSpent requirement is met, if required by settings.
- */
-export const isTimeSpentSatisfied = (
-  timeSpentMs: number,
-  settings: Pick<UserSettings, 'fieldConfig'>,
-): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
-
-/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
-export const accumulatedTimeSpent = (
-  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-): number =>
-  task.timeSpent +
-  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)

@@ -16,12 +16,7 @@
 import { type AppError, ERRORS } from '../constants'
 import type { InsertTask, Task, UserSettings } from '../schema'
 import { TaskStatus } from '../schema'
-import {
-  accumulatedTimeSpent,
-  getHasIncomplete,
-  isTimeSpentSatisfied,
-  REVERT_COMPLETION_PATCH,
-} from '../utils/task-utils'
+import { getHasIncomplete } from '../utils/task-utils'
 
 const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
   children.reduce<Date | null>((latest, c) => {
@@ -40,7 +35,7 @@ const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
  * of its current status — useful when computing from a snapshot taken before
  * the child's write commits.
  */
-export const autoCompleteParentPatch = (
+const autoCompleteParentPatch = (
   children: Task[],
   options: { treatAsCompleted?: number } = {},
 ): Partial<Task> | null => {
@@ -55,6 +50,31 @@ export const autoCompleteParentPatch = (
     inProgressStartedAt: null,
   }
 }
+
+/**
+ * True if the timeSpent requirement is met, if required by settings.
+ */
+const isTimeSpentSatisfied = (
+  timeSpentMs: number,
+  settings: Pick<UserSettings, 'fieldConfig'>,
+): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
+
+/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
+const accumulatedTimeSpent = (
+  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): number =>
+  task.timeSpent +
+  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
+
+/**
+ * Returns a task to OPEN and clears every status-related timestamp.
+ */
+const REVERT_COMPLETION_PATCH = {
+  status: TaskStatus.OPEN,
+  completedAt: null,
+  inProgressStartedAt: null,
+} as const satisfies Partial<Task>
 
 export type MaybePromise<T> = T | Promise<T>
 

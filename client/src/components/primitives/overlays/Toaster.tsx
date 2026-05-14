@@ -3,7 +3,7 @@
  * notifications with viewport positioning.
  */
 
-import { useToast } from '@/hooks/useToast'
+import { useToasts } from '@/hooks/useToasts'
 import {
   Toast,
   ToastClose,
@@ -14,7 +14,7 @@ import {
 } from './Toast'
 
 export const Toaster = () => {
-  const { toasts } = useToast()
+  const { toasts } = useToasts()
 
   return (
     <ToastProvider>

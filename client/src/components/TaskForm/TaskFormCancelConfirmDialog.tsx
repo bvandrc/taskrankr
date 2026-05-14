@@ -5,7 +5,6 @@ import {
 
 interface TaskFormCancelConfirmDialogProps
   extends Pick<ConfirmAlertDialogProps, 'open' | 'onOpenChange' | 'onConfirm'> {
-  onOpenChange: (open: boolean) => void
   subtaskCount: number
 }
 

@@ -31,17 +31,22 @@ const TimeSpentInput = ({
   onBlur,
   timeSpentMs,
   setTimeSpentMs,
+  disabled,
 }: {
   onBlur: () => void
   timeSpentMs: number
   setTimeSpentMs: (ms: number) => void
+  disabled?: boolean
 }) => (
   <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-    <span className="text-xs text-muted-foreground">Time Spent</span>
+    <span className="text-xs text-muted-foreground">
+      {disabled ? 'Time Spent (subtasks)' : 'Time Spent'}
+    </span>
     <TimeInput
       durationMs={timeSpentMs}
       onDurationChange={setTimeSpentMs}
       onBlur={onBlur}
+      disabled={disabled}
       className="w-16 h-8 text-center text-sm bg-secondary/30"
     />
   </div>
@@ -114,6 +119,7 @@ interface ChangeStatusDialogProps {
   taskName: string
   status: TaskStatus
   timeSpent: number
+  subtaskTimeMs?: number
   isSubtask?: boolean
   isHidden?: boolean
   showToggleHidden?: boolean
@@ -130,6 +136,7 @@ export const ChangeStatusDialog = ({
   taskName,
   status,
   timeSpent: initialTimeSpent,
+  subtaskTimeMs = 0,
   isSubtask,
   isHidden,
   showToggleHidden,
@@ -158,9 +165,15 @@ export const ChangeStatusDialog = ({
     }
   }, [open, initialTimeSpent])
 
+  const timeInputDisabled = !!hasIncompleteSubtasks
+
   const handleTimeBlur = () => {
-    if (timeSpent !== initialTimeSpent) {
-      onUpdateTime(timeSpent)
+    const clamped = Math.max(timeSpent, subtaskTimeMs)
+    if (clamped !== timeSpent) setTimeSpent(clamped)
+    const ownTime = clamped - subtaskTimeMs
+    const initialOwnTime = initialTimeSpent - subtaskTimeMs
+    if (ownTime !== initialOwnTime) {
+      onUpdateTime(ownTime)
     }
   }
 
@@ -257,6 +270,7 @@ export const ChangeStatusDialog = ({
                 onBlur={handleTimeBlur}
                 timeSpentMs={timeSpent}
                 setTimeSpentMs={setTimeSpent}
+                disabled={timeInputDisabled}
               />
             )}
 

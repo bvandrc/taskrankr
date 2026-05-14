@@ -57,7 +57,7 @@ export const SubtaskActionDialog = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogAction
             onClick={onDelete}
-            className="bg-destructive/70 hover:bg-destructive/90 text-white"
+            className="bg-danger/70 hover:bg-danger/90 text-white"
             data-testid="button-subtask-delete"
           >
             Delete Permanently

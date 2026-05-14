@@ -1,7 +1,6 @@
 /**
  * @fileoverview Toast notification state management.
  * - `toast` — fire a toast from anywhere (including non-component code).
- * - `toastApiError` — fire a destructive toast from an API error response body.
  * - `useToasts` — subscribe to the active toast list (used by `Toaster`).
  */
 
@@ -163,7 +162,7 @@ const toast = ({ ...props }: Toast) => {
 }
 
 export const toastError = (props: Omit<Toast, 'variant'>) =>
-  toast({ ...props, variant: 'destructive' })
+  toast({ ...props, variant: 'danger' })
 
 export const toastInfo = (props: Omit<Toast, 'variant'>) =>
   toast({ ...props, variant: 'default' })

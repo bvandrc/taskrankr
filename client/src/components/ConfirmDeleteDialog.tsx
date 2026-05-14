@@ -24,7 +24,7 @@ export const ConfirmDeleteDialog = ({
     title="Delete Task Permanently?"
     description={`This will permanently delete "${taskName}" and all its subtasks. This action cannot be undone.`}
     confirmLabel="Delete Permanently"
-    confirmBtnVariant="destructive"
+    confirmBtnVariant="danger"
     onConfirm={onConfirm}
     data-testid="confirm-delete-dialog"
   />

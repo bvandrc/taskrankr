@@ -81,7 +81,7 @@ export const Selectors = {
     },
   },
   Toasts: {
-    ERROR: testId('toast-destructive'),
+    ERROR: testId('toast-danger'),
     DEFAULT: testId('toast-default'),
   },
 } as const

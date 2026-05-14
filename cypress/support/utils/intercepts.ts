@@ -1,5 +1,5 @@
 import type { RankField, Task } from '~/shared/schema'
-import { ApiPaths } from '../constants'
+import { ApiPaths, Selectors } from '../constants'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { isLoggedIn } from './test-runner'
 
@@ -24,6 +24,7 @@ export function maybeWaitForIntercept(
         ).to.equal(expectedStatus)
       })
     })
+  cy.get(Selectors.Toasts.ERROR).should('not.exist')
 }
 
 export const interceptCreate = () =>

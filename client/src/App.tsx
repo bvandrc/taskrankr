@@ -12,7 +12,7 @@ import { TooltipProvider } from '@/components/primitives/overlays/Tooltip'
 import { Spinner } from '@/components/primitives/Spinner'
 import { TaskFormDialogProvider } from '@/components/TaskForm/TaskFormDialogProvider'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
+import { toast } from '@/hooks/useToasts'
 import {
   clearGuestStorage,
   migrateGuestTasksToAuth,
@@ -68,7 +68,6 @@ const GuestRedirect = () => {
 const AuthenticatedApp = () => {
   const { isLoading, isAuthenticated } = useAuth()
   const { isGuestMode } = useGuestMode()
-  const { toast } = useToast()
   const hasMigrated = useRef(false)
   const [location] = useLocation()
 
@@ -84,7 +83,7 @@ const AuthenticatedApp = () => {
         })
       }
     }
-  }, [isAuthenticated, isGuestMode, toast])
+  }, [isAuthenticated, isGuestMode])
 
   if (isLoading && !isGuestMode) {
     return <Spinner fullScreen />

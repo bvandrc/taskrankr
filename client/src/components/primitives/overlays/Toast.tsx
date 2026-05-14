@@ -49,6 +49,7 @@ export const Toast = forwardRefHelper<
       {...props}
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
+      data-testid={`toast-${variant === 'destructive' ? 'destructive' : 'default'}`}
     />
   )
 }, ToastPrimitives.Root)

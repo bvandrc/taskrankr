@@ -78,11 +78,16 @@ export const fillTaskForm = (
 
   fillTaskFormRankFields(task, settings)
 
-  const timeSpent = cy
-    .get(TaskForm.TIME_SPENT_INPUT)
-    .should(settings.timeSpent.visible ? 'be.visible' : 'not.exist')
+  cy.get(TaskForm.TIME_SPENT_INPUT).should(
+    settings.timeSpent.visible ? 'be.visible' : 'not.exist',
+  )
   if (settings.timeSpent.visible) {
-    timeSpent.should(hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled')
+    cy.get(TaskForm.TIME_SPENT_INPUT_HOURS).should(
+      hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+    )
+    cy.get(TaskForm.TIME_SPENT_INPUT_MINUTES).should(
+      hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+    )
   }
   // TODO: test TIME INPUT required or not
 

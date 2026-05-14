@@ -348,10 +348,28 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const doSubmit = async (data: MutateTaskContent) => {
+  const handleSubmit = async (data: MutateTaskContent) => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
+
+    // Guard: when saving a completed task that has newly-added incomplete
+    // subtasks, warn the user that the parent will be re-opened. Skip this
+    // branch when re-called from the dialog's onConfirm — at that point
+    // pendingSaveFormData is already set, signalling the user has confirmed.
+    if (
+      isRoot &&
+      pendingSaveFormData === null &&
+      data.status === TaskStatus.COMPLETED &&
+      incompleteDraftSubtaskCount > 0
+    ) {
+      setPendingSaveFormData(data)
+      setShowSaveOpenSubtasksConfirm(true)
+      return
+    }
+
+    setShowSaveOpenSubtasksConfirm(false)
+    setPendingSaveFormData(null)
 
     try {
       if (top.taskId === null) {
@@ -379,20 +397,6 @@ const TaskFormDialogProviderInner = ({
     } catch {
       // Mutator already surfaced a toast; keep dialog open so user can retry.
     }
-  }
-
-  const handleSubmit = async (data: MutateTaskContent) => {
-    const isRoot = navStack.length === 1
-    if (
-      isRoot &&
-      data.status === TaskStatus.COMPLETED &&
-      incompleteDraftSubtaskCount > 0
-    ) {
-      setPendingSaveFormData(data)
-      setShowSaveOpenSubtasksConfirm(true)
-      return
-    }
-    await doSubmit(data)
   }
 
   const handleAddSubtask = (_pid: number, formData?: MutateTaskContent) => {
@@ -550,10 +554,7 @@ const TaskFormDialogProviderInner = ({
         cancelLabel="Go Back"
         confirmLabel="OK"
         onConfirm={() => {
-          setShowSaveOpenSubtasksConfirm(false)
-          const data = pendingSaveFormData
-          setPendingSaveFormData(null)
-          if (data) void doSubmit(data)
+          if (pendingSaveFormData) void handleSubmit(pendingSaveFormData)
         }}
         data-testid="save-open-subtasks-confirm-dialog"
       />

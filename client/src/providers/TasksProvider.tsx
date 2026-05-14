@@ -493,7 +493,7 @@ export const TasksProvider = ({
       if (!result.ok) {
         const taskName = getById(tasksRef.current, id)?.name
         toastApiError({
-          title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
+          title: `${errorTitle}${taskName ? `: "${taskName}"` : ''}`,
           body: result.error,
         })
         // Throw (not return-fallback) so awaiting callers can keep dialogs

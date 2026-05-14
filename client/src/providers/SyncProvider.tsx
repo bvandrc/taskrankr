@@ -254,7 +254,7 @@ export const SyncProvider = ({
                 throw new Error(`Unknown operation type: ${op satisfies never}`)
             }
           })()
-          const title = taskName ? `Sync error: "${taskName}"` : 'Sync error'
+          const title = `Sync error${taskName ? `: "${taskName}"` : ''}`
           toastApiError({ body: errorBody, title })
           setLastSyncError(`Failed to sync: ${op.type}`)
           break

@@ -109,6 +109,52 @@ export class TaskService {
   ) {}
 
   /**
+   * Walks the entire task list until a fixed point, auto-completing
+   * `inheritCompletionState` parents when all their children are completed and
+   * auto-reverting them when any child is not. Returns the corrected list and
+   * the status changes so callers can enqueue sync operations.
+   *
+   * This is a pure, synchronous, snapshot-based operation — it needs no I/O
+   * adapter and is therefore a static method.
+   */
+  static reconcileInheritCompletionState<T extends Task>(
+    tasks: T[],
+  ): {
+    tasks: T[]
+    corrections: { id: number; status: TaskStatus }[]
+  } {
+    const corrections: { id: number; status: TaskStatus }[] = []
+    let updated = tasks
+    let changed = true
+
+    while (changed) {
+      changed = false
+      for (const parent of updated) {
+        if (!parent.inheritCompletionState) continue
+        const children = updated.filter((t) => t.parentId === parent.id)
+        if (children.length === 0) continue
+
+        const completePatch = autoCompleteParentPatch(children)
+        if (completePatch && parent.status !== TaskStatus.COMPLETED) {
+          updated = updated.map((t) =>
+            t.id === parent.id ? { ...t, ...completePatch } : t,
+          )
+          corrections.push({ id: parent.id, status: TaskStatus.COMPLETED })
+          changed = true
+        } else if (!completePatch && parent.status === TaskStatus.COMPLETED) {
+          updated = updated.map((t) =>
+            t.id === parent.id ? { ...t, ...REVERT_COMPLETION_PATCH } : t,
+          )
+          corrections.push({ id: parent.id, status: TaskStatus.OPEN })
+          changed = true
+        }
+      }
+    }
+
+    return { tasks: updated, corrections }
+  }
+
+  /**
    * Validates and computes all mutations for an update to `id`. Returns an
    * error if a guard fails (incomplete subtasks, missing timeSpent, missing
    * task), otherwise the primary patch plus every cascade side-effect.

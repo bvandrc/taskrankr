@@ -38,7 +38,6 @@ import {
   getById,
   getDirectSubtasks,
   mapById,
-  REVERT_COMPLETION_PATCH,
   removeIds,
   updateItem,
 } from '@/lib/task-tree-utils'
@@ -57,11 +56,7 @@ import {
   taskSchema,
   type UpdateTask,
 } from '~/shared/schema'
-import {
-  autoCompleteParentPatch,
-  type MutationPatch,
-  TaskService,
-} from '~/shared/service/task-service'
+import { type MutationPatch, TaskService } from '~/shared/service/task-service'
 
 export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
   /** Preserved across draft → real promotion. */
@@ -70,52 +65,6 @@ export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
 export type UpdateTaskContent = Omit<UpdateTask, 'id'>
 export type MutateTaskContent = CreateTaskContent | UpdateTaskContent
 export type DeleteTaskArgs = Pick<Task, 'id' | 'name'>
-
-/**
- * Walks the tree until fixed point, auto-completing parents with
- * `inheritCompletionState` once all their children are completed and
- * auto-reverting them when any child is not completed. Returns the
- * reconciled tasks plus the list of status corrections so callers can
- * enqueue sync ops.
- */
-function reconcileInheritCompletionState<T extends Task>(
-  tasks: T[],
-): {
-  tasks: T[]
-  corrections: { id: number; status: TaskStatus }[]
-} {
-  const corrections: { id: number; status: TaskStatus }[] = []
-  let updated = tasks
-  let changed = true
-
-  while (changed) {
-    changed = false
-    const parents = updated.filter((t) => t.inheritCompletionState)
-    for (const parent of parents) {
-      const children = getDirectSubtasks(updated, parent.id)
-      if (children.length === 0) continue
-
-      const completePatch = autoCompleteParentPatch(children)
-      if (completePatch && parent.status !== TaskStatus.COMPLETED) {
-        updated = updateItem(updated, parent.id, (t) => ({
-          ...t,
-          ...completePatch,
-        }))
-        corrections.push({ id: parent.id, status: TaskStatus.COMPLETED })
-        changed = true
-      } else if (!completePatch && parent.status === TaskStatus.COMPLETED) {
-        updated = updateItem(updated, parent.id, (t) => ({
-          ...t,
-          ...REVERT_COMPLETION_PATCH,
-        }))
-        corrections.push({ id: parent.id, status: TaskStatus.OPEN })
-        changed = true
-      }
-    }
-  }
-
-  return { tasks: updated, corrections }
-}
 
 /**
  * Topologically orders a set of tasks so that any task with a parent in the
@@ -264,7 +213,7 @@ export const TasksProvider = ({
   const reconcileAndSetTasks = useCallback(
     (incomingTasks: LocalTask[], source: string) => {
       const { tasks: reconciled, corrections } =
-        reconcileInheritCompletionState(incomingTasks)
+        TaskService.reconcileInheritCompletionState(incomingTasks)
       setTasks(reconciled)
       if (corrections.length > 0) {
         debugLog.log('reconcile', `inheritCompletionState:${source}`, {

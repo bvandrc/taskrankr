@@ -6,7 +6,7 @@
  * or discarded on Cancel.
  */
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { without } from 'es-toolkit'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { EmptyObject } from 'type-fest'
@@ -25,8 +25,9 @@ import {
   useTaskMutations,
 } from '@/providers/TasksProvider'
 import type { CreateTask, Task } from '~/shared/schema'
-import { SubtaskSortMode } from '~/shared/schema'
+import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
 import { ConfirmDeleteDialog } from '../ConfirmDeleteDialog'
+import { ConfirmAlertDialog } from '../primitives/overlays/ConfirmAlertDialog'
 import {
   Dialog,
   DialogContent,
@@ -184,6 +185,10 @@ const TaskFormDialogProviderInner = ({
   )
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showSaveOpenSubtasksConfirm, setShowSaveOpenSubtasksConfirm] =
+    useState(false)
+  const [pendingSaveFormData, setPendingSaveFormData] =
+    useState<MutateTaskContent | null>(null)
   /** When non-null, AssignSubtaskDialog is open and the picked task should be
    *  assigned under this parent (real or draft). */
   const [assignTargetParentId, setAssignTargetParentId] = useState<
@@ -214,6 +219,17 @@ const TaskFormDialogProviderInner = ({
       )
     })
   }, [subscribeToIdReplacement])
+
+  /** Number of draft subtasks (excluding the root draft) that are not completed. */
+  const incompleteDraftSubtaskCount = useMemo(() => {
+    const rootId = navStack[0]?.taskId
+    return [...draftTaskIds]
+      .filter((id) => id !== rootId)
+      .filter((id) => {
+        const task = getById(tasksWithDrafts, id)
+        return task != null && task.status !== TaskStatus.COMPLETED
+      }).length
+  }, [draftTaskIds, tasksWithDrafts, navStack])
 
   const currentEntry: NavEntry | null = navStack.at(-1) ?? null
   const rootEntry: NavEntry | null = navStack[0] ?? null
@@ -332,7 +348,7 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const handleSubmit = async (data: MutateTaskContent) => {
+  const doSubmit = async (data: MutateTaskContent) => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
@@ -363,6 +379,20 @@ const TaskFormDialogProviderInner = ({
     } catch {
       // Mutator already surfaced a toast; keep dialog open so user can retry.
     }
+  }
+
+  const handleSubmit = async (data: MutateTaskContent) => {
+    const isRoot = navStack.length === 1
+    if (
+      isRoot &&
+      data.status === TaskStatus.COMPLETED &&
+      incompleteDraftSubtaskCount > 0
+    ) {
+      setPendingSaveFormData(data)
+      setShowSaveOpenSubtasksConfirm(true)
+      return
+    }
+    await doSubmit(data)
   }
 
   const handleAddSubtask = (_pid: number, formData?: MutateTaskContent) => {
@@ -500,6 +530,27 @@ const TaskFormDialogProviderInner = ({
         }}
         subtaskCount={pendingSubtaskCount}
         onConfirm={resetAndClose}
+      />
+
+      <ConfirmAlertDialog
+        open={showSaveOpenSubtasksConfirm}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowSaveOpenSubtasksConfirm(false)
+            setPendingSaveFormData(null)
+          }
+        }}
+        title="Saving will re-open this task"
+        description={`${incompleteDraftSubtaskCount} open ${incompleteDraftSubtaskCount === 1 ? 'subtask has' : 'subtasks have'} been added. This task will be marked incomplete on save.`}
+        cancelLabel="Go Back"
+        confirmLabel="Save Anyway"
+        onConfirm={() => {
+          setShowSaveOpenSubtasksConfirm(false)
+          const data = pendingSaveFormData
+          setPendingSaveFormData(null)
+          if (data) void doSubmit(data)
+        }}
+        data-testid="save-open-subtasks-confirm-dialog"
       />
 
       <AssignSubtaskDialog

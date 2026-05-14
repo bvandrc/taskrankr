@@ -175,7 +175,7 @@ describe('Completed Subtasks', () => {
 
       // Parent auto-completes as the last subtask is marked done
       waitForUpdate([completedRootTask])
-      checkNumCalls({ create: 2, update: 2 })
+      checkNumCalls({ create: 2, update: 2 }) // one from status change, one from parent auto-completing
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])

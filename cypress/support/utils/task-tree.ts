@@ -85,9 +85,24 @@ export const openStatusChangeDialog = (task: Pick<Task, 'name'>) => {
 export const changeStatusViaStatusChangeDialog = (
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
+  { hasIncompleteSubtasks = false }: { hasIncompleteSubtasks?: boolean } = {},
 ) => {
   openStatusChangeDialog(task)
-  cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).click()
+
+  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_HOURS).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_MINUTES).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+
+  if (hasIncompleteSubtasks) {
+    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).should('be.disabled')
+  } else {
+    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN)
+      .should('be.enabled')
+      .click()
+  }
   waitForUpdate([{ ...task, status: newStatus }])
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }

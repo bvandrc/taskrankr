@@ -1,4 +1,4 @@
-import { type Task, TaskStatus } from '../schema'
+import { type Task, TaskStatus, type UserSettings } from '../schema'
 
 export * from './id-list-utils'
 export * from './zod-utils'
@@ -152,6 +152,14 @@ export const autoCompleteParentPatch = (
     inProgressStartedAt: null,
   } as const satisfies Partial<Task>
 }
+
+/**
+ * True if the timeSpent requirement is met, if required by settings.
+ */
+export const isTimeSpentSatisfied = (
+  timeSpentMs: number,
+  settings: Pick<UserSettings, 'fieldConfig'>,
+): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
 
 /** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
 export const accumulatedTimeSpent = (

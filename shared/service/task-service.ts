@@ -21,19 +21,12 @@ import {
   accumulatedTimeSpent,
   autoCompleteParentPatch,
   getHasIncomplete,
+  isTimeSpentSatisfied,
   REVERT_COMPLETION_PATCH,
   statusToStatusPatch,
 } from '../utils/task-utils'
 
 export type MaybePromise<T> = T | Promise<T>
-
-/**
- * True if the timeSpent requirement is met, if required by settings.
- */
-const isTimeSpentSatisfied = (
-  timeSpentMs: number,
-  settings: Pick<UserSettings, 'fieldConfig'>,
-): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
 
 export interface TaskServiceIO {
   getTask(id: number): MaybePromise<Task | null | undefined>

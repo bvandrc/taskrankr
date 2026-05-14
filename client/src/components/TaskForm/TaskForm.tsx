@@ -2,7 +2,7 @@
  * @fileoverview Form component for creating and editing tasks
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
@@ -45,7 +45,6 @@ import {
 } from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
-import { AddSubtaskCompletedConfirmDialog } from './AddSubtaskCompletedConfirmDialog'
 import { RankFieldSelect } from './RankFieldSelect'
 import { SubtasksCard } from './SubtasksCard'
 import { useTaskFormParentChain } from './useTaskFormParentChain'
@@ -145,10 +144,6 @@ export const TaskForm = ({
   const hasIncompleteSubtasks = initialData
     ? getHasIncompleteSubtasks(allTasks, initialData.id)
     : false
-
-  const [pendingAddSubtaskParentId, setPendingAddSubtaskParentId] = useState<
-    number | null
-  >(null)
 
   const visibleRankFields = useMemo(
     () =>
@@ -298,13 +293,7 @@ export const TaskForm = ({
 
             <SubtasksCard
               task={initialData ?? STUB_TASK}
-              onAddSubtask={(pid) => {
-                if (form.getValues('status') === TaskStatus.COMPLETED) {
-                  setPendingAddSubtaskParentId(pid)
-                } else {
-                  onAddSubtask(pid, form.getValues())
-                }
-              }}
+              onAddSubtask={(pid) => onAddSubtask(pid, form.getValues())}
               onEditSubtask={onEditSubtask}
               onDeleteSubtask={onDeleteSubtask}
               onAssignSubtask={(t) => onAssignSubtask(t, form.getValues())}
@@ -425,27 +414,6 @@ export const TaskForm = ({
             {isEditingExisting ? 'Save' : 'Create'}
           </Button>
         </div>
-
-        <AddSubtaskCompletedConfirmDialog
-          open={pendingAddSubtaskParentId !== null}
-          onOpenChange={(open) => {
-            if (!open) setPendingAddSubtaskParentId(null)
-          }}
-          onConfirm={() => {
-            if (pendingAddSubtaskParentId === null) return
-            const revertedStatus =
-              initialData?.status !== TaskStatus.COMPLETED
-                ? initialData?.status
-                : TaskStatus.OPEN
-            const newStatus = revertedStatus ?? TaskStatus.OPEN
-            form.setValue('status', newStatus, { shouldValidate: true })
-            onAddSubtask(pendingAddSubtaskParentId, {
-              ...form.getValues(),
-              status: newStatus,
-            })
-            setPendingAddSubtaskParentId(null)
-          }}
-        />
       </form>
     </Form>
   )

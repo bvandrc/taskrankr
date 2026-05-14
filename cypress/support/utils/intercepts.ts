@@ -11,7 +11,12 @@ function maybeWaitForIntercept(
 ): void {
   const loggedIn = isLoggedIn()
   loggedIn &&
-    cy.wait(Array(count).fill(alias)).then((interceptions) => {
+    cy.wait(Array(count).fill(alias)).then((interceptionResult) => {
+      // if only 1 alias is passed, is not an array.
+      const interceptions = Array.isArray(interceptionResult)
+        ? interceptionResult
+        : [interceptionResult]
+
       interceptions.forEach((interception, index) => {
         expect(
           interception.response?.statusCode,

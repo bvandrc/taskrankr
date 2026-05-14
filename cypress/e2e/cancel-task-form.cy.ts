@@ -42,6 +42,12 @@ const checkTasksDontExist = (tasks: CreatedTask[]) => {
   checkTasksDontExistBackend(tasks)
 }
 
+const checkCancelWarningDialog = (count: number) =>
+  cy
+    .get(TaskForm.CANCEL_CONFIRM_DIALOG)
+    .should('be.visible')
+    .should('contain.text', `${count} unsaved subtask`)
+
 describe('Task Form Cancellation', () => {
   beforeEach(() => {
     const loggedIn = isLoggedIn()
@@ -119,9 +125,7 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
-          .should('be.visible')
-          .should('contain.text', '1 unsaved subtask')
+        checkCancelWarningDialog(1)
         cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })
@@ -155,9 +159,7 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
-          .should('be.visible')
-          .should('contain.text', '2 unsaved subtask')
+        checkCancelWarningDialog(2)
         cy.get(ConfirmDialog.DENY_BTN).click()
 
         getTaskForm(0).within(() => {
@@ -169,9 +171,7 @@ describe('Task Form Cancellation', () => {
         cy.log(
           'Step 3: Cancel parent form — confirm discard, verify all removed',
         )
-        cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
-          .should('be.visible')
-          .should('contain.text', '2 unsaved subtask')
+        checkCancelWarningDialog(2)
         cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })

@@ -396,11 +396,8 @@ export const TasksProvider = ({
     ) => {
       for (const m of mutations) {
         if (m.id === primary?.id) {
-          // Service buffered an auto-cascade on the primary id (e.g. parent
-          // auto-completes when `inheritCompletionState` flips on). User-intent
-          // already shipped via the primary enqueue; emit a follow-up PUT only
-          // for the derived status (where the buffered status differs from
-          // anything the user explicitly set).
+          // User-intent already shipped; emit a follow-up only for a
+          // service-derived status that diverges from it.
           if (
             m.patch.status !== undefined &&
             m.patch.status !== primary.userUpdates.status

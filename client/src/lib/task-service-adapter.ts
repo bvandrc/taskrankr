@@ -1,3 +1,8 @@
+/**
+ * Client-side adapter that wires `TaskMutationService` to in-memory task and
+ * settings refs for a given provider scope.
+ */
+
 import type { MutableRefObject } from 'react'
 
 import type { LocalTask } from '@/types'

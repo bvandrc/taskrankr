@@ -2,9 +2,9 @@
  * @fileoverview API route handlers using ts-rest contract-based routing.
  *
  * Defines all task and settings CRUD endpoints with authentication middleware.
- * Mutation handlers delegate rule validation and side-effect resolution to the shared `TaskMutationService` and
- * persist its computed mutations via `storage`. Integrates with Replit Auth
- * for user session management.
+ * Mutation handlers delegate to `TaskMutationService` for rule validation and
+ * side-effect resolution, then persist the computed mutations via `storage`.
+ * Integrates with Replit Auth for user session management.
  */
 
 import type { Server } from 'node:http'

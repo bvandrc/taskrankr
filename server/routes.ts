@@ -41,10 +41,13 @@ const checkTimeSpentRequired = async (
   return null
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: is always present
-const getUserId = (req: Record<string, any>): string =>
-  // biome-ignore lint/style/noNonNullAssertion: is always present
-  (req.user as UserSession).claims!.sub
+const getUserId = (req: { user?: UserSession }): string => {
+  const userId = req.user?.claims?.sub
+  if (!userId) {
+    throw new Error('User ID not found in session')
+  }
+  return userId
+}
 
 const router = s.router(contract, {
   tasks: {

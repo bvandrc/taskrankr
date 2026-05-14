@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react'
 
-import { toastApiError } from '@/hooks/useToasts'
+import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
@@ -169,7 +169,7 @@ export const SyncProvider = ({
       let successCount = 0
       for (const op of queueSnapshot) {
         let success = false
-        let errorBody: unknown
+        let errorBody: { message: string } | undefined
 
         switch (op.type) {
           case SyncOperationType.CREATE_TASK: {
@@ -255,7 +255,7 @@ export const SyncProvider = ({
             }
           })()
           const title = `Sync error${taskName ? `: "${taskName}"` : ''}`
-          toastApiError({ body: errorBody, title })
+          toastError({ title, description: errorBody?.message })
           setLastSyncError(`Failed to sync: ${op.type}`)
           break
         }
@@ -281,9 +281,10 @@ export const SyncProvider = ({
         if (result.status === 200) {
           acknowledgeSettingsSync(settingsSnapshot)
         } else {
-          toastApiError({
+          toastError({
             title: 'Failed to sync: settings',
-            body: result.body,
+            description: (result.body as unknown as { message: string })
+              .message,
           })
           setLastSyncError('Failed to sync: settings')
         }

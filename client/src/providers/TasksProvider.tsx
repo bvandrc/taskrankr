@@ -25,7 +25,7 @@ import {
 } from 'react'
 import { omit } from 'es-toolkit'
 
-import { toastApiError } from '@/hooks/useToasts'
+import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { createDemoTasks } from '@/lib/demo-tasks'
 import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
@@ -425,9 +425,9 @@ export const TasksProvider = ({
       })
 
       if (!result.ok) {
-        toastApiError({
+        toastError({
           title: `Cannot create task "${data.name}"`,
-          body: result.error,
+          description: result.error.message,
         })
 
         nextIdRef.current++
@@ -492,9 +492,9 @@ export const TasksProvider = ({
 
       if (!result.ok) {
         const taskName = getById(tasksRef.current, id)?.name
-        toastApiError({
+        toastError({
           title: `${errorTitle}${taskName ? `: "${taskName}"` : ''}`,
-          body: result.error,
+          description: result.error.message,
         })
         // Throw (not return-fallback) so awaiting callers can keep dialogs
         // open / abort follow-on work. Mirrors `createTask`.

@@ -36,7 +36,7 @@ import {
 } from '@/components/primitives/overlays/AlertDialog'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useAuth } from '@/hooks/useAuth'
-import { toast, toastApiError } from '@/hooks/useToasts'
+import { toastError, toastInfo } from '@/hooks/useToasts'
 import { APP_VERSION } from '@/lib/changelog'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { Routes } from '@/lib/constants'
@@ -263,15 +263,18 @@ const ImportButton = () => {
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
-        toastApiError({ title: 'Failed to import tasks', body: result.body })
+        toastError({
+          title: 'Failed to import tasks',
+          description: result.body.message,
+        })
         return
       }
 
       queryClient.invalidateQueries({ queryKey: QueryKeys.getTasks })
-      toast({ title: 'Tasks imported successfully' })
+      toastInfo({ title: 'Tasks imported successfully' })
     } catch (err) {
       if (err instanceof SyntaxError || err instanceof TypeError) {
-        toast({ title: 'Failed to import tasks', variant: 'destructive' })
+        toastError({ title: 'Failed to import tasks' })
       } else {
         throw err
       }
@@ -335,7 +338,7 @@ const ClearLocalStorageConfirmDialog = () => {
           <AlertDialogAction
             onClick={() => {
               localStorage.clear()
-              toast({ title: 'Local storage cleared' })
+              toastInfo({ title: 'Local storage cleared' })
               window.location.reload()
             }}
             data-testid="button-confirm-clear"

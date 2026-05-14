@@ -133,14 +133,13 @@ const dispatch = (action: ToastAction) => {
 
 type Toast = Omit<ToasterToast, 'id'>
 
-export const toast = ({ ...props }: Toast) => {
+const toast = ({ ...props }: Toast) => {
   const id = genId()
 
-  // biome-ignore lint/nursery/noShadow: is fine
-  const update = (props: ToasterToast) =>
+  const update = (updateProps: ToasterToast) =>
     dispatch({
       type: ToastActionType.UPDATE,
-      toast: { ...props, id },
+      toast: { ...updateProps, id },
     })
 
   const dismiss = () => dispatch({ type: ToastActionType.DISMISS, toastId: id })
@@ -163,28 +162,11 @@ export const toast = ({ ...props }: Toast) => {
   }
 }
 
-/**
- * Fires a destructive toast for an API error response.
- * Uses `body.message` as the description when present, otherwise `fallback`.
- */
-export function toastApiError({
-  title,
-  body,
-  fallback,
-}: {
-  title: string
-  body: unknown
-  fallback?: string
-}) {
-  const description =
-    body !== null &&
-    typeof body === 'object' &&
-    'message' in body &&
-    typeof (body as { message: unknown }).message === 'string'
-      ? (body as { message: string }).message
-      : fallback
-  toast({ title, description, variant: 'destructive' })
-}
+export const toastError = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'destructive' })
+
+export const toastInfo = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'default' })
 
 export const useToasts = () => {
   const [state, setState] = useState<State>(memoryState)

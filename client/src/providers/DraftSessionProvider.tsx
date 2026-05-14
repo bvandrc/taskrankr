@@ -42,7 +42,7 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
-import { toastApiError } from '@/hooks/useToasts'
+import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
 import { makeTaskService } from '@/lib/task-service-adapter'
@@ -410,9 +410,9 @@ export const DraftSessionProvider = ({
       const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
         const taskName = getById(draftTasksRef.current, id)?.name
-        toastApiError({
+        toastError({
           title: `${errorTitle}${taskName ? `: "${taskName}"` : ''}`,
-          body: result.error,
+          description: result.error.message,
         })
         throw new Error(result.error.message)
       }

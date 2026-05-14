@@ -43,7 +43,7 @@ export const Selectors = {
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),
-    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
+    CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
     CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
     CANCEL_DENY_BTN: testId('button-cancel-deny'),
     // subtasks

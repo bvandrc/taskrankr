@@ -2,13 +2,14 @@
  * @fileoverview Confirmation dialog for permanent task deletion
  */
 
-import { ConfirmAlertDialog } from './primitives/overlays/ConfirmAlertDialog'
+import {
+  ConfirmAlertDialog,
+  type ConfirmAlertDialogProps,
+} from './primitives/overlays/ConfirmAlertDialog'
 
-interface ConfirmDeleteDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface ConfirmDeleteDialogProps
+  extends Pick<ConfirmAlertDialogProps, 'open' | 'onOpenChange' | 'onConfirm'> {
   taskName: string
-  onConfirm: () => void
 }
 
 export const ConfirmDeleteDialog = ({
@@ -23,9 +24,8 @@ export const ConfirmDeleteDialog = ({
     title="Delete Task Permanently?"
     description={`This will permanently delete "${taskName}" and all its subtasks. This action cannot be undone.`}
     confirmLabel="Delete Permanently"
-    confirmClassName="bg-destructive hover:bg-destructive/90 text-white"
+    confirmBtnClassName="bg-destructive hover:bg-destructive/90 text-white"
     onConfirm={onConfirm}
-    testId="confirm-delete-dialog"
-    confirmTestId="button-delete-permanently"
+    data-testid="confirm-delete-dialog"
   />
 )

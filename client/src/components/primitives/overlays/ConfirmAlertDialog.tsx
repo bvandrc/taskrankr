@@ -19,20 +19,19 @@ import {
   AlertDialogTitle,
 } from './AlertDialog'
 
-interface ConfirmAlertDialogProps {
+export interface ConfirmAlertDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   title: string
   description: React.ReactNode
-  /** Defaults to "Cancel". */
+  /**
+   * @default "Cancel"
+   */
   cancelLabel?: string
   confirmLabel: string
   onConfirm: () => void
-  /** Tailwind classes applied to the confirm button. */
-  confirmClassName?: string
-  testId?: string
-  cancelTestId?: string
-  confirmTestId?: string
+  confirmBtnClassName?: string
+  'data-testid'?: string
 }
 
 /**
@@ -47,10 +46,8 @@ export const ConfirmAlertDialog = ({
   cancelLabel = 'Cancel',
   confirmLabel,
   onConfirm,
-  confirmClassName,
-  testId,
-  cancelTestId,
-  confirmTestId,
+  confirmBtnClassName,
+  'data-testid': testId,
 }: ConfirmAlertDialogProps) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogPortal>
@@ -72,14 +69,14 @@ export const ConfirmAlertDialog = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel
             className="bg-secondary/50 border-white/5 hover:bg-white/10"
-            data-testid={cancelTestId}
+            data-testid="cancel-btn"
           >
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={confirmClassName}
-            data-testid={confirmTestId}
+            className={confirmBtnClassName}
+            data-testid="confirm-btn"
           >
             {confirmLabel}
           </AlertDialogAction>

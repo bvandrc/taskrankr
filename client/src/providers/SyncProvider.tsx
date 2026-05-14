@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react'
 
-import { toast } from '@/hooks/useToast'
+import { toast, toastApiError } from '@/hooks/useToast'
 import { debugLog } from '@/lib/debug-logger'
 import { tsr } from '@/lib/ts-rest'
 import { useSettings } from './SettingsProvider'
@@ -34,17 +34,6 @@ const SyncContext = createContext<SyncContextValue | null>(null)
 type SyncProviderProps = React.PropsWithChildren<{
   isAuthenticated: boolean
 }>
-
-function toastApiError(body: unknown, fallback: string) {
-  const message =
-    body !== null &&
-    typeof body === 'object' &&
-    'message' in body &&
-    typeof (body as { message: unknown }).message === 'string'
-      ? (body as { message: string }).message
-      : fallback
-  toast({ title: 'Sync error', description: message, variant: 'destructive' })
-}
 
 export const SyncProvider = ({
   children,

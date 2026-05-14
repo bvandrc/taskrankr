@@ -36,7 +36,7 @@ import {
 } from '@/components/primitives/overlays/AlertDialog'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useAuth } from '@/hooks/useAuth'
-import { useToast } from '@/hooks/useToast'
+import { toastApiError, useToast } from '@/hooks/useToast'
 import { APP_VERSION } from '@/lib/changelog'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { Routes } from '@/lib/constants'
@@ -264,18 +264,7 @@ const ImportButton = () => {
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
-        const message =
-          result.body !== null &&
-          typeof result.body === 'object' &&
-          'message' in result.body &&
-          typeof (result.body as { message: unknown }).message === 'string'
-            ? (result.body as { message: string }).message
-            : 'Failed to import tasks'
-        toast({
-          title: 'Failed to import tasks',
-          description: message,
-          variant: 'destructive',
-        })
+        toastApiError(result.body, 'Failed to import tasks')
         return
       }
 

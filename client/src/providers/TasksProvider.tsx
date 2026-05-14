@@ -58,11 +58,7 @@ import {
   taskSchema,
   type UpdateTask,
 } from '~/shared/schema'
-import {
-  type MutationPatch,
-  TaskService,
-  type TaskServiceIO,
-} from '~/shared/service/task-service'
+import { type MutationPatch, TaskService } from '~/shared/service/task-service'
 
 export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
   /** Preserved across draft → real promotion. */
@@ -412,19 +408,20 @@ export const TasksProvider = ({
 
   // Stable `TaskService` instance whose I/O adapter reads from `tasksRef` /
   // `settingsRef` so it always sees the freshest in-memory state.
-  const service = useMemo(() => {
-    const io: TaskServiceIO = {
-      getTask: (id) => getById(tasksRef.current, id) ?? null,
-      getDirectSubtasks: (parentId) =>
-        getDirectSubtasks(tasksRef.current, parentId),
-      getCurrentInProgressTask: (excludeId) =>
-        tasksRef.current.find(
-          (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
-        ) ?? null,
-      getSettings: () => settingsRef.current,
-    }
-    return new TaskService(io)
-  }, [])
+  const service = useMemo(
+    () =>
+      new TaskService({
+        getTask: (id) => getById(tasksRef.current, id) ?? null,
+        getDirectSubtasks: (parentId) =>
+          getDirectSubtasks(tasksRef.current, parentId),
+        getCurrentInProgressTask: (excludeId) =>
+          tasksRef.current.find(
+            (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
+          ) ?? null,
+        getSettings: () => settingsRef.current,
+      }),
+    [],
+  )
 
   /**
    * Applies the service's mutations atomically and eagerly syncs `tasksRef`

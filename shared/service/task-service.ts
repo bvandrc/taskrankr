@@ -27,16 +27,6 @@ import {
 
 export type MaybePromise<T> = T | Promise<T>
 
-export interface TaskServiceIO {
-  getTask(id: number): MaybePromise<Task | null | undefined>
-  getDirectSubtasks(parentId: number): MaybePromise<Task[]>
-  /** Find any IN_PROGRESS task other than `excludeId`, or null. */
-  getCurrentInProgressTask(
-    excludeId: number,
-  ): MaybePromise<Task | null | undefined>
-  getSettings(): MaybePromise<Pick<UserSettings, 'fieldConfig'>>
-}
-
 export interface MutationPatch {
   id: number
   patch: Partial<Task>
@@ -75,7 +65,17 @@ class MutationBuffer {
 }
 
 export class TaskService {
-  constructor(private readonly io: TaskServiceIO) {}
+  constructor(
+    private readonly io: {
+      getTask(id: number): MaybePromise<Task | null | undefined>
+      getDirectSubtasks(parentId: number): MaybePromise<Task[]>
+      /** Find any IN_PROGRESS task other than `excludeId`, or null. */
+      getCurrentInProgressTask(
+        excludeId: number,
+      ): MaybePromise<Task | null | undefined>
+      getSettings(): MaybePromise<Pick<UserSettings, 'fieldConfig'>>
+    },
+  ) {}
 
   /**
    * Validates and computes all mutations for an update to `id`. Returns an

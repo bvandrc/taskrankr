@@ -60,11 +60,7 @@ import {
 } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
 import { SubtaskSortMode, type Task, TaskStatus } from '~/shared/schema'
-import {
-  type MutationPatch,
-  TaskService,
-  type TaskServiceIO,
-} from '~/shared/service/task-service'
+import { type MutationPatch, TaskService } from '~/shared/service/task-service'
 
 /**
  * Returns a new Map by applying `rewrite` to each entry:
@@ -243,19 +239,20 @@ export const DraftSessionProvider = ({
   // cascades (auto-complete walk among drafts, IN_PROGRESS demotion of
   // sibling drafts) work correctly during the dialog session. Mutations
   // emitted on real tasks are dropped — see `applyDraftMutations`.
-  const draftService = useMemo(() => {
-    const io: TaskServiceIO = {
-      getTask: (id) => getById(tasksWithDraftsRef.current, id) ?? null,
-      getDirectSubtasks: (parentId) =>
-        getDirectSubtasks(tasksWithDraftsRef.current, parentId),
-      getCurrentInProgressTask: (excludeId) =>
-        tasksWithDraftsRef.current.find(
-          (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
-        ) ?? null,
-      getSettings: () => settingsRef.current,
-    }
-    return new TaskService(io)
-  }, [])
+  const draftService = useMemo(
+    () =>
+      new TaskService({
+        getTask: (id) => getById(tasksWithDraftsRef.current, id) ?? null,
+        getDirectSubtasks: (parentId) =>
+          getDirectSubtasks(tasksWithDraftsRef.current, parentId),
+        getCurrentInProgressTask: (excludeId) =>
+          tasksWithDraftsRef.current.find(
+            (t) => t.status === TaskStatus.IN_PROGRESS && t.id !== excludeId,
+          ) ?? null,
+        getSettings: () => settingsRef.current,
+      }),
+    [],
+  )
 
   /**
    * Writes the planned mutations to draft state. Returns `false` if the plan

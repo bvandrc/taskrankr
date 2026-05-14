@@ -130,38 +130,6 @@ const TimeSpentInput = ({
   </SubtaskBlockedTooltip>
 )
 
-const CompletedCheckbox = ({
-  isCompleted,
-  disabled,
-  hasIncompleteSubtasks,
-  onSetStatus,
-}: {
-  isCompleted: boolean
-  disabled: boolean
-  hasIncompleteSubtasks?: boolean
-  onSetStatus: (status: TaskStatus) => void
-}) => (
-  <SubtaskBlockedTooltip blocked={!isCompleted && !!hasIncompleteSubtasks}>
-    <AlertDialogAction
-      onClick={() =>
-        onSetStatus(isCompleted ? TaskStatus.OPEN : TaskStatus.COMPLETED)
-      }
-      disabled={disabled}
-      className={cn(
-        'w-full h-11 text-base font-semibold',
-        isCompleted
-          ? 'bg-primary hover:bg-primary/90 text-white'
-          : disabled
-            ? 'bg-muted text-muted-foreground cursor-not-allowed'
-            : 'bg-emerald-600 hover:bg-emerald-700 text-white',
-      )}
-      data-testid="button-complete-task"
-    >
-      {isCompleted ? 'Restore Task to Open' : 'Complete Task'}
-    </AlertDialogAction>
-  </SubtaskBlockedTooltip>
-)
-
 export const ChangeStatusDialog = ({
   open,
   onOpenChange,
@@ -273,12 +241,30 @@ export const ChangeStatusDialog = ({
               </>
             )}
 
-            <CompletedCheckbox
-              isCompleted={isCompleted}
-              disabled={!!isCompleteActionDisabled}
-              hasIncompleteSubtasks={hasIncompleteSubtasks}
-              onSetStatus={onSetStatus}
-            />
+            {/** Complete/ Restore to Open button */}
+            <SubtaskBlockedTooltip
+              blocked={!isCompleted && !!hasIncompleteSubtasks}
+            >
+              <AlertDialogAction
+                onClick={() =>
+                  onSetStatus(
+                    isCompleted ? TaskStatus.OPEN : TaskStatus.COMPLETED,
+                  )
+                }
+                disabled={isCompleteActionDisabled}
+                className={cn(
+                  'w-full h-11 text-base font-semibold',
+                  isCompleted
+                    ? 'bg-primary hover:bg-primary/90 text-white'
+                    : isCompleteActionDisabled
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white',
+                )}
+                data-testid="button-complete-task"
+              >
+                {isCompleted ? 'Restore Task to Open' : 'Complete Task'}
+              </AlertDialogAction>
+            </SubtaskBlockedTooltip>
 
             {showTimeSpentInput && (
               <TimeSpentInput

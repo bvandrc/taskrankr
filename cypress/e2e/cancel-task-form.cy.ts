@@ -16,7 +16,7 @@ import { isLoggedIn } from '@cypress/support/utils/test-runner'
 
 import { TaskStatus } from '~/shared/schema'
 
-const { TaskForm } = Selectors
+const { TaskForm, ConfirmDialog } = Selectors
 
 const rootTask = {
   ...DefaultTask,
@@ -122,7 +122,7 @@ describe('Task Form Cancellation', () => {
         cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
           .should('be.visible')
           .should('contain.text', '1 unsaved subtask')
-        cy.get(TaskForm.CANCEL_CONFIRM_BTN).click()
+        cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })
 
@@ -158,7 +158,7 @@ describe('Task Form Cancellation', () => {
         cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
           .should('be.visible')
           .should('contain.text', '2 unsaved subtasks')
-        cy.get(TaskForm.CANCEL_DENY_BTN).click()
+        cy.get(ConfirmDialog.DENY_BTN).click()
 
         getTaskForm(0).within(() => {
           cy.get(TaskForm.NAME_INPUT).should('have.value', rootTask.name)
@@ -172,7 +172,7 @@ describe('Task Form Cancellation', () => {
         cy.get(TaskForm.CANCEL_CONFIRM_DIALOG)
           .should('be.visible')
           .should('contain.text', '2 unsaved subtasks')
-        cy.get(TaskForm.CANCEL_CONFIRM_BTN).click()
+        cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })
 

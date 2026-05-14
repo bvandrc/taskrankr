@@ -43,9 +43,7 @@ export const Selectors = {
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),
-    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
-    CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
-    CANCEL_DENY_BTN: testId('button-cancel-deny'),
+    CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
@@ -72,6 +70,10 @@ export const Selectors = {
     DIALOG: testId('change-status-dialog'),
     COMPLETE_BTN: testId('button-complete-task'),
   },
+  ConfirmDialog: {
+    CONFIRM_BTN: testId('button-confirm'),
+    DENY_BTN: testId('button-cancel'),
+  },
   Settings: {
     FieldConfig: {
       visibleCheckbox: (field: keyof FieldConfig) =>
@@ -81,7 +83,7 @@ export const Selectors = {
     },
   },
   Toasts: {
-    ERROR: testId('toast-destructive'),
+    ERROR: testId('toast-danger'),
     DEFAULT: testId('toast-default'),
   },
 } as const

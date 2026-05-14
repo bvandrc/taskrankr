@@ -61,7 +61,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
             data-testid={`rank-select-${name}`}
             className={cn(
               'bg-secondary/20 capitalize font-semibold h-10',
-              hasError ? 'border-destructive/50' : 'border-white/5',
+              hasError ? 'border-danger/50' : 'border-white/5',
               getRankFieldStyle(name, field.value, 'text-muted-foreground'),
             )}
           >
@@ -94,9 +94,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
           ))}
         </SelectContent>
       </Select>
-      {hasError && (
-        <p className="text-[10px] text-destructive mt-1">Required</p>
-      )}
+      {hasError && <p className="text-[10px] text-danger mt-1">Required</p>}
     </FormItem>
   )
 }

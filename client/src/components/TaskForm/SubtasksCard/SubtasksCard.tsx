@@ -26,6 +26,8 @@ import { useFormFieldsWithDefaults } from '@/hooks/useFormFieldsWithDefaults'
 import {
   getById,
   getDirectSubtasks,
+  isEffectivelyHiddenInTree,
+  mapById,
   sortTasksByIdOrder,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
@@ -38,7 +40,6 @@ import {
   TaskStatus,
   taskSchemaDefaults,
 } from '~/shared/schema'
-import { isEffectivelyHiddenInTree, mapById } from '~/shared/utils/task-utils'
 import { CollapsibleCard } from '../../primitives/CollapsibleCard'
 import { type Subtask, SubtaskRowItem } from './SubtaskRowItem'
 import { SubtasksSettings } from './SubtasksSettings'

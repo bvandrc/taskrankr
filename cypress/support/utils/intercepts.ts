@@ -4,7 +4,7 @@ import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { isLoggedIn } from './test-runner'
 
 /** helper function */
-function maybeWaitForIntercept(
+export function maybeWaitForIntercept(
   alias: string,
   count: number,
   expectedStatus: number,

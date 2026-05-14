@@ -1,5 +1,8 @@
 /**
- * @fileoverview Toast notification hook and state management.
+ * @fileoverview Toast notification state management.
+ * - `toast` — fire a toast from anywhere (including non-component code).
+ * - `toastApiError` — fire a destructive toast from an API error response body.
+ * - `useToasts` — subscribe to the active toast list (used by `Toaster`).
  */
 
 import { useEffect, useState } from 'react'
@@ -170,7 +173,7 @@ export function toastApiError(body: unknown, fallback: string) {
   toast({ title: 'Error', description: message, variant: 'destructive' })
 }
 
-export const useToast = () => {
+export const useToasts = () => {
   const [state, setState] = useState<State>(memoryState)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: added by Replit
@@ -184,10 +187,5 @@ export const useToast = () => {
     }
   }, [state])
 
-  return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) =>
-      dispatch({ type: ToastActionType.DISMISS, toastId }),
-  }
+  return state
 }

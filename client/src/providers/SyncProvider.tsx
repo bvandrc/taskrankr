@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react'
 
-import { toast, toastApiError } from '@/hooks/useToast'
+import { toast, toastApiError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { tsr } from '@/lib/ts-rest'
 import { useSettings } from './SettingsProvider'

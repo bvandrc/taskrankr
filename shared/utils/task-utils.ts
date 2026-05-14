@@ -1,5 +1,4 @@
 import { type Task, TaskStatus } from '../schema'
-import type { UserSettings } from '../schema/settings.zod'
 
 export * from './id-list-utils'
 export * from './zod-utils'
@@ -128,63 +127,6 @@ export const REVERT_COMPLETION_PATCH = {
   completedAt: null,
   inProgressStartedAt: null,
 } as const satisfies Partial<Task>
-
-/**
- * True if the timeSpent requirement is met: either not required by settings,
- * or `effectiveTimeMs` > 0. Callers should compute `effectiveTimeMs` via
- * `accumulatedTimeSpent` to include any active IN_PROGRESS session.
- */
-export const isTimeSpentSatisfied = (
-  effectiveTimeMs: number,
-  settings: Pick<UserSettings, 'fieldConfig'>,
-): boolean => !settings.fieldConfig.timeSpent.required || effectiveTimeMs > 0
-
-/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
-export const accumulatedTimeSpent = (
-  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-): number =>
-  task.timeSpent +
-  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
-
-/**
- * Patch that demotes an IN_PROGRESS task to PINNED, flushing its accumulated
- * time into timeSpent. Used to enforce the single-IN_PROGRESS invariant when
- * another task is being moved to IN_PROGRESS.
- */
-export const inProgressDemotionPatch = (
-  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-) =>
-  ({
-    status: TaskStatus.PINNED,
-    timeSpent: accumulatedTimeSpent(task, now),
-    inProgressStartedAt: null,
-  }) as const satisfies Partial<Task>
-
-/**
- * Full patch for transitioning `currentTask` to `newStatus`: timestamp
- * side-effects from `statusToStatusPatch`, plus a timeSpent flush when
- * leaving IN_PROGRESS.
- */
-export const statusChangeSideEffectsPatch = (
-  newStatus: TaskStatus,
-  currentTask: Pick<Task, 'status' | 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-) => {
-  const patch = statusToStatusPatch(newStatus)
-  if (
-    currentTask.status === TaskStatus.IN_PROGRESS &&
-    newStatus !== TaskStatus.IN_PROGRESS &&
-    currentTask.inProgressStartedAt
-  ) {
-    return {
-      ...patch,
-      timeSpent: accumulatedTimeSpent(currentTask, now),
-    } satisfies Partial<Task>
-  }
-  return patch
-}
 
 /**
  * Patch to auto-complete a parent with `inheritCompletionState` enabled, or

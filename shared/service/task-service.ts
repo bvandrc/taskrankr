@@ -18,16 +18,29 @@ import { ERRORS } from '../errors'
 import type { InsertTask, Task, UserSettings } from '../schema'
 import { TaskStatus } from '../schema'
 import {
-  accumulatedTimeSpent,
   autoCompleteParentPatch,
   getHasIncomplete,
-  inProgressDemotionPatch,
-  isTimeSpentSatisfied,
   REVERT_COMPLETION_PATCH,
-  statusChangeSideEffectsPatch,
+  statusToStatusPatch,
 } from '../utils/task-utils'
 
 export type MaybePromise<T> = T | Promise<T>
+
+/**
+ * True if the timeSpent requirement is met, if required by settings.
+ */
+const isTimeSpentSatisfied = (
+  timeSpentMs: number,
+  settings: Pick<UserSettings, 'fieldConfig'>,
+): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
+
+/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
+const accumulatedTimeSpent = (
+  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
+  now: number,
+): number =>
+  task.timeSpent +
+  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
 
 export interface TaskServiceIO {
   getTask(id: number): MaybePromise<Task | null | undefined>
@@ -126,20 +139,30 @@ export class TaskService {
     if (primary.parentId === null) primary.hidden = false
 
     if (newStatus !== undefined && isStatusChange) {
-      Object.assign(
-        primary,
-        statusChangeSideEffectsPatch(newStatus, current, now),
-      )
+      const statusPatch = statusToStatusPatch(newStatus)
+      if (
+        current.status === TaskStatus.IN_PROGRESS &&
+        newStatus !== TaskStatus.IN_PROGRESS &&
+        current.inProgressStartedAt
+      ) {
+        Object.assign(primary, {
+          ...statusPatch,
+          timeSpent: accumulatedTimeSpent(current, now),
+        })
+      } else {
+        Object.assign(primary, statusPatch)
+      }
     }
     buffer.add(id, primary)
 
     if (newStatus === TaskStatus.IN_PROGRESS) {
       const otherInProgress = await this.io.getCurrentInProgressTask(id)
       if (otherInProgress) {
-        buffer.add(
-          otherInProgress.id,
-          inProgressDemotionPatch(otherInProgress, now),
-        )
+        buffer.add(otherInProgress.id, {
+          status: TaskStatus.PINNED,
+          timeSpent: accumulatedTimeSpent(otherInProgress, now),
+          inProgressStartedAt: null,
+        })
       }
     }
 

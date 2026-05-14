@@ -390,26 +390,9 @@ export const TasksProvider = ({
    * server's `TaskMutationService` so omitting them avoids stale-clock drift.
    */
   const enqueueCascadeOps = useCallback(
-    (
-      mutations: MutationPatch[],
-      primary?: { id: number; userUpdates: Partial<Task> },
-    ) => {
+    (mutations: MutationPatch[], skipPrimaryId?: number) => {
       for (const m of mutations) {
-        if (m.id === primary?.id) {
-          // User-intent already shipped; emit a follow-up only for a
-          // service-derived status that diverges from it.
-          if (
-            m.patch.status !== undefined &&
-            m.patch.status !== primary.userUpdates.status
-          ) {
-            enqueue({
-              type: SyncOperationType.UPDATE_TASK,
-              id: m.id,
-              data: { status: m.patch.status },
-            })
-          }
-          continue
-        }
+        if (m.id === skipPrimaryId) continue
         const data: Partial<Task> =
           m.patch.status !== undefined ? { status: m.patch.status } : m.patch
         enqueue({ type: SyncOperationType.UPDATE_TASK, id: m.id, data })
@@ -519,12 +502,20 @@ export const TasksProvider = ({
       }
 
       applyMutations(result.mutations)
-      enqueue({
-        type: SyncOperationType.UPDATE_TASK,
-        id,
-        data: enqueuePrimary,
-      })
-      enqueueCascadeOps(result.mutations, { id, userUpdates: enqueuePrimary })
+
+      // Fold any service-derived status on the primary id into the primary
+      // PUT (e.g. flipping `inheritCompletionState` on a task with all
+      // children done auto-completes the task itself in the same call).
+      const primaryPatch = result.mutations.find((m) => m.id === id)?.patch
+      const primaryData: Partial<Task> = { ...enqueuePrimary }
+      if (
+        primaryPatch?.status !== undefined &&
+        primaryPatch.status !== enqueuePrimary.status
+      ) {
+        primaryData.status = primaryPatch.status
+      }
+      enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: primaryData })
+      enqueueCascadeOps(result.mutations, id)
 
       // `applyMutations` already wrote to `tasksRef`, so the looked-up task
       // already reflects the primary patch.

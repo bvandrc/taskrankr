@@ -168,6 +168,7 @@ describe('Completed Subtasks', () => {
 
       checkNumCalls({ create: 2, update: 0 })
 
+      cy.wait(500) // TODO: debug
       cy.log('Step 2: Complete subtask — parent auto-completes')
       expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
@@ -238,14 +239,15 @@ describe('Completed Subtasks', () => {
         'Step 2: Edit subtask to enable autocomplete and add subtask2 as its child',
       )
       openTaskEditForm(subtask)
-      getTaskForm(0).within(() => {
+      // TODO: would be nice if we could base `data-tier` by the level of dialog it is, not by the level in tree
+      getTaskForm(1).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
-      getTaskForm(1).within(() => {
+      getTaskForm(2).within(() => {
         fillTaskForm(subtask2)
         clickSubmitBtnCreate()
       })
-      getTaskForm(0).within(() => {
+      getTaskForm(1).within(() => {
         cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
         cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
         clickSubmitBtnUpdate({ updatedTasks: [subtask] })

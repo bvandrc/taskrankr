@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react'
 
-import { toast, toastApiError } from '@/hooks/useToasts'
+import { toastApiError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
@@ -276,23 +276,13 @@ export const SyncProvider = ({
       // the synced fields. `acknowledgeSettingsSync` retains any fields the
       // user changed mid-flight so we don't clobber concurrent edits.
       if (settingsSnapshot !== null) {
-        try {
-          const result = await tsr.settings.update.mutate({
-            body: settingsSnapshot,
-          })
-          if (result.status === 200) {
-            acknowledgeSettingsSync(settingsSnapshot)
-          } else {
-            toastApiError(result.body, 'Failed to sync: settings')
-            setLastSyncError('Failed to sync: settings')
-          }
-        } catch (err) {
-          debugLog.log('sync', 'settingsFlush:error', { error: String(err) })
-          toast({
-            title: 'Sync error',
-            description: 'Failed to sync: settings',
-            variant: 'destructive',
-          })
+        const result = await tsr.settings.update.mutate({
+          body: settingsSnapshot,
+        })
+        if (result.status === 200) {
+          acknowledgeSettingsSync(settingsSnapshot)
+        } else {
+          toastApiError(result.body, 'Failed to sync: settings')
           setLastSyncError('Failed to sync: settings')
         }
       }

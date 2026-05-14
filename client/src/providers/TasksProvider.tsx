@@ -56,7 +56,10 @@ import {
   taskSchema,
   type UpdateTask,
 } from '~/shared/schema'
-import { type MutationPatch, TaskService } from '~/shared/service/task-service'
+import {
+  type MutationPatch,
+  TaskMutationService,
+} from '~/shared/service/task-mutation-service'
 
 export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
   /** Preserved across draft → real promotion. */
@@ -120,7 +123,7 @@ interface TasksContextValue {
  */
 interface TaskMutationsContextValue {
   isInitialized: boolean
-  // Task mutations. All return Promises because the shared `TaskService`
+  // Task mutations. All return Promises because the shared `TaskMutationService`
   // they delegate to is async (its I/O contract is `MaybePromise`); on the
   // client every adapter callback is sync, so resolution lands in the
   // current microtask in practice.
@@ -213,7 +216,7 @@ export const TasksProvider = ({
   const reconcileAndSetTasks = useCallback(
     (incomingTasks: LocalTask[], source: string) => {
       const { tasks: reconciled, corrections } =
-        TaskService.reconcileInheritCompletionState(incomingTasks)
+        TaskMutationService.reconcileInheritCompletionState(incomingTasks)
       setTasks(reconciled)
       if (corrections.length > 0) {
         debugLog.log('reconcile', `inheritCompletionState:${source}`, {
@@ -358,11 +361,11 @@ export const TasksProvider = ({
     settingsRef.current = settings
   }, [settings])
 
-  // Stable `TaskService` instance whose I/O adapter reads from `tasksRef` /
+  // Stable `TaskMutationService` instance whose I/O adapter reads from `tasksRef` /
   // `settingsRef` so it always sees the freshest in-memory state.
   const service = useMemo(
     () =>
-      new TaskService({
+      new TaskMutationService({
         getTask: (id) => getById(tasksRef.current, id) ?? null,
         getDirectSubtasks: (parentId) =>
           getDirectSubtasks(tasksRef.current, parentId),
@@ -400,7 +403,7 @@ export const TasksProvider = ({
    * Enqueues a sync op for each cascade mutation. Sends only the user-intent
    * (`status` for status-changes; the full patch otherwise) — computed
    * fields (`completedAt`, `timeSpent` flush, etc.) are re-derived by the
-   * server's `TaskService` so omitting them avoids stale-clock drift.
+   * server's `TaskMutationService` so omitting them avoids stale-clock drift.
    */
   const enqueueCascadeOps = useCallback(
     (mutations: MutationPatch[], skipPrimaryId?: number) => {
@@ -427,7 +430,7 @@ export const TasksProvider = ({
 
       const newTask = buildLocalTask({ ...data, id: tempId, status: newStatus })
 
-      const result = await service.planCreate({
+      const result = await service.resolveCreate({
         ...omit(data, ['clientKey']),
         parentId: data.parentId ?? null,
         status: newStatus,
@@ -501,7 +504,7 @@ export const TasksProvider = ({
       enqueuePrimary: Partial<Task>,
       errorTitle: string,
     ): Promise<LocalTask> => {
-      const result = await service.planUpdate(id, updates)
+      const result = await service.resolveUpdate(id, updates)
 
       if (!result.ok) {
         toast({
@@ -524,7 +527,7 @@ export const TasksProvider = ({
 
       // `applyMutations` already wrote to `tasksRef`, so the looked-up task
       // already reflects the primary patch.
-      // biome-ignore lint/style/noNonNullAssertion: planUpdate succeeded ⇒ id exists
+      // biome-ignore lint/style/noNonNullAssertion: resolveUpdate succeeded ⇒ id exists
       return getById(tasksRef.current, id)!
     },
     [applyMutations, enqueue, enqueueCascadeOps, service],
@@ -548,7 +551,7 @@ export const TasksProvider = ({
 
   const deleteTask = useCallback(
     async (id: number) => {
-      const result = await service.planDelete(id)
+      const result = await service.resolveDelete(id)
       if (!result.ok) return
       const deleted = new Set(result.deletedIds)
       const cascadeById = new Map(result.mutations.map((m) => [m.id, m.patch]))

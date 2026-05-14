@@ -2,7 +2,7 @@
  * @fileoverview Database access layer implementing the IStorage interface.
  *
  * Does not handle any business logic or side-effects; just basic CRUD and queries.
- * All logic lives in `TaskService` and is orchestrated by the route handlers.
+ * All logic lives in `TaskMutationService` and is orchestrated by the route handlers.
  */
 
 import { and, eq, ne } from 'drizzle-orm'

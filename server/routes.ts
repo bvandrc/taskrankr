@@ -2,7 +2,7 @@
  * @fileoverview API route handlers using ts-rest contract-based routing.
  *
  * Defines all task and settings CRUD endpoints with authentication middleware.
- * Mutation handlers delegate orchestration to the shared `TaskService` and
+ * Mutation handlers delegate rule validation and side-effect resolution to the shared `TaskMutationService` and
  * persist its computed mutations via `storage`. Integrates with Replit Auth
  * for user session management.
  */
@@ -79,7 +79,7 @@ const router = s.router(contract, {
       handler: async ({ body, req }) => {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
-        const result = await service.planCreate(body)
+        const result = await service.resolveCreate(body)
         if (!result.ok) return createError(result.error)
 
         const task = await storage.createTask({ ...body, userId })
@@ -94,7 +94,7 @@ const router = s.router(contract, {
       handler: async ({ params, body, req }) => {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
-        const result = await service.planUpdate(params.id, body)
+        const result = await service.resolveUpdate(params.id, body)
         if (!result.ok) return updateError(result.error)
 
         let primary: Task | undefined
@@ -102,10 +102,8 @@ const router = s.router(contract, {
           const updated = await storage.updateTask(m.id, userId, m.patch)
           if (m.id === params.id) primary = updated
         }
-        // planUpdateInto always adds the target id to the buffer, so primary
-        // is guaranteed to be set when result.ok is true.
         if (!primary)
-          throw new Error(`planUpdate missing mutation for id ${params.id}`)
+          throw new Error(`resolveUpdate missing mutation for id ${params.id}`)
         return { status: 200, body: primary }
       },
     },
@@ -114,7 +112,7 @@ const router = s.router(contract, {
       handler: async ({ params, req }) => {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
-        const result = await service.planDelete(params.id)
+        const result = await service.resolveDelete(params.id)
         if (!result.ok) return deleteError(result.error)
 
         for (const id of result.deletedIds) {

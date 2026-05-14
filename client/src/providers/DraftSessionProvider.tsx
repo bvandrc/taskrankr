@@ -60,7 +60,10 @@ import {
 } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
 import { SubtaskSortMode, type Task, TaskStatus } from '~/shared/schema'
-import { type MutationPatch, TaskService } from '~/shared/service/task-service'
+import {
+  type MutationPatch,
+  TaskMutationService,
+} from '~/shared/service/task-mutation-service'
 
 /**
  * Returns a new Map by applying `rewrite` to each entry:
@@ -238,7 +241,7 @@ export const DraftSessionProvider = ({
    */
   const draftService = useMemo(
     () =>
-      new TaskService({
+      new TaskMutationService({
         getTask: (id) => getById(tasksWithDraftsRef.current, id) ?? null,
         getDirectSubtasks: (parentId) =>
           getDirectSubtasks(tasksWithDraftsRef.current, parentId),
@@ -421,7 +424,7 @@ export const DraftSessionProvider = ({
       updates: UpdateTaskContent,
       errorTitle: string,
     ): Promise<LocalTask> => {
-      const result = await draftService.planUpdate(id, updates)
+      const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
         toast({
           title: errorTitle,

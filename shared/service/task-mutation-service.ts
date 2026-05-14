@@ -1,16 +1,16 @@
 /**
- * @fileoverview Cross-platform task mutation orchestrator.
+ * @fileoverview Validates rules and computes side-effects for task mutations.
  *
- * Owns every guard, side-effect, and cascade for task mutations so that the
- * server (`routes.ts` + `storage.ts`) and the client (`TasksProvider.tsx`)
- * share the *exact* same business logic. Each side instantiates the service
- * with an I/O adapter:
+ * `TaskMutationService` is the single source of truth for every business rule,
+ * guard, and cascade triggered by create/update/delete. Server (`routes.ts`)
+ * and client (`TasksProvider.tsx`) each instantiate it with an I/O adapter so
+ * they share identical logic:
  *  - server adapter: async DB calls via `storage`
  *  - client adapter: sync reads from `tasksRef.current`, wrapped in Promises
  *
- * The service is read-only: every method returns a `ServicePlan` describing
- * the validated mutations. Callers persist them however they wish (DB write
- * vs React state update + sync queue enqueue).
+ * Every public method returns a `ServicePlan` — the validated set of patches
+ * to apply. Callers persist them however they wish (DB write vs React state
+ * update + sync queue enqueue). The service itself never writes.
  */
 
 import { type AppError, ERRORS } from '../constants'
@@ -112,7 +112,7 @@ class MutationBuffer {
   }
 }
 
-export class TaskService {
+export class TaskMutationService {
   constructor(
     private readonly io: {
       getTask(id: number): MaybePromise<Task | null | undefined>
@@ -168,19 +168,22 @@ export class TaskService {
   }
 
   /**
-   * Validates and computes all mutations for an update to `id`. Returns an
-   * error if a guard fails (incomplete subtasks, missing timeSpent, missing
-   * task), otherwise the primary patch plus every cascade side-effect.
+   * Validates update rules (incomplete subtasks, timeSpent) and computes all
+   * side-effects: status timestamps, IN_PROGRESS demotion, completion cascades
+   * to children and ancestors, and parent revert on re-parent.
    */
-  async planUpdate(id: number, updates: Partial<Task>): Promise<ServicePlan> {
+  async resolveUpdate(
+    id: number,
+    updates: Partial<Task>,
+  ): Promise<ServicePlan> {
     const buffer = new MutationBuffer()
-    const result = await this.planUpdateInto(id, updates, buffer)
+    const result = await this.resolveUpdateInto(id, updates, buffer)
     if (!result.ok) return result
     return { ok: true, mutations: buffer.toArray() }
   }
 
-  /** Recursive core used by `planUpdate`; shares a buffer so all cascade steps observe one coherent in-flight state. */
-  private async planUpdateInto(
+  /** Recursive core used by `resolveUpdate`; shares a buffer so all cascade steps observe one coherent in-flight state. */
+  private async resolveUpdateInto(
     id: number,
     updates: Partial<Task>,
     buffer: MutationBuffer,
@@ -282,7 +285,7 @@ export class TaskService {
       )
       for (const child of children) {
         if (child.status === newStatus) continue
-        const childResult = await this.planUpdateInto(
+        const childResult = await this.resolveUpdateInto(
           child.id,
           { status: newStatus },
           buffer,
@@ -308,10 +311,11 @@ export class TaskService {
   }
 
   /**
-   * Returns cascade patches for a new task: IN_PROGRESS demotion, parent revert,
-   * or parent auto-complete walk. Does not include the primary insert.
+   * Validates creation rules (timeSpent) and computes side-effects: IN_PROGRESS
+   * demotion, parent revert, or parent auto-complete walk. Does not include the
+   * primary insert — only patches to existing tasks.
    */
-  async planCreate(data: CreatePayload): Promise<ServicePlan> {
+  async resolveCreate(data: CreatePayload): Promise<ServicePlan> {
     if (data.status === TaskStatus.COMPLETED) {
       const settings = await this.io.getSettings()
       if (!isTimeSpentSatisfied(data.timeSpent ?? 0, settings)) {
@@ -354,10 +358,12 @@ export class TaskService {
   }
 
   /**
-   * Computes the full delete plan: every descendant id to remove plus the
-   * patch on the parent (time accumulation + subtaskOrder removal).
+   * Computes delete side-effects: the full descendant id set (leaves-first) and
+   * the patch on the parent (time accumulation + subtaskOrder removal).
    */
-  async planDelete(id: number): Promise<ServicePlan<{ deletedIds: number[] }>> {
+  async resolveDelete(
+    id: number,
+  ): Promise<ServicePlan<{ deletedIds: number[] }>> {
     const target = await this.io.getTask(id)
     if (!target) return { ok: false, error: ERRORS.TASK_NOT_FOUND }
 

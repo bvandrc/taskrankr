@@ -1,13 +1,13 @@
 /**
- * Server-side adapter that wires `TaskService` to the database `storage`
+ * Server-side adapter that wires `TaskMutationService` to the database `storage`
  * layer for a specific user.
  */
 
-import { TaskService } from '~/shared/service/task-service'
+import { TaskMutationService } from '~/shared/service/task-mutation-service'
 import { storage } from './storage'
 
-export const makeTaskService = (userId: string): TaskService =>
-  new TaskService({
+export const makeTaskService = (userId: string): TaskMutationService =>
+  new TaskMutationService({
     getTask: async (id) => (await storage.getTask(id, userId)) ?? null,
     getDirectSubtasks: (parentId) => storage.getSubtasks(parentId, userId),
     getCurrentInProgressTask: async (excludeId) =>

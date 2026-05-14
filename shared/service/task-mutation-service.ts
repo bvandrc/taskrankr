@@ -246,15 +246,23 @@ export class TaskMutationService {
     }
 
     const effective = buffer.overlay(current)
-    if (
-      updates.inheritCompletionState &&
-      effective.status === TaskStatus.COMPLETED
-    ) {
-      const children = (await this.io.getDirectSubtasks(id)).map((c) =>
-        buffer.overlay(c),
-      )
-      if (getHasIncomplete(children)) {
-        buffer.add(id, REVERT_COMPLETION_PATCH)
+    if (updates.inheritCompletionState) {
+      if (effective.status === TaskStatus.COMPLETED) {
+        const children = (await this.io.getDirectSubtasks(id)).map((c) =>
+          buffer.overlay(c),
+        )
+        if (getHasIncomplete(children)) {
+          buffer.add(id, REVERT_COMPLETION_PATCH)
+        }
+      } else {
+        // Flag flipped on while not yet COMPLETED: auto-complete this task
+        // (and walk up) if all children are already done. Skip leaves —
+        // an empty children list would otherwise vacuously "complete" the
+        // task, matching `reconcileInheritCompletionState`'s skip rule.
+        const children = await this.io.getDirectSubtasks(id)
+        if (children.length > 0) {
+          await this.walkAutoCompleteParent(id, buffer)
+        }
       }
     }
 

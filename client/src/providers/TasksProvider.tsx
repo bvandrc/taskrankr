@@ -390,9 +390,29 @@ export const TasksProvider = ({
    * server's `TaskMutationService` so omitting them avoids stale-clock drift.
    */
   const enqueueCascadeOps = useCallback(
-    (mutations: MutationPatch[], skipPrimaryId?: number) => {
+    (
+      mutations: MutationPatch[],
+      primary?: { id: number; userUpdates: Partial<Task> },
+    ) => {
       for (const m of mutations) {
-        if (m.id === skipPrimaryId) continue
+        if (m.id === primary?.id) {
+          // Service buffered an auto-cascade on the primary id (e.g. parent
+          // auto-completes when `inheritCompletionState` flips on). User-intent
+          // already shipped via the primary enqueue; emit a follow-up PUT only
+          // for the derived status (where the buffered status differs from
+          // anything the user explicitly set).
+          if (
+            m.patch.status !== undefined &&
+            m.patch.status !== primary.userUpdates.status
+          ) {
+            enqueue({
+              type: SyncOperationType.UPDATE_TASK,
+              id: m.id,
+              data: { status: m.patch.status },
+            })
+          }
+          continue
+        }
         const data: Partial<Task> =
           m.patch.status !== undefined ? { status: m.patch.status } : m.patch
         enqueue({ type: SyncOperationType.UPDATE_TASK, id: m.id, data })
@@ -507,7 +527,7 @@ export const TasksProvider = ({
         id,
         data: enqueuePrimary,
       })
-      enqueueCascadeOps(result.mutations, id)
+      enqueueCascadeOps(result.mutations, { id, userUpdates: enqueuePrimary })
 
       // `applyMutations` already wrote to `tasksRef`, so the looked-up task
       // already reflects the primary patch.

@@ -246,13 +246,12 @@ export const SyncProvider = ({
               case SyncOperationType.CREATE_TASK:
                 return op.data.name
               case SyncOperationType.UPDATE_TASK:
-                return getById(tasksRef.current, resolveId(op.id))?.name
               case SyncOperationType.DELETE_TASK:
                 return getById(tasksRef.current, resolveId(op.id))?.name
               case SyncOperationType.REORDER_SUBTASKS:
                 return getById(tasksRef.current, resolveId(op.parentId))?.name
               default:
-                return undefined
+                throw new Error(`Unknown operation type: ${op satisfies never}`)
             }
           })()
           const title = taskName ? `Sync error: "${taskName}"` : 'Sync error'

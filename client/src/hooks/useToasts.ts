@@ -13,7 +13,7 @@ import type {
 } from '@/components/primitives/overlays/Toast'
 import { removeIds } from '~/shared/utils/id-list-utils'
 
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 1500
 
 interface ToasterToast extends Omit<ToastProps, 'title' | 'description'> {

@@ -42,13 +42,12 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
+import { toast } from '@/hooks/useToast'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
-import {
-  collectDescendantIds,
-  removeIds,
-  statusToStatusPatch,
-} from '@/lib/task-tree-utils'
+import { makeTaskService } from '@/lib/task-service-adapter'
+import { collectDescendantIds, getById, removeIds } from '@/lib/task-tree-utils'
+import { useSettings } from '@/providers/SettingsProvider'
 import {
   type CreateTaskContent,
   type UpdateTaskContent,
@@ -56,7 +55,8 @@ import {
   useTasks,
 } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
-import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
+import { SubtaskSortMode, type Task, TaskStatus } from '~/shared/schema'
+import type { MutationPatch } from '~/shared/service/task-mutation-service'
 
 /**
  * Returns a new Map by applying `rewrite` to each entry:
@@ -99,15 +99,15 @@ interface DraftSessionStateValue {
 interface DraftSessionMutationsValue {
   // Draft-aware mutators: route to the draft layer if the id is a draft,
   // otherwise fall through to the real TasksProvider mutator.
-  updateTask: (id: number, updates: UpdateTaskContent) => LocalTask
-  deleteTask: (id: number) => void
+  updateTask: (id: number, updates: UpdateTaskContent) => Promise<LocalTask>
+  deleteTask: (id: number) => Promise<void>
   reorderSubtasks: (parentId: number, orderedIds: number[]) => void
-  setTaskStatus: (id: number, status: TaskStatus) => LocalTask
+  setTaskStatus: (id: number, status: TaskStatus) => Promise<LocalTask>
 
   // Session lifecycle
   createDraftTask: (data: CreateTaskContent) => LocalTask
   assignDraftSubtask: (realTaskId: number, draftParentId: number) => void
-  commitDraftSession: () => void
+  commitDraftSession: () => Promise<void>
   discardDraftSession: () => void
 }
 
@@ -121,6 +121,7 @@ export const DraftSessionProvider = ({
   children,
 }: React.PropsWithChildren<EmptyObject>) => {
   const { tasks } = useTasks()
+  const { settings } = useSettings()
   const {
     createTask,
     updateTask: realUpdateTask,
@@ -133,6 +134,8 @@ export const DraftSessionProvider = ({
   // across draft churn. Mirrors `TasksProvider`'s tasksRef pattern.
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   const [draftTasks, setDraftTasks] = useState<LocalTask[]>([])
   // realTaskId -> draft parent id for the duration of the session.
@@ -221,6 +224,46 @@ export const DraftSessionProvider = ({
     draftAssignedParents,
     draftSubtaskOrderOverrides,
   ])
+
+  const tasksWithDraftsRef = useRef(tasksWithDrafts)
+  tasksWithDraftsRef.current = tasksWithDrafts
+
+  /**
+   * Reads from the merged real+draft view so guards and cascades work across
+   * both during the dialog session. Real-task mutations are dropped — see `applyDraftMutations`.
+   */
+  const draftService = useMemo(
+    () => makeTaskService(tasksWithDraftsRef, settingsRef),
+    [],
+  )
+
+  /**
+   * Applies service mutations to draft state. Returns `false` if any patch targets
+   * a real task — a partial cascade is worse than none, so callers fall back to the
+   * raw user-intent patch instead.
+   */
+  const applyDraftMutations = useCallback(
+    (mutations: MutationPatch[]): boolean => {
+      const draftIds = draftTaskIdsRef.current
+      const draftPatches = new Map<number, Partial<Task>>()
+      for (const m of mutations) {
+        if (!draftIds.has(m.id)) return false
+        draftPatches.set(m.id, m.patch)
+      }
+      if (draftPatches.size === 0) return true
+      setDraftTasks((prev) =>
+        prev.map(
+          (t): LocalTask =>
+            draftPatches.has(t.id)
+              ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
+                { ...t, ...draftPatches.get(t.id)! }
+              : t,
+        ),
+      )
+      return true
+    },
+    [],
+  )
 
   // ---------------------------------------------------------------------------
   // Draft-layer primitives. All callbacks below have empty / stable-only deps
@@ -357,16 +400,41 @@ export const DraftSessionProvider = ({
   // remain referentially stable across draft churn.
   // ---------------------------------------------------------------------------
 
+  /** Draft-layer equivalent of `runUpdate` in `TasksProvider`: toasts + throws on guard failure. */
+  const runDraftUpdate = useCallback(
+    async (
+      id: number,
+      updates: UpdateTaskContent,
+      errorTitle: string,
+    ): Promise<LocalTask> => {
+      const result = await draftService.resolveUpdate(id, updates)
+      if (!result.ok) {
+        toast({
+          title: errorTitle,
+          description: result.error.message,
+          variant: 'destructive',
+        })
+        throw new Error(result.error.message)
+      }
+      // Fall back to raw patch if the plan touches real tasks (see `applyDraftMutations`).
+      const applied = applyDraftMutations(result.mutations)
+      if (!applied) updateDraftTask(id, updates)
+      return getById(draftTasksRef.current, id) ?? ({ ...updates } as LocalTask)
+    },
+    [draftService, applyDraftMutations, updateDraftTask],
+  )
+
   const updateTask = useCallback(
-    (id: number, updates: UpdateTaskContent): LocalTask => {
-      if (isDraftIdStable(id)) return updateDraftTask(id, updates)
+    (id: number, updates: UpdateTaskContent): Promise<LocalTask> => {
+      if (isDraftIdStable(id))
+        return runDraftUpdate(id, updates, 'Cannot update task')
       return realUpdateTask(id, updates)
     },
-    [isDraftIdStable, updateDraftTask, realUpdateTask],
+    [isDraftIdStable, runDraftUpdate, realUpdateTask],
   )
 
   const deleteTask = useCallback(
-    (id: number) => {
+    async (id: number): Promise<void> => {
       if (isDraftIdStable(id)) {
         deleteDraftTask(id)
         return
@@ -392,7 +460,7 @@ export const DraftSessionProvider = ({
         }),
       )
 
-      realDeleteTask(id)
+      await realDeleteTask(id)
     },
     [isDraftIdStable, deleteDraftTask, realDeleteTask],
   )
@@ -433,13 +501,12 @@ export const DraftSessionProvider = ({
   )
 
   const setTaskStatus = useCallback(
-    (id: number, status: TaskStatus): LocalTask => {
-      if (isDraftIdStable(id)) {
-        return updateDraftTask(id, statusToStatusPatch(status))
-      }
+    (id: number, status: TaskStatus): Promise<LocalTask> => {
+      if (isDraftIdStable(id))
+        return runDraftUpdate(id, { status }, 'Cannot complete task')
       return realSetTaskStatus(id, status)
     },
-    [isDraftIdStable, updateDraftTask, realSetTaskStatus],
+    [isDraftIdStable, runDraftUpdate, realSetTaskStatus],
   )
 
   // ---------------------------------------------------------------------------
@@ -457,7 +524,7 @@ export const DraftSessionProvider = ({
   // Reads draft state via refs so the callback stays stable across draft
   // churn (consumers of `useDraftSessionMutations` don't re-render).
   // ---------------------------------------------------------------------------
-  const commitDraftSession = useCallback(() => {
+  const commitDraftSession = useCallback(async () => {
     const drafts = draftTasksRef.current
     const assignments = draftAssignedParentsRef.current
     const overrides = draftSubtaskOrderOverridesRef.current
@@ -476,7 +543,7 @@ export const DraftSessionProvider = ({
     const resolve = (id: number) => idMap.get(id) ?? id
 
     for (const draft of drafts) {
-      const created = createTask({
+      const created = await createTask({
         ...omit(draft, ['id', 'userId']),
         parentId: draft.parentId != null ? resolve(draft.parentId) : null,
       })
@@ -494,14 +561,14 @@ export const DraftSessionProvider = ({
     }
 
     // Apply assignments: real task -> resolved (draft) parent.
-    assignments.forEach((newParentId, realTaskId) => {
-      realUpdateTask(realTaskId, { parentId: resolve(newParentId) })
-    })
+    for (const [realTaskId, newParentId] of assignments) {
+      await realUpdateTask(realTaskId, { parentId: resolve(newParentId) })
+    }
 
     // Apply real-parent subtaskOrder overrides (resolving any draft ids).
-    overrides.forEach((order, realParentId) => {
+    for (const [realParentId, order] of overrides) {
       realReorderSubtasks(realParentId, order.map(resolve))
-    })
+    }
 
     discardDraftSession()
     debugLog.log('task', 'commitDraftSession:complete', { mapped: idMap.size })

@@ -229,16 +229,18 @@ export const DraftSessionProvider = ({
     draftSubtaskOrderOverrides,
   ])
 
-  // Ref so the draft service adapter (created once) can always read the
-  // freshest merged view without re-instantiating.
+  /**
+   * Ref so the draft service adapter (created once) can always read the
+   * freshest merged view without re-instantiating.
+   */
   const tasksWithDraftsRef = useRef(tasksWithDrafts)
   tasksWithDraftsRef.current = tasksWithDrafts
 
-  // Draft-scoped `TaskService`: reads from the merged real+draft view so its
-  // guards (INCOMPLETE_SUBTASKS, TIME_SPENT_REQUIRED) and intra-draft
-  // cascades (auto-complete walk among drafts, IN_PROGRESS demotion of
-  // sibling drafts) work correctly during the dialog session. Mutations
-  // emitted on real tasks are dropped — see `applyDraftMutations`.
+  /**
+   * Draft-scoped `TaskService`: reads from the merged real+draft view so its
+   * CRUD guards and intra-draft cascades work correctly during the dialog session.
+   * Mutations emitted on real tasks are dropped — see `applyDraftMutations`.
+   */
   const draftService = useMemo(
     () =>
       new TaskService({

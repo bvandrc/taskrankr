@@ -220,15 +220,15 @@ const TaskFormDialogProviderInner = ({
     })
   }, [subscribeToIdReplacement])
 
-  /** Number of draft subtasks (excluding the root draft) that are not completed. */
-  const incompleteDraftSubtaskCount = useMemo(() => {
+  /** Draft subtasks (excluding the root draft) that are not completed. */
+  const incompleteDraftSubtasks = useMemo(() => {
     const rootId = navStack[0]?.taskId
     return [...draftTaskIds]
       .filter((id) => id !== rootId)
       .filter((id) => {
         const task = getById(tasksWithDrafts, id)
         return task != null && task.status !== TaskStatus.COMPLETED
-      }).length
+      })
   }, [draftTaskIds, tasksWithDrafts, navStack])
 
   const currentEntry: NavEntry | null = navStack.at(-1) ?? null
@@ -361,7 +361,7 @@ const TaskFormDialogProviderInner = ({
       isRoot &&
       pendingSaveFormData === null &&
       data.status === TaskStatus.COMPLETED &&
-      incompleteDraftSubtaskCount > 0
+      incompleteDraftSubtasks.length > 0
     ) {
       setPendingSaveFormData(data)
       setShowSaveOpenSubtasksConfirm(true)
@@ -547,7 +547,7 @@ const TaskFormDialogProviderInner = ({
         title="Saving will re-open this task"
         description={
           <>
-            {incompleteDraftSubtaskCount} open subtask(s) have been added, so
+            {incompleteDraftSubtasks.length} open subtask(s) have been added, so
             this task will be changed to <strong>incomplete</strong> on save.
           </>
         }

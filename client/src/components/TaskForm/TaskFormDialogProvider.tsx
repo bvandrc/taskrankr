@@ -332,32 +332,36 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const handleSubmit = (data: MutateTaskContent) => {
+  const handleSubmit = async (data: MutateTaskContent) => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
 
-    if (top.taskId === null) {
-      // Fresh create with no draft: just create directly.
-      createTask({
-        ...data,
-        parentId: freshCreateParentId ?? undefined,
-      } as CreateTask)
-      // Defensive: any stray drafts get committed (shouldn't exist here).
-      if (hasDraftSession) commitDraftSession()
-      resetAndClose()
-      return
-    }
+    try {
+      if (top.taskId === null) {
+        // Fresh create with no draft: just create directly.
+        await createTask({
+          ...data,
+          parentId: freshCreateParentId ?? undefined,
+        } as CreateTask)
+        // Defensive: any stray drafts get committed (shouldn't exist here).
+        if (hasDraftSession) await commitDraftSession()
+        resetAndClose()
+        return
+      }
 
-    // Save form data to current entity. updateTask routes drafts internally.
-    updateTask(top.taskId, data)
+      // Save form data to current entity. updateTask routes drafts internally.
+      await updateTask(top.taskId, data)
 
-    if (isRoot) {
-      if (hasDraftSession) commitDraftSession()
-      resetAndClose()
-    } else {
-      // Returning from a nested form: pop back to the parent.
-      setNavStack((prev) => prev.slice(0, -1))
+      if (isRoot) {
+        if (hasDraftSession) await commitDraftSession()
+        resetAndClose()
+      } else {
+        // Returning from a nested form: pop back to the parent.
+        setNavStack((prev) => prev.slice(0, -1))
+      }
+    } catch {
+      // Mutator already surfaced a toast; keep dialog open so user can retry.
     }
   }
 

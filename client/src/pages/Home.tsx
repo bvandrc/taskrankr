@@ -68,7 +68,7 @@ const DeleteDemoDataButton = ({ onClick }: { onClick: () => void }) => (
     <Button
       variant="ghost"
       size="sm"
-      className="text-destructive bg-destructive/10 hover:text-destructive hover:bg-destructive/15"
+      className="text-danger bg-danger/10 hover:text-danger hover:bg-danger/15"
       onClick={onClick}
       data-testid="button-delete-demo-data"
     >

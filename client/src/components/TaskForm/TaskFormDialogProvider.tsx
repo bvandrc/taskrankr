@@ -499,7 +499,7 @@ const TaskFormDialogProviderInner = ({
           if (!open) setShowCancelConfirm(false)
         }}
         subtaskCount={pendingSubtaskCount}
-        onDiscard={resetAndClose}
+        onConfirm={resetAndClose}
       />
 
       <AssignSubtaskDialog

@@ -42,7 +42,7 @@ import {
 import { omit } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
-import { toast } from '@/hooks/useToasts'
+import { toastApiError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { buildLocalTask } from '@/lib/task-provider-utils'
 import { makeTaskService } from '@/lib/task-service-adapter'
@@ -410,11 +410,10 @@ export const DraftSessionProvider = ({
       const result = await draftService.resolveUpdate(id, updates)
       if (!result.ok) {
         const taskName = getById(draftTasksRef.current, id)?.name
-        toast({
-          title: taskName ? `${errorTitle} "${taskName}"` : errorTitle,
-          description: result.error.message,
-          variant: 'destructive',
-        })
+        toastApiError(
+          result.error,
+          taskName ? `${errorTitle} "${taskName}"` : errorTitle,
+        )
         throw new Error(result.error.message)
       }
       // Fall back to raw patch if the plan touches real tasks (see `applyDraftMutations`).

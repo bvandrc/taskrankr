@@ -44,8 +44,6 @@ export const Selectors = {
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),
     CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
-    CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
-    CANCEL_DENY_BTN: testId('button-cancel-deny'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
@@ -71,6 +69,10 @@ export const Selectors = {
   ChangeStatusDialog: {
     DIALOG: testId('change-status-dialog'),
     COMPLETE_BTN: testId('button-complete-task'),
+  },
+  ConfirmDialog: {
+    CONFIRM_BTN: testId('button-confirm'),
+    DENY_BTN: testId('button-cancel'),
   },
   Settings: {
     FieldConfig: {

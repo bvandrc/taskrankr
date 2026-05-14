@@ -71,14 +71,14 @@ export const ConfirmAlertDialog = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel
             className="bg-secondary/50 border-white/5 hover:bg-white/10"
-            data-testid="cancel-btn"
+            data-testid="button-cancel"
           >
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className={buttonVariants({ variant: confirmBtnVariant })}
-            data-testid="confirm-btn"
+            data-testid="button-confirm"
           >
             {confirmLabel}
           </AlertDialogAction>

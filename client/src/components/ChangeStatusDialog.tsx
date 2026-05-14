@@ -39,9 +39,7 @@ const TimeSpentInput = ({
   disabled?: boolean
 }) => (
   <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-    <span className="text-xs text-muted-foreground">
-      {disabled ? 'Time Spent (subtasks)' : 'Time Spent'}
-    </span>
+    <span className="text-xs text-muted-foreground">Time Spent</span>
     <TimeInput
       durationMs={timeSpentMs}
       onDurationChange={setTimeSpentMs}

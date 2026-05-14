@@ -44,20 +44,21 @@ const getUserId = (req: { user?: UserSession }): string => {
  * by that route. An unexpected code throws — service contracts diverging
  * from route contracts is a programming error, not a runtime one.
  */
-const createError = (e: AppError) => {
-  if (e.code === 'TIME_SPENT_REQUIRED') return ERRORS.TIME_SPENT_REQUIRED
-  throw new Error(`Unexpected create error: ${e.code}`)
-}
-const updateError = (e: AppError) => {
-  if (e.code === 'TASK_NOT_FOUND') return ERRORS.TASK_NOT_FOUND
-  if (e.code === 'INCOMPLETE_SUBTASKS') return ERRORS.INCOMPLETE_SUBTASKS
-  if (e.code === 'TIME_SPENT_REQUIRED') return ERRORS.TIME_SPENT_REQUIRED
-  throw new Error(`Unexpected update error: ${e.code}`)
-}
-const deleteError = (e: AppError) => {
-  if (e.code === 'TASK_NOT_FOUND') return ERRORS.TASK_NOT_FOUND
-  throw new Error(`Unexpected delete error: ${e.code}`)
-}
+
+const makeErrorHandler =
+  <K extends keyof typeof ERRORS>(label: string, allowed: K[]) =>
+  (e: AppError): (typeof ERRORS)[K] => {
+    if (allowed.includes(e.name as K)) return ERRORS[e.name as K]
+    throw new Error(`Unexpected ${label} error: ${e.name}`)
+  }
+
+const createError = makeErrorHandler('create', ['TIME_SPENT_REQUIRED'])
+const updateError = makeErrorHandler('update', [
+  'TASK_NOT_FOUND',
+  'INCOMPLETE_SUBTASKS',
+  'TIME_SPENT_REQUIRED',
+])
+const deleteError = makeErrorHandler('delete', ['TASK_NOT_FOUND'])
 
 const router = s.router(contract, {
   tasks: {

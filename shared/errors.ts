@@ -5,33 +5,35 @@
  * tests and logging.
  */
 
-export interface AppError {
-  status: number
-  code: string
-  message: string
-}
+import type { ValueOf } from 'type-fest'
 
 export const ERRORS = {
   TASK_NOT_FOUND: {
+    name: 'TASK_NOT_FOUND',
     status: 404,
-    code: 'TASK_NOT_FOUND',
     message: 'Task not found',
   },
   PARENT_NOT_FOUND: {
+    name: 'PARENT_NOT_FOUND',
     status: 404,
-    code: 'PARENT_NOT_FOUND',
     message: 'Parent task not found',
   },
   INCOMPLETE_SUBTASKS: {
+    name: 'INCOMPLETE_SUBTASKS',
     status: 400,
-    code: 'INCOMPLETE_SUBTASKS',
     message: 'All subtasks must be completed first',
   },
   TIME_SPENT_REQUIRED: {
+    name: 'TIME_SPENT_REQUIRED',
     status: 400,
-    code: 'TIME_SPENT_REQUIRED',
     message: 'Time spent must be recorded to complete this task',
   },
-} as const satisfies Record<string, AppError>
+} as const satisfies {
+  [K in string]: {
+    status: number
+    name: K
+    message: string
+  }
+}
 
-export type AppErrorKey = keyof typeof ERRORS
+export type AppError = ValueOf<typeof ERRORS>

@@ -21,9 +21,8 @@ function maybeWaitForIntercept(
     })
 }
 
-export const interceptCreate = () => {
+export const interceptCreate = () =>
   cy.intercept('POST', ApiPaths.CREATE_TASK).as('createTask')
-}
 
 export type CreatedTask = Pick<Task, 'name' | 'status' | RankField>
 
@@ -32,18 +31,16 @@ export function waitForCreate(tasks: CreatedTask[]): void {
   checkTasksExistBackend(tasks)
 }
 
-export const interceptDelete = () => {
+export const interceptDelete = () =>
   cy.intercept('DELETE', ApiPaths.DELETE_TASK).as('deleteTask')
-}
 
 export const waitForDelete = (tasks: Pick<Task, 'name'>[]) => {
   maybeWaitForIntercept('@deleteTask', tasks.length, 204)
   checkTasksDontExistBackend(tasks)
 }
 
-export const interceptUpdate = () => {
+export const interceptUpdate = () =>
   cy.intercept('PUT', ApiPaths.UPDATE_TASK).as('updateTask')
-}
 
 export const waitForUpdate = (tasks: CreatedTask[]) => {
   maybeWaitForIntercept('@updateTask', tasks.length, 200)

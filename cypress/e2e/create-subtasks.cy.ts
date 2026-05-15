@@ -208,14 +208,16 @@ describe('Create Subtasks', () => {
   })
 
   context('Adding subtasks to a completed task', () => {
-    it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
+    beforeEach(() => {
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
       clickSubmitBtnCreate({ newTasks: [completedRootTask] })
 
       cy.log('Navigate to completed page and open the edit form')
       goToCompletedPage()
       openTaskEditForm(completedRootTask)
+    })
 
+    it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
       cy.log('Add an open subtask')
       getTaskForm(0).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -248,13 +250,6 @@ describe('Create Subtasks', () => {
     })
 
     it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
-      cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
-
-      cy.log('Navigate to completed page and open the edit form')
-      goToCompletedPage()
-      openTaskEditForm(completedRootTask)
-
       cy.log('Add a completed subtask')
       getTaskForm(0).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()

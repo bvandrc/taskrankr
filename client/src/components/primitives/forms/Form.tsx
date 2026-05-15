@@ -100,11 +100,11 @@ export const FormLabel = forwardRefHelper<
     <Label
       {...props}
       ref={ref}
-      className={cn(error && redOnError && 'text-destructive', className)}
+      className={cn(error && redOnError && 'text-danger', className)}
       htmlFor={formItemId}
     >
       {children}
-      {isRequired && <span className="text-destructive ml-1">*</span>}
+      {isRequired && <span className="text-danger ml-1">*</span>}
     </Label>
   )
 }, 'FormLabel')
@@ -161,7 +161,7 @@ export const FormMessage = forwardRefHelper<HTMLParagraphElement>(
         {...props}
         ref={ref}
         id={formMessageId}
-        className={cn('text-sm font-medium text-destructive', className)}
+        className={cn('text-sm font-medium text-danger', className)}
       >
         {body}
       </p>

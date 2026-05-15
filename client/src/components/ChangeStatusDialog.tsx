@@ -41,7 +41,7 @@ const DeleteButton = ({
       <Button
         variant="ghost"
         size="sm"
-        className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2 h-8"
+        className="text-danger hover:text-danger hover:bg-danger/10 gap-2 h-8"
         onClick={() => {
           setTimeout(() => setShowDeleteConfirm(true), 100)
         }}

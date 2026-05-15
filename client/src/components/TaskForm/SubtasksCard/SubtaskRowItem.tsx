@@ -114,7 +114,7 @@ export const SubtaskRowItem = ({
           onClick={() => onDelete(task)}
           data-testid={`button-delete-subtask-${task.id}`}
         >
-          <Trash2 className="size-4 text-destructive" />
+          <Trash2 className="size-4 text-danger" />
         </Button>
       </div>
     </div>

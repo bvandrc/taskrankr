@@ -8,6 +8,12 @@ export const checkIsAtHomePage = () => {
   cy.url().should('not.include', Routes.COMPLETED)
 }
 
+export const goToHomePage = () => {
+  cy.get(Selectors.MENU_BTN).click()
+  cy.get(Selectors.Menu.HOME).click()
+  checkIsAtHomePage()
+}
+
 export const goToCompletedPage = () => {
   cy.get(Selectors.MENU_BTN).click()
   cy.get(Selectors.Menu.COMPLETED).click()

@@ -6,7 +6,7 @@
  * or discarded on Cancel.
  */
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { without } from 'es-toolkit'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { EmptyObject } from 'type-fest'
@@ -25,8 +25,9 @@ import {
   useTaskMutations,
 } from '@/providers/TasksProvider'
 import type { CreateTask, Task } from '~/shared/schema'
-import { SubtaskSortMode } from '~/shared/schema'
+import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
 import { ConfirmDeleteDialog } from '../ConfirmDeleteDialog'
+import { ConfirmAlertDialog } from '../primitives/overlays/ConfirmAlertDialog'
 import {
   Dialog,
   DialogContent,
@@ -184,6 +185,10 @@ const TaskFormDialogProviderInner = ({
   )
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showSaveOpenSubtasksConfirm, setShowSaveOpenSubtasksConfirm] =
+    useState(false)
+  const [pendingSaveFormData, setPendingSaveFormData] =
+    useState<MutateTaskContent | null>(null)
   /** When non-null, AssignSubtaskDialog is open and the picked task should be
    *  assigned under this parent (real or draft). */
   const [assignTargetParentId, setAssignTargetParentId] = useState<
@@ -214,6 +219,17 @@ const TaskFormDialogProviderInner = ({
       )
     })
   }, [subscribeToIdReplacement])
+
+  /** Draft subtasks (excluding the root draft) that are not completed. */
+  const incompleteDraftSubtasks = useMemo(() => {
+    const rootId = navStack[0]?.taskId
+    return [...draftTaskIds]
+      .filter((id) => id !== rootId)
+      .filter((id) => {
+        const task = getById(tasksWithDrafts, id)
+        return task != null && task.status !== TaskStatus.COMPLETED
+      })
+  }, [draftTaskIds, tasksWithDrafts, navStack])
 
   const currentEntry: NavEntry | null = navStack.at(-1) ?? null
   const rootEntry: NavEntry | null = navStack[0] ?? null
@@ -337,6 +353,24 @@ const TaskFormDialogProviderInner = ({
     if (!top) return
     const isRoot = navStack.length === 1
 
+    // Guard: when saving a completed task that has newly-added incomplete
+    // subtasks, warn the user that the parent will be re-opened. Skip this
+    // branch when re-called from the dialog's onConfirm — at that point
+    // pendingSaveFormData is already set, signalling the user has confirmed.
+    if (
+      isRoot &&
+      pendingSaveFormData === null &&
+      data.status === TaskStatus.COMPLETED &&
+      incompleteDraftSubtasks.length > 0
+    ) {
+      setPendingSaveFormData(data)
+      setShowSaveOpenSubtasksConfirm(true)
+      return
+    }
+
+    setShowSaveOpenSubtasksConfirm(false)
+    setPendingSaveFormData(null)
+
     try {
       if (top.taskId === null) {
         // Fresh create with no draft: just create directly.
@@ -351,7 +385,16 @@ const TaskFormDialogProviderInner = ({
       }
 
       // Save form data to current entity. updateTask routes drafts internally.
-      await updateTask(top.taskId, data)
+      // If the user confirmed saving a completed task that has incomplete draft
+      // subtasks, force the parent back to OPEN so the intent ("saving will
+      // re-open this task") is actually applied.
+      const effectiveData =
+        isRoot &&
+        data.status === TaskStatus.COMPLETED &&
+        incompleteDraftSubtasks.length > 0
+          ? { ...data, status: TaskStatus.OPEN }
+          : data
+      await updateTask(top.taskId, effectiveData)
 
       if (isRoot) {
         if (hasDraftSession) await commitDraftSession()
@@ -500,6 +543,29 @@ const TaskFormDialogProviderInner = ({
         }}
         subtaskCount={pendingSubtaskCount}
         onConfirm={resetAndClose}
+      />
+
+      <ConfirmAlertDialog
+        open={showSaveOpenSubtasksConfirm}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowSaveOpenSubtasksConfirm(false)
+            setPendingSaveFormData(null)
+          }
+        }}
+        title="Saving will re-open this task"
+        description={
+          <>
+            {incompleteDraftSubtasks.length} open subtask(s) have been added, so
+            this task will be changed to <strong>incomplete</strong> on save.
+          </>
+        }
+        cancelLabel="Go Back"
+        confirmLabel="OK"
+        onConfirm={() => {
+          if (pendingSaveFormData) void handleSubmit(pendingSaveFormData)
+        }}
+        data-testid="saving-will-reopen-dialog"
       />
 
       <AssignSubtaskDialog

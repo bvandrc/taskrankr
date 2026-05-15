@@ -18,7 +18,7 @@ export const TaskFormCancelConfirmDialog = ({
     open={open}
     onOpenChange={onOpenChange}
     title="Are you sure you want to cancel?"
-    description={`You have ${subtaskCount} unsaved ${subtaskCount === 1 ? 'subtask' : 'subtasks'}. ${subtaskCount === 1 ? 'It' : 'They'} will be discarded if you cancel this task.`}
+    description={`You have ${subtaskCount} unsaved subtask(s). They will be discarded if you cancel this task.`}
     cancelLabel="Go Back"
     confirmLabel="Cancel and Discard Subtasks"
     confirmBtnVariant="danger"

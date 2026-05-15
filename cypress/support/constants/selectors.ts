@@ -82,6 +82,9 @@ export const Selectors = {
         testId(`checkbox-${field}-required`),
     },
   },
+  SaveOpenSubtasksConfirmDialog: {
+    DIALOG: testId('saving-will-reopen-dialog'),
+  },
   Toasts: {
     ERROR: testId('toast-danger'),
     DEFAULT: testId('toast-default'),

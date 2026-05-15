@@ -39,7 +39,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { omit } from 'es-toolkit'
+import { omit, uniqBy } from 'es-toolkit'
 import type { EmptyObject } from 'type-fest'
 
 import { toastError } from '@/hooks/useToasts'
@@ -216,7 +216,9 @@ export const DraftSessionProvider = ({
       }
     })
 
-    return [...merged, ...draftTasks]
+    // uniqBy keeps the first occurrence, so real tasks always shadow any
+    // matching draft during the commitDraftSession window.
+    return uniqBy([...merged, ...draftTasks], (t) => t.clientKey)
   }, [
     hasDraftSession,
     tasks,

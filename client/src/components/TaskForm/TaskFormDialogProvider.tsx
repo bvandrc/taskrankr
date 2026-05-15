@@ -556,7 +556,7 @@ const TaskFormDialogProviderInner = ({
         onConfirm={() => {
           if (pendingSaveFormData) void handleSubmit(pendingSaveFormData)
         }}
-        data-testid="save-open-subtasks-confirm-dialog"
+        data-testid="saving-will-reopen-dialog"
       />
 
       <AssignSubtaskDialog

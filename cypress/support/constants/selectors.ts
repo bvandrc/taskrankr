@@ -83,7 +83,7 @@ export const Selectors = {
     },
   },
   SaveOpenSubtasksConfirmDialog: {
-    DIALOG: testId('save-open-subtasks-confirm-dialog'),
+    DIALOG: testId('saving-will-reopen-dialog'),
   },
   Toasts: {
     ERROR: testId('toast-danger'),

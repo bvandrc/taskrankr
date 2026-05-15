@@ -117,8 +117,10 @@ const clickSubmitBtn = (
     .click()
     .then(($btn) => {
       if (confirmDialog) {
-        cy.get(confirmDialog).should('be.visible')
-        cy.get(Selectors.ConfirmDialog.CONFIRM_BTN).click()
+        cy.escapeWithin().within(() => {
+          cy.get(confirmDialog).should('be.visible')
+          cy.get(Selectors.ConfirmDialog.CONFIRM_BTN).click()
+        })
       }
       newTasks && waitForCreate(newTasks)
       updatedTasks && waitForUpdate(updatedTasks)

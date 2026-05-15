@@ -227,11 +227,13 @@ describe('Create Subtasks', () => {
         clickSubmitBtnCreate()
       })
 
+      const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
+
       cy.log('Click Save — dialog warns that the parent will be re-opened')
       getTaskForm(0).within(() => {
         clickSubmitBtnUpdate({
-          updatedTasks: [rootTask],
           newTasks: [subtask],
+          updatedTasks: [openRootTask],
           confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
         })
       })
@@ -242,11 +244,7 @@ describe('Create Subtasks', () => {
       cy.contains(rootTask.name).should('not.exist')
       cy.contains(subtask.name).should('not.exist')
       goToHomePage()
-      expandAndCheckTree({
-        ...completedRootTask,
-        status: TaskStatus.OPEN,
-        subtasks: [subtask],
-      })
+      expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
     })
 
     it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {

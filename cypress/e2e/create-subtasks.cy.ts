@@ -234,7 +234,9 @@ describe('Create Subtasks', () => {
         })
       })
 
-      cy.log('Navigate home — parent is now open and subtask is visible')
+      cy.log(
+        'Parent task is now visible on home page with the new open subtask, no longer on completed page',
+      )
       cy.contains(rootTask.name).should('not.exist')
       cy.contains(subtask.name).should('not.exist')
       goToHomePage()

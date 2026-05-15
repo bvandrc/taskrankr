@@ -385,7 +385,16 @@ const TaskFormDialogProviderInner = ({
       }
 
       // Save form data to current entity. updateTask routes drafts internally.
-      await updateTask(top.taskId, data)
+      // If the user confirmed saving a completed task that has incomplete draft
+      // subtasks, force the parent back to OPEN so the intent ("saving will
+      // re-open this task") is actually applied.
+      const effectiveData =
+        isRoot &&
+        data.status === TaskStatus.COMPLETED &&
+        incompleteDraftSubtasks.length > 0
+          ? { ...data, status: TaskStatus.OPEN }
+          : data
+      await updateTask(top.taskId, effectiveData)
 
       if (isRoot) {
         if (hasDraftSession) await commitDraftSession()

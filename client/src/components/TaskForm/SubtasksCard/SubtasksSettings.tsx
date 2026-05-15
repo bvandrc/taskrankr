@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { SwitchProps } from '@radix-ui/react-switch'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Settings2 } from 'lucide-react'
 
@@ -93,23 +94,17 @@ const SortingMethodSwitch = ({
 
 const SwitchRow = ({
   label,
-  checked,
-  onCheckedChange,
-  'data-testid': dataTestId,
+  ...switchProps
 }: {
   label: string
   checked: boolean
   onCheckedChange: (checked: boolean) => void
   'data-testid'?: string
-}) => (
+} & Pick<SwitchProps, 'checked' | 'onCheckedChange'>) => (
   // biome-ignore lint/a11y/noLabelWithoutControl: is present in the switch
   <label className="flex items-center justify-between cursor-pointer">
     <span className="text-xs text-muted-foreground">{label}</span>
-    <Switch
-      checked={checked}
-      onCheckedChange={onCheckedChange}
-      data-testid={dataTestId}
-    />
+    <Switch {...switchProps} />
   </label>
 )
 

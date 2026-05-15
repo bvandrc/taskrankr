@@ -6,6 +6,10 @@ import {
   checkNumCalls,
 } from '@cypress/support/utils/intercepts'
 import {
+  goToCompletedPage,
+  goToHomePage,
+} from '@cypress/support/utils/navigation'
+import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -19,7 +23,7 @@ import {
 
 import { TaskStatus } from '~/shared/schema'
 
-const { TaskForm } = Selectors
+const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
 describe('Create Subtasks', () => {
   const rootTask = {
@@ -42,6 +46,16 @@ describe('Create Subtasks', () => {
   const subtask3 = {
     ...subtask,
     name: 'E2E Subtask 3',
+  } as const satisfies CreatedTask
+
+  const completedRootTask = {
+    ...rootTask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
+  const completedSubtask = {
+    ...subtask,
+    status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
   beforeEach(() => {
@@ -191,5 +205,69 @@ describe('Create Subtasks', () => {
     checkNumCalls({ create: 4, update: 0 })
 
     // TODO: test EDIT
+  })
+
+  context('Adding subtasks to a completed task', () => {
+    beforeEach(() => {
+      cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
+
+      cy.log('Navigate to completed page and open the edit form')
+      goToCompletedPage()
+      openTaskEditForm(completedRootTask)
+    })
+
+    it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
+      cy.log('Add an open subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        clickSubmitBtnCreate()
+      })
+
+      const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
+
+      cy.log('Click Save — dialog warns that the parent will be re-opened')
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          newTasks: [subtask],
+          updatedTasks: [openRootTask],
+          confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
+        })
+      })
+
+      cy.log(
+        'Parent task is now visible on home page with the new open subtask, no longer on completed page',
+      )
+      cy.contains(rootTask.name).should('not.exist')
+      cy.contains(subtask.name).should('not.exist')
+      goToHomePage()
+      expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
+    })
+
+    it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
+      cy.log('Add a completed subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(completedSubtask)
+        cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          updatedTasks: [completedRootTask],
+          newTasks: [completedSubtask],
+        })
+      })
+
+      cy.log(
+        'Completed page still shows parent task with its new completed subtask',
+      )
+      expandAndCheckTree({ ...completedRootTask, subtasks: [completedSubtask] })
+    })
   })
 })

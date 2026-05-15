@@ -129,7 +129,7 @@ const clickSubmitBtn = (
     })
   // API calls should only be created when root task form is submitted
   if (newTasks || updatedTasks) {
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
+    cy.escapeWithin().find(Selectors.TaskForm.FORM).should('not.exist')
   }
 }
 

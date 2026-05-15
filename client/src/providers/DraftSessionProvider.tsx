@@ -216,10 +216,7 @@ export const DraftSessionProvider = ({
       }
     })
 
-    // During commitDraftSession, createTask adds a real task to `tasks` before
-    // discardDraftSession removes the corresponding draft. Both share the same
-    // clientKey (passed through omit), causing a transient duplicate key in
-    // the rendered list. Filter those out so React never sees the collision.
+
     const mergedClientKeys = new Set(merged.map((t) => t.clientKey))
     return [
       ...merged,

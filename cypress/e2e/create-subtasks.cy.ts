@@ -233,7 +233,7 @@ describe('Create Subtasks', () => {
       getTaskForm(0).within(() => {
         clickSubmitBtnUpdate({
           newTasks: [subtask],
-          updatedTasks: [completedRootTask], // TODO: debug. Should be OPEN with update
+          updatedTasks: [openRootTask],
           confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
         })
       })

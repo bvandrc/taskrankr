@@ -217,13 +217,20 @@ export const TasksProvider = ({
         debugLog.log('reconcile', `inheritCompletionState:${source}`, {
           corrections,
         })
+        const reconciledById = mapById(reconciled)
         enqueueMany(
           corrections.map(
             (c) =>
               ({
                 type: SyncOperationType.UPDATE_TASK,
                 id: c.id,
-                data: { status: c.status },
+                data: {
+                  status: c.status,
+                  timeSpent:
+                    (c.status === TaskStatus.COMPLETED
+                      ? reconciledById.get(c.id)?.timeSpent
+                      : undefined) || undefined,
+                },
               }) as const,
           ),
         )
@@ -393,8 +400,16 @@ export const TasksProvider = ({
     (mutations: MutationPatch[], skipPrimaryId?: number) => {
       for (const m of mutations) {
         if (m.id === skipPrimaryId) continue
-        const data: Partial<Task> =
-          m.patch.status !== undefined ? { status: m.patch.status } : m.patch
+        let data: Partial<Task>
+        if (m.patch.status !== undefined) {
+          data = { status: m.patch.status }
+          if (m.patch.status === TaskStatus.COMPLETED) {
+            const ts = getById(tasksRef.current, m.id)?.timeSpent
+            if (ts) data.timeSpent = ts
+          }
+        } else {
+          data = m.patch
+        }
         enqueue({ type: SyncOperationType.UPDATE_TASK, id: m.id, data })
       }
     },
@@ -528,7 +543,12 @@ export const TasksProvider = ({
   const setTaskStatus = useCallback(
     (id: number, status: TaskStatus) => {
       debugLog.log('task', 'setStatus', { id, status })
-      return runUpdate(id, { status }, { status }, 'Cannot complete task')
+      const enqueuePrimary: Partial<Task> = { status }
+      if (status === TaskStatus.COMPLETED) {
+        const ts = getById(tasksRef.current, id)?.timeSpent
+        if (ts) enqueuePrimary.timeSpent = ts
+      }
+      return runUpdate(id, { status }, enqueuePrimary, 'Cannot complete task')
     },
     [runUpdate],
   )

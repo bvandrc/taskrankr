@@ -58,7 +58,7 @@ export const checkTasksExistBackend = (
       expect(
         givenTask,
         `Task "${expectedTask.name}" exists in ${message} with correct props`,
-      ).to.include(expectedTask)
+      ).to.deep.include(expectedTask)
     }
   }, isLoggedIn())
 

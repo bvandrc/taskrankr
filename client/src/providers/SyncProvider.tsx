@@ -190,12 +190,9 @@ export const SyncProvider = ({
               success = true
               break
             }
-            // Bare status=completed ops (setTaskStatus, cascade, reconcile)
-            // don't carry timeSpent. If the server task still has timeSpent=0
-            // (because an earlier full-form save hasn't synced yet), the
-            // TIME_SPENT_REQUIRED guard fires and permanently blocks the queue.
-            // Hydrating from local state satisfies the check idempotently —
-            // op data wins if it already contains a timeSpent value.
+            // op to COMPLETED may not have timeSpent, but backend requires
+            // timeSpent when setting status to COMPLETED, so we may need to
+            // pass it sometimes
             const body = { ...op.data }
             if (
               body.status === TaskStatus.COMPLETED &&

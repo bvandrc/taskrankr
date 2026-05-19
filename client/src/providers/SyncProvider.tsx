@@ -18,6 +18,7 @@ import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
+import { TaskStatus } from '~/shared/schema'
 import { useSettings } from './SettingsProvider'
 import { SyncOperationType, useTaskSyncQueue } from './TaskSyncQueueProvider'
 import { useTaskMutations, useTasks } from './TasksProvider'
@@ -189,9 +190,23 @@ export const SyncProvider = ({
               success = true
               break
             }
+            // op to COMPLETED may not have timeSpent, but backend requires
+            // timeSpent when setting status to COMPLETED, so we may need to
+            // pass it sometimes
+            const body = { ...op.data }
+            if (
+              body.status === TaskStatus.COMPLETED &&
+              body.timeSpent === undefined
+            ) {
+              const localTimeSpent = getById(
+                tasksRef.current,
+                realId,
+              )?.timeSpent
+              if (localTimeSpent) body.timeSpent = localTimeSpent
+            }
             const result = await tsr.tasks.update.mutate({
               params: { id: realId },
-              body: op.data,
+              body,
             })
             if (result.status === 200) {
               success = true

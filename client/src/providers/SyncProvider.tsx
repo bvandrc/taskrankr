@@ -277,7 +277,7 @@ export const SyncProvider = ({
             title: `Sync error${err?.taskName ? `: "${err.taskName}"` : ''}`,
             description: [
               err?.message,
-              `${remaining} unsynced ${remaining === 1 ? 'action' : 'actions'} remaining.`,
+              `${remaining} unsynced action(s) remaining.`,
             ]
               .filter(Boolean)
               .join(' '),

@@ -29,7 +29,7 @@ export function maybeWaitForIntercept(
 
 export type CreatedTask = Pick<Task, 'name' | 'status' | RankField>
 
-let _createTaskWaitCount = 0
+let createTaskWaitCount = 0
 
 export const interceptCreate = () =>
   cy.intercept('POST', ApiPaths.CREATE_TASK).as('createTask')
@@ -37,10 +37,10 @@ export const interceptCreate = () =>
 export function waitForCreate(tasks: CreatedTask[]): void {
   maybeWaitForIntercept('@createTask', tasks.length, 201)
   checkTasksExistBackend(tasks)
-  _createTaskWaitCount += tasks.length
+  createTaskWaitCount += tasks.length
 }
 
-let _deleteTaskWaitCount = 0
+let deleteTaskWaitCount = 0
 
 export const interceptDelete = () =>
   cy.intercept('DELETE', ApiPaths.DELETE_TASK).as('deleteTask')
@@ -48,10 +48,10 @@ export const interceptDelete = () =>
 export const waitForDelete = (tasks: Pick<Task, 'name'>[]) => {
   maybeWaitForIntercept('@deleteTask', tasks.length, 204)
   checkTasksDontExistBackend(tasks)
-  _deleteTaskWaitCount += tasks.length
+  deleteTaskWaitCount += tasks.length
 }
 
-let _updateTaskWaitCount = 0
+let updateTaskWaitCount = 0
 
 export const interceptUpdate = () =>
   cy.intercept('PUT', ApiPaths.UPDATE_TASK).as('updateTask')
@@ -59,7 +59,7 @@ export const interceptUpdate = () =>
 export const waitForUpdate = (tasks: CreatedTask[]) => {
   maybeWaitForIntercept('@updateTask', tasks.length, 200)
   checkTasksExistBackend(tasks)
-  _updateTaskWaitCount += tasks.length
+  updateTaskWaitCount += tasks.length
 }
 
 export const checkNumCalls = ({

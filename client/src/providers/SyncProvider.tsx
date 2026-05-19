@@ -274,9 +274,15 @@ export const SyncProvider = ({
         if (success) {
           successCount++
         } else {
+          const remaining = queueSnapshot.length - successCount
           toastError({
             title: `Sync error${err?.taskName ? `: "${err.taskName}"` : ''}`,
-            description: err?.message,
+            description: [
+              err?.message,
+              `${remaining} unsynced ${remaining === 1 ? 'action' : 'actions'} remaining.`,
+            ]
+              .filter(Boolean)
+              .join(' '),
           })
           setLastSyncError(`Failed to sync: ${op.type}`)
           break

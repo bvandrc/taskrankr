@@ -190,18 +190,33 @@ export const SyncProvider = ({
               success = true
               break
             }
-            // op to COMPLETED may not have timeSpent, but backend requires
-            // timeSpent when setting status to COMPLETED, so we may need to
-            // pass it sometimes
+            // If the task has already been deleted locally and a delete op
+            // follows in the queue for the same id, the status update is moot
+            // — skip it so the delete can proceed and clear the server record.
+            const localTask = getById(tasksRef.current, realId)
+            if (
+              op.data.status === TaskStatus.COMPLETED &&
+              !localTask &&
+              queueSnapshot
+                .slice(queueSnapshot.indexOf(op) + 1)
+                .some(
+                  (o) =>
+                    o.type === SyncOperationType.DELETE_TASK &&
+                    resolveId(o.id) === realId,
+                )
+            ) {
+              success = true
+              break
+            }
+            // Bare status=completed ops (setTaskStatus, cascade, reconcile)
+            // may still lack timeSpent (e.g. legacy queued ops). Hydrate from
+            // local state as a defensive fallback.
             const body = { ...op.data }
             if (
               body.status === TaskStatus.COMPLETED &&
               body.timeSpent === undefined
             ) {
-              const localTimeSpent = getById(
-                tasksRef.current,
-                realId,
-              )?.timeSpent
+              const localTimeSpent = localTask?.timeSpent
               if (localTimeSpent) body.timeSpent = localTimeSpent
             }
             const result = await tsr.tasks.update.mutate({

@@ -18,6 +18,7 @@ import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
+import { TaskStatus } from '~/shared/schema'
 import { useSettings } from './SettingsProvider'
 import { SyncOperationType, useTaskSyncQueue } from './TaskSyncQueueProvider'
 import { useTaskMutations, useTasks } from './TasksProvider'
@@ -189,9 +190,26 @@ export const SyncProvider = ({
               success = true
               break
             }
+            // Bare status=completed ops (setTaskStatus, cascade, reconcile)
+            // don't carry timeSpent. If the server task still has timeSpent=0
+            // (because an earlier full-form save hasn't synced yet), the
+            // TIME_SPENT_REQUIRED guard fires and permanently blocks the queue.
+            // Hydrating from local state satisfies the check idempotently —
+            // op data wins if it already contains a timeSpent value.
+            const body = { ...op.data }
+            if (
+              body.status === TaskStatus.COMPLETED &&
+              body.timeSpent === undefined
+            ) {
+              const localTimeSpent = getById(
+                tasksRef.current,
+                realId,
+              )?.timeSpent
+              if (localTimeSpent) body.timeSpent = localTimeSpent
+            }
             const result = await tsr.tasks.update.mutate({
               params: { id: realId },
-              body: op.data,
+              body,
             })
             if (result.status === 200) {
               success = true

@@ -171,12 +171,10 @@ describe('Completed Subtasks', () => {
       cy.log('Step 2: Complete subtask — parent auto-completes')
       expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
-        // TODO: debug
-        // sideEffects: [completedRootTask], // Parent auto-completes as the last subtask is marked done
+        sideEffects: [completedRootTask], // Parent auto-completes as the last subtask is marked done
       })
 
-      // TODO: debug should be 2 updates — one from the subtask status change, one from the parent auto-completing
-      checkNumCalls({ create: 2, update: 1 }) // one from status change, one from parent auto-completing
+      checkNumCalls({ create: 2, update: 2 })
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])

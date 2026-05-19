@@ -190,14 +190,10 @@ export const SyncProvider = ({
               success = true
               break
             }
-            // If this is a reconciliation COMPLETED update and the task has
-            // already been deleted locally with a DELETE op following in the
-            // queue, the update is moot — skip it to avoid a spurious sync
-            // error that would halt the queue before the DELETE is processed.
-            const localTask = getById(tasksRef.current, realId)
+            // Any UPDATE for a task that will be DELETEd later in the queue
+            // is moot — skip it to avoid a spurious sync error that would
+            // halt the queue before the DELETE is processed.
             if (
-              op.data.status === TaskStatus.COMPLETED &&
-              !localTask &&
               queueSnapshot
                 .slice(queueSnapshot.indexOf(op) + 1)
                 .some(
@@ -209,6 +205,7 @@ export const SyncProvider = ({
               success = true
               break
             }
+            const localTask = getById(tasksRef.current, realId)
             // RECONCILE: op to COMPLETED may not have timeSpent, but backend
             // may require it and be missing it
             const body = { ...op.data }

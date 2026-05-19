@@ -173,13 +173,10 @@ describe('Completed Subtasks', () => {
       })
 
       checkNumCalls({ create: 2, update: 0 })
+      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       cy.log('Step 2: Complete subtask — parent auto-completes')
       cy.wait(300) // TODO: remove
-
-      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
-      cy.wait(300) // TODO: remove
-
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
         sideEffects: [completedRootTask], // Parent auto-completes as the last subtask is marked done
       })

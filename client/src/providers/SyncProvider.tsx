@@ -170,7 +170,7 @@ export const SyncProvider = ({
       let successCount = 0
       for (const op of queueSnapshot) {
         let success = false
-        let errorBody: { message: string } | undefined
+        let err: { message: string; taskName?: string } | undefined
 
         switch (op.type) {
           case SyncOperationType.CREATE_TASK: {
@@ -180,7 +180,7 @@ export const SyncProvider = ({
               replaceTaskId(op.tempId, result.body.id)
               success = true
             } else {
-              errorBody = result.body
+              err = { ...result.body, taskName: op.data.name }
             }
             break
           }
@@ -190,27 +190,9 @@ export const SyncProvider = ({
               success = true
               break
             }
-            // If the task has already been deleted locally and a delete op
-            // follows in the queue for the same id, the status update is moot
-            // — skip it so the delete can proceed and clear the server record.
             const localTask = getById(tasksRef.current, realId)
-            if (
-              op.data.status === TaskStatus.COMPLETED &&
-              !localTask &&
-              queueSnapshot
-                .slice(queueSnapshot.indexOf(op) + 1)
-                .some(
-                  (o) =>
-                    o.type === SyncOperationType.DELETE_TASK &&
-                    resolveId(o.id) === realId,
-                )
-            ) {
-              success = true
-              break
-            }
-            // Bare status=completed ops (setTaskStatus, cascade, reconcile)
-            // may still lack timeSpent (e.g. legacy queued ops). Hydrate from
-            // local state as a defensive fallback.
+            // RECONCILE: op to COMPLETED may not have timeSpent, but backend
+            // may require it and be missing it
             const body = { ...op.data }
             if (
               body.status === TaskStatus.COMPLETED &&
@@ -225,8 +207,21 @@ export const SyncProvider = ({
             })
             if (result.status === 200) {
               success = true
+            } else if (
+              queueSnapshot
+                .slice(queueSnapshot.indexOf(op) + 1)
+                .some(
+                  (o) =>
+                    o.type === SyncOperationType.DELETE_TASK &&
+                    resolveId(o.id) === realId,
+                )
+            ) {
+              // Update failed but a DELETE for the same task follows — the
+              // task will be deleted anyway, so treat this as moot and
+              // continue processing the queue.
+              success = true
             } else {
-              errorBody = result.body
+              err = { ...result.body, taskName: localTask?.name }
             }
             break
           }
@@ -242,7 +237,10 @@ export const SyncProvider = ({
             if (result.status === 204) {
               success = true
             } else {
-              errorBody = result.body
+              err = {
+                ...result.body,
+                taskName: getById(tasksRef.current, realId)?.name,
+              }
             }
             break
           }
@@ -260,7 +258,10 @@ export const SyncProvider = ({
             if (result.status === 200) {
               success = true
             } else {
-              errorBody = result.body
+              err = {
+                ...result.body,
+                taskName: getById(tasksRef.current, realParentId)?.name,
+              }
             }
             break
           }
@@ -271,21 +272,16 @@ export const SyncProvider = ({
         if (success) {
           successCount++
         } else {
-          const taskName = (() => {
-            switch (op.type) {
-              case SyncOperationType.CREATE_TASK:
-                return op.data.name
-              case SyncOperationType.UPDATE_TASK:
-              case SyncOperationType.DELETE_TASK:
-                return getById(tasksRef.current, resolveId(op.id))?.name
-              case SyncOperationType.REORDER_SUBTASKS:
-                return getById(tasksRef.current, resolveId(op.parentId))?.name
-              default:
-                throw new Error(`Unknown operation type: ${op satisfies never}`)
-            }
-          })()
-          const title = `Sync error${taskName ? `: "${taskName}"` : ''}`
-          toastError({ title, description: errorBody?.message })
+          const remaining = queueSnapshot.length - successCount
+          toastError({
+            title: `Sync error${err?.taskName ? `: "${err.taskName}"` : ''}`,
+            description: [
+              err?.message,
+              `${remaining} unsynced action(s) remaining.`,
+            ]
+              .filter(Boolean)
+              .join(' '),
+          })
           setLastSyncError(`Failed to sync: ${op.type}`)
           break
         }

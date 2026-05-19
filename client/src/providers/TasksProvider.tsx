@@ -224,15 +224,13 @@ export const TasksProvider = ({
               ({
                 type: SyncOperationType.UPDATE_TASK,
                 id: c.id,
-                data: (() => {
-                  const ts =
-                    c.status === TaskStatus.COMPLETED
+                data: {
+                  status: c.status,
+                  timeSpent:
+                    (c.status === TaskStatus.COMPLETED
                       ? reconciledById.get(c.id)?.timeSpent
-                      : undefined
-                  return ts
-                    ? { status: c.status, timeSpent: ts }
-                    : { status: c.status }
-                })(),
+                      : undefined) || undefined,
+                },
               }) as const,
           ),
         )

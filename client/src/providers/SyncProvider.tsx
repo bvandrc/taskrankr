@@ -190,21 +190,6 @@ export const SyncProvider = ({
               success = true
               break
             }
-            // Any UPDATE for a task that will be DELETEd later in the queue
-            // is moot — skip it to avoid a spurious sync error that would
-            // halt the queue before the DELETE is processed.
-            if (
-              queueSnapshot
-                .slice(queueSnapshot.indexOf(op) + 1)
-                .some(
-                  (o) =>
-                    o.type === SyncOperationType.DELETE_TASK &&
-                    resolveId(o.id) === realId,
-                )
-            ) {
-              success = true
-              break
-            }
             const localTask = getById(tasksRef.current, realId)
             // RECONCILE: op to COMPLETED may not have timeSpent, but backend
             // may require it and be missing it
@@ -221,6 +206,19 @@ export const SyncProvider = ({
               body,
             })
             if (result.status === 200) {
+              success = true
+            } else if (
+              queueSnapshot
+                .slice(queueSnapshot.indexOf(op) + 1)
+                .some(
+                  (o) =>
+                    o.type === SyncOperationType.DELETE_TASK &&
+                    resolveId(o.id) === realId,
+                )
+            ) {
+              // Update failed but a DELETE for the same task follows — the
+              // task will be deleted anyway, so treat this as moot and
+              // continue processing the queue.
               success = true
             } else {
               err = { ...result.body, taskName: localTask?.name }

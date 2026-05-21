@@ -412,6 +412,16 @@ export class TaskMutationService {
       })
       if (!completePatch) break
 
+      // Roll up children's accumulated timeSpent so the auto-completed parent
+      // satisfies timeSpent validation and reflects real work done on subtasks.
+      const childrenTimeSpent = siblings.reduce(
+        (sum, s) => sum + s.timeSpent,
+        0,
+      )
+      if (childrenTimeSpent > parent.timeSpent) {
+        completePatch.timeSpent = childrenTimeSpent
+      }
+
       buffer.add(parent.id, completePatch)
       lastCompletedChildId = parent.id
       currentParentId = parent.parentId

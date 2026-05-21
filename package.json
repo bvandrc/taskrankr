@@ -8,6 +8,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "__c0": "====================[ Local Dev (Docker) ]========================",
+    "local:db:up": "docker compose up -d",
+    "local:db:down": "docker compose down",
+    "local:migrate": "cross-env DATABASE_URL=postgresql://app:password@localhost:5432/appdb drizzle-kit migrate",
+    "local:start": "cross-env DATABASE_URL=postgresql://app:password@localhost:5432/appdb SESSION_SECRET=changeme NODE_ENV=production node dist/index.cjs",
     "__c1": "====================[ Build & Development ]======================",
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",

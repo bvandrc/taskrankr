@@ -25,11 +25,38 @@ A multi-user task management app with priority, ease, enjoyment, and time rating
 
 ## Getting Started
 
-1. Clone the repository
+### On Replit
+
+1. Fork the repl
 2. Install dependencies: `npm install`
-3. Set up your PostgreSQL database and add `DATABASE_URL` to environment
-4. Push the schema: `npm run db:push`
-5. Start the development server: `npm run dev`
+3. Start the development server: `npm run dev`
+
+Database and auth are provisioned automatically by Replit.
+
+### Locally (Docker)
+
+> **Note:** Replit Auth (login) requires a live Replit repl and cannot be replicated locally. The app will run in guest mode only — all data is stored in the browser.
+
+**Prerequisites:** Docker Desktop, Node.js 20+
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start Postgres
+npm run local:db:up
+
+# 3. Build the app
+npm run build
+
+# 4. Run DB migrations (first time only, or after schema changes)
+npm run local:migrate
+
+# 5. Start the server — visit http://localhost:5000
+npm run local:start
+```
+
+To stop Postgres: `npm run local:db:down`
 
 ## License
 

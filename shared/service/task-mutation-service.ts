@@ -31,12 +31,11 @@ const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
  * null if any child is still incomplete. `completedAt` reflects the latest
  * child completion so the parent inherits its meaningful "done" timestamp.
  *
- * Pass `treatAsCompleted` to count a specific child id as completed regardless
- * of its current status — useful when computing from a snapshot taken before
- * the child's write commits.
- *
- * Pass `parent` so that children's accumulated timeSpent is rolled up
- * when it exceeds the parent's own value, satisfying timeSpent validation.
+ * @param children - Direct subtasks of the parent, overlaid with any in-flight buffer patches.
+ * @param options.treatAsCompleted - Count this child id as completed regardless of its current
+ *   status — useful when computing from a snapshot taken before the child's write commits.
+ * @param options.parent - Current parent task state. Children's accumulated timeSpent is rolled
+ *   up into the patch when it exceeds the parent's own value, satisfying timeSpent validation.
  */
 const autoCompleteParentPatch = (
   children: Task[],

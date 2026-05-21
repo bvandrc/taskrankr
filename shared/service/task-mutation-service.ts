@@ -35,16 +35,18 @@ const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
  * of its current status — useful when computing from a snapshot taken before
  * the child's write commits.
  *
- * Pass `parentTimeSpent` so that children's accumulated timeSpent is rolled up
+ * Pass `parent` so that children's accumulated timeSpent is rolled up
  * when it exceeds the parent's own value, satisfying timeSpent validation.
  */
 const autoCompleteParentPatch = (
   children: Task[],
-  options: { treatAsCompleted?: number; parentTimeSpent?: number } = {},
+  {
+    treatAsCompleted,
+    parent,
+  }: { treatAsCompleted?: number; parent: Pick<Task, 'timeSpent'> },
 ): Partial<Task> | null => {
   const allComplete = children.every(
-    (c) =>
-      c.id === options.treatAsCompleted || c.status === TaskStatus.COMPLETED,
+    (c) => c.id === treatAsCompleted || c.status === TaskStatus.COMPLETED,
   )
   if (!allComplete) return null
 
@@ -55,7 +57,7 @@ const autoCompleteParentPatch = (
   }
 
   const childrenTimeSpent = children.reduce((sum, c) => sum + c.timeSpent, 0)
-  if (childrenTimeSpent > (options.parentTimeSpent ?? 0)) {
+  if (childrenTimeSpent > parent.timeSpent) {
     patch.timeSpent = childrenTimeSpent
   }
 
@@ -156,9 +158,7 @@ export class TaskMutationService {
         const children = updated.filter((t) => t.parentId === parent.id)
         if (children.length === 0) continue
 
-        const completePatch = autoCompleteParentPatch(children, {
-          parentTimeSpent: parent.timeSpent,
-        })
+        const completePatch = autoCompleteParentPatch(children, { parent })
         if (completePatch && parent.status !== TaskStatus.COMPLETED) {
           updated = updated.map((t) =>
             t.id === parent.id ? { ...t, ...completePatch } : t,
@@ -422,7 +422,7 @@ export class TaskMutationService {
       )
       const completePatch = autoCompleteParentPatch(siblings, {
         treatAsCompleted: lastCompletedChildId,
-        parentTimeSpent: parent.timeSpent,
+        parent,
       })
       if (!completePatch) break
 

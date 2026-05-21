@@ -59,7 +59,7 @@ describe('Task Creation', () => {
 
     cy.log('Step 1: Update rank field settings')
     setSettings({ fieldConfig })
-    cy.get('@settingsPut.all').should('have.length', isLoggedIn() ? 4 : 0)
+    checkNumCalls({ updateSettings: 4 })
     cy.get(Selectors.BACK_BTN).click()
 
     cy.log('Step 2: Create task using new field config, verify in tree')
@@ -86,7 +86,7 @@ describe('Task Creation', () => {
 
     cy.log('Step 1: Update settings to show only time spent (required)')
     setSettings({ fieldConfig })
-    cy.get('@settingsPut.all').should('have.length', isLoggedIn() ? 5 : 0)
+    checkNumCalls({ updateSettings: 5 })
     cy.get(Selectors.BACK_BTN).click()
 
     cy.log(

@@ -14,7 +14,7 @@ export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
   cy.get(Selectors.MENU_BTN).click()
   cy.get(Menu.SETTINGS).click()
 
-  cy.intercept('PUT', ApiPaths.UPDATE_SETTINGS).as('settingsPut')
+  cy.intercept('PATCH', ApiPaths.UPDATE_SETTINGS).as('updateSettings')
 
   setFieldConfig(settings.fieldConfig)
 
@@ -34,7 +34,7 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
         if (isChecked !== visible) {
           cy.get(Settings.FieldConfig.visibleCheckbox(field)) //
             .toggleState(visible)
-          maybeWaitForIntercept('@settingsPut', 1, 200)
+          maybeWaitForIntercept('@updateSettings', 1, 200)
         }
       })
 
@@ -44,7 +44,7 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
         if (isChecked !== required) {
           cy.get(Settings.FieldConfig.requiredCheckbox(field)) //
             .toggleState(required)
-          maybeWaitForIntercept('@settingsPut', 1, 200)
+          maybeWaitForIntercept('@updateSettings', 1, 200)
         }
       })
   }

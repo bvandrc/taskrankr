@@ -9,6 +9,7 @@ export const AuthPaths = {
   LOGOUT: '/api/logout',
   CALLBACK: '/api/callback',
   USER: '/api/auth/user',
+  CONFIG: '/api/auth/config',
 } as const
 
 /**

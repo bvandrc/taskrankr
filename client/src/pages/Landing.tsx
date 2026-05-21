@@ -21,6 +21,7 @@ import {
 import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
 import { InlineLink } from '@/components/primitives/InlineText'
+import { useAuthConfig } from '@/hooks/useAuthConfig'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
@@ -84,6 +85,7 @@ const LandingButtonWithCaption = ({
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
   const queryClient = useQueryClient()
+  const { replitAuthEnabled, testLoginEnabled } = useAuthConfig()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)
 
@@ -91,6 +93,8 @@ const Landing = () => {
     await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
     queryClient.invalidateQueries({ queryKey: [AuthPaths.USER] })
   }
+
+  const useDevLogin = !replitAuthEnabled && testLoginEnabled
 
   return (
     <div className="max-h-screen bg-background text-foreground flex flex-col">
@@ -151,8 +155,13 @@ const Landing = () => {
 
         <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-4 gap-2 justify-center">
           <LandingButtonWithCaption
-            href={AuthPaths.LOGIN}
-            caption="To back up your data and sync across devices"
+            href={useDevLogin ? undefined : AuthPaths.LOGIN}
+            onClick={useDevLogin ? devLogin : undefined}
+            caption={
+              useDevLogin
+                ? 'Bypasses Replit Auth for local dev'
+                : 'To back up your data and sync across devices'
+            }
             data-testid="button-get-started"
           >
             Log In / Sign Up
@@ -166,23 +175,6 @@ const Landing = () => {
             Try as Guest
           </LandingButtonWithCaption>
         </div>
-
-        {import.meta.env.DEV && (
-          <div className="mt-4 flex flex-col items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={devLogin}
-              className="border-dashed border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
-              data-testid="button-dev-login"
-            >
-              Dev Login
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Local dev only — bypasses Replit Auth
-            </p>
-          </div>
-        )}
 
         {!isStandalone && (
           <div className="mt-auto py-[8vh] flex justify-center">

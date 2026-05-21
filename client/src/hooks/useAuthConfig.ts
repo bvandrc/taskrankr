@@ -7,12 +7,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { defaults } from 'es-toolkit/compat'
 
-import { type AuthConfig, AuthPaths, TestPaths } from '~/shared/constants'
+import { AuthPaths, TestPaths } from '~/shared/constants'
+import { type AuthConfig, authConfigSchema } from '~/shared/schema'
 
 async function fetchAuthConfig(): Promise<AuthConfig> {
   const res = await fetch(AuthPaths.CONFIG)
   if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`)
-  return res.json()
+  return authConfigSchema.parse(await res.json())
 }
 
 export function useAuthConfig() {

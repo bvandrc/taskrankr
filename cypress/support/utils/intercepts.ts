@@ -65,11 +65,13 @@ export const waitForUpdate = (tasks: CreatedTask[]) => {
 export const checkNumCalls = ({
   create: createCount,
   update: updateCount,
-  delete: _deleteCount,
+  delete: deleteCount,
+  updateSettings: updateSettingsCount,
 }: {
   create?: number
   update?: number
   delete?: number
+  updateSettings?: number
 }) => {
   // TODO: debug
   // for (const [expected, waitedFor] of [
@@ -86,10 +88,14 @@ export const checkNumCalls = ({
   // }
 
   const loggedIn = isLoggedIn()
-  if (createCount !== undefined) {
-    cy.get('@createTask.all').should('have.length', loggedIn ? createCount : 0)
-  }
-  if (updateCount !== undefined) {
-    cy.get('@updateTask.all').should('have.length', loggedIn ? updateCount : 0)
+  for (const [alias, expectedCount] of [
+    ['@createTask', createCount],
+    ['@updateTask', updateCount],
+    ['@deleteTask', deleteCount],
+    ['@updateSettings', updateSettingsCount],
+  ] as const) {
+    if (expectedCount !== undefined) {
+      cy.get(`${alias}.all`).should('have.length', loggedIn ? expectedCount : 0)
+    }
   }
 }

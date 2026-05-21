@@ -36,10 +36,18 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackAllowlist: [/^\/(?!api\/|login|callback)/],
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /^\/src\//,
+          /^\/@/,
+          /^\/node_modules\//,
+          /\.[a-zA-Z0-9]+$/,
+        ],
         runtimeCaching,
       },
       devOptions: {
-        enabled: true,
+        // Only on Replit — local Chrome can keep a dev SW that serves HTML for modules.
+        enabled: process.env.REPL_ID !== undefined,
       },
     }),
     ...(process.env.NODE_ENV !== 'production' &&

@@ -33,7 +33,18 @@ export async function setupVite(server: Server, app: Express) {
   app.use(vite.middlewares)
 
   app.use('*', async (req, res, next) => {
-    const url = req.originalUrl
+    const url = req.originalUrl.split('?')[0]
+
+    // Vite owns modules, deps, and static assets — only bare navigations need the SPA shell.
+    if (
+      url.startsWith('/api/') ||
+      url.startsWith('/@') ||
+      url.startsWith('/src/') ||
+      url.startsWith('/node_modules/') ||
+      /\.[a-zA-Z0-9]+$/.test(url)
+    ) {
+      return next()
+    }
 
     try {
       const clientTemplate = path.resolve(

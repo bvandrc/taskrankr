@@ -31,7 +31,8 @@ export function useAuthConfig() {
   const useDevLogin = !replitAuthEnabled && testLoginEnabled
 
   const devLogin = async () => {
-    await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
+    const res = await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
+    if (!res.ok) throw new Error(`Test login failed: ${res.status}`)
     queryClient.invalidateQueries({ queryKey: [AuthPaths.USER] })
   }
 

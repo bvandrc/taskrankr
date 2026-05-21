@@ -41,13 +41,13 @@ export default defineConfig({
           /^\/src\//,
           /^\/@/,
           /^\/node_modules\//,
-          /\.[a-zA-Z0-9]+$/,
+          /\.(?:js|ts|tsx|jsx|css|html|ico|png|svg|woff2?|json|map|txt|webp|jpe?g|gif|avif)$/i,
         ],
         runtimeCaching,
       },
       devOptions: {
-        // Only on Replit — local Chrome can keep a dev SW that serves HTML for modules.
-        enabled: process.env.REPL_ID !== undefined,
+        // SW is never active in dev — main.tsx unregisters any stale SW on non-PROD load.
+        enabled: false,
       },
     }),
     ...(process.env.NODE_ENV !== 'production' &&

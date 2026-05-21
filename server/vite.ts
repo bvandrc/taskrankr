@@ -41,7 +41,9 @@ export async function setupVite(server: Server, app: Express) {
       url.startsWith('/@') ||
       url.startsWith('/src/') ||
       url.startsWith('/node_modules/') ||
-      /\.[a-zA-Z0-9]+$/.test(url)
+      /\.(?:js|ts|tsx|jsx|css|html|ico|png|svg|woff2?|json|map|txt|webp|jpe?g|gif|avif)$/i.test(
+        url,
+      )
     ) {
       return next()
     }

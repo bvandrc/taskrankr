@@ -59,9 +59,9 @@ To stop Postgres: `npm run local:db:down`
 
 #### Guest mode vs. Login mode
 
-`npm run dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. The **Log In / Sign Up** button on the landing page will automatically detect that Replit Auth is unavailable and log you in as the built-in test user instead, giving you full authenticated mode with real database sync.
+Both `npm run dev` and `npm run build && npm run local:start` run in **development mode**: the **Log In / Sign Up** button automatically bypasses Replit Auth and logs you in as the built-in test user, giving you full authenticated mode with real database sync. The only difference is that `npm run dev` uses the Vite dev server, while `local:start` serves the pre-built static files.
 
-> **Production build:** `npm run build && npm run prod:start` does not register the test login endpoint, so only guest mode is available. Use `npm run build && npm run local:start` to run the built app in dev mode (test login enabled).
+> `npm run build && npm run prod:start` runs in production mode — test login is disabled and only guest mode is available.
 
 ## License
 

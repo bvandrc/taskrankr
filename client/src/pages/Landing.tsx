@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import type { VariantProps } from 'class-variance-authority'
 import { isStandalonePWA } from 'is-standalone-pwa'
 import type { LucideIcon } from 'lucide-react'
@@ -25,7 +24,7 @@ import { useAuthConfig } from '@/hooks/useAuthConfig'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
-import { AuthPaths, TestPaths } from '~/shared/constants'
+import { AuthPaths } from '~/shared/constants'
 
 const CaptionedIcon = ({
   icon: Icon,
@@ -84,17 +83,9 @@ const LandingButtonWithCaption = ({
 
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
-  const queryClient = useQueryClient()
-  const { replitAuthEnabled, testLoginEnabled } = useAuthConfig()
+  const { useDevLogin, devLogin } = useAuthConfig()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)
-
-  const devLogin = async () => {
-    await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
-    queryClient.invalidateQueries({ queryKey: [AuthPaths.USER] })
-  }
-
-  const useDevLogin = !replitAuthEnabled && testLoginEnabled
 
   return (
     <div className="max-h-screen bg-background text-foreground flex flex-col">

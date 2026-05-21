@@ -5,7 +5,6 @@
  */
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { defaults } from 'es-toolkit/compat'
 
 import { AuthPaths, TestPaths } from '~/shared/constants'
 import { type AuthConfig, authConfigSchema } from '~/shared/schema'
@@ -26,10 +25,8 @@ export function useAuthConfig() {
     retry: false,
   })
 
-  const { replitAuthEnabled, testLoginEnabled } = defaults(data ?? {}, {
-    replitAuthEnabled: true,
-    testLoginEnabled: false,
-  })
+  const replitAuthEnabled = data?.replitAuthEnabled ?? true
+  const testLoginEnabled = data?.testLoginEnabled ?? false
 
   const useDevLogin = !replitAuthEnabled && testLoginEnabled
 

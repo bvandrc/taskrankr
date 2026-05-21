@@ -60,12 +60,11 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
-    // Pre-including these packages prevents Vite from triggering a mid-session
-    // full-page reload + re-bundle when it first encounters them, which can
-    // land two React instances in the module graph simultaneously.
-    // - workbox-window: only discovered when the PWA service worker runs
-    // - es-toolkit/compat: not discovered during the initial crawl in some envs
-    include: ['workbox-window', 'es-toolkit/compat'],
+    // workbox-window is only discovered when the PWA service worker runs in
+    // the browser, not during the initial module-graph crawl. Pre-including it
+    // prevents Vite from triggering a mid-session full-page reload + re-bundle
+    // which can land two React instances in the module graph simultaneously.
+    include: ['workbox-window'],
   },
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),

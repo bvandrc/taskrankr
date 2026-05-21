@@ -4,16 +4,9 @@
 
 import type { Express } from 'express'
 
-import { AuthPaths } from '~/shared/constants'
+import { type AuthConfig, AuthPaths } from '~/shared/constants'
 import { isAuthenticated, type UserSession } from './replitAuth'
 import { authStorage } from './storage'
-
-export type AuthConfig = {
-  /** Replit OIDC is available — the /api/login flow works. */
-  replitAuthEnabled: boolean
-  /** Dev-only test login endpoint is registered (NODE_ENV !== 'production'). */
-  testLoginEnabled: boolean
-}
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {

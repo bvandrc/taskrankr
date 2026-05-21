@@ -12,6 +12,13 @@ export const AuthPaths = {
   CONFIG: '/api/auth/config',
 } as const
 
+export type AuthConfig = {
+  /** Replit OIDC is available — the /api/login flow works. */
+  replitAuthEnabled: boolean
+  /** Dev-only test login endpoint is registered (NODE_ENV !== 'production'). */
+  testLoginEnabled: boolean
+}
+
 /**
  * E2E-only backdoors, only registered when NODE_ENV !== 'production'.
  * See server/routes.ts → registerTestRoutes.

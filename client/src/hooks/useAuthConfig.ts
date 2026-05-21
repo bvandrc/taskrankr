@@ -7,8 +7,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { defaults } from 'es-toolkit/compat'
 
-import type { AuthConfig } from '~/server/replit_integrations/auth/routes'
-import { AuthPaths, TestPaths } from '~/shared/constants'
+import { type AuthConfig, AuthPaths, TestPaths } from '~/shared/constants'
 
 async function fetchAuthConfig(): Promise<AuthConfig> {
   const res = await fetch(AuthPaths.CONFIG)

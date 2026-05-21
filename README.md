@@ -49,7 +49,7 @@ npm install
 npm run local:db:up
 
 # 3. Run DB migrations (first time only, or after schema changes)
-npm run local:migrate
+npm run db:migrate
 
 # 4. Start the dev server — visit http://localhost:5000
 npm run dev

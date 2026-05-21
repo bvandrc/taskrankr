@@ -172,7 +172,7 @@ describe('Completed Subtasks', () => {
       cy.log('Step 2: Complete subtask — parent auto-completes')
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
         sideEffects: [
-          subtask, // TODO: shouldn't occur, double PATCH on the Subtask, debug
+          completedSubtask, // TODO: shouldn't occur, double PATCH on the Subtask, debug
           completedRootTask, // Parent auto-completes as the last subtask is marked done
         ],
       })

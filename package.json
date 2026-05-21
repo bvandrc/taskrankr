@@ -12,6 +12,7 @@
     "local:db:up": "docker compose up -d",
     "local:db:down": "docker compose down",
     "local:migrate": "cross-env DATABASE_URL=postgresql://app:password@localhost:5432/appdb drizzle-kit migrate",
+    "local:dev": "cross-env DATABASE_URL=postgresql://app:password@localhost:5432/appdb SESSION_SECRET=changeme NODE_ENV=development tsx server/index.ts",
     "local:start": "cross-env DATABASE_URL=postgresql://app:password@localhost:5432/appdb SESSION_SECRET=changeme NODE_ENV=production node dist/index.cjs",
     "__c1": "====================[ Build & Development ]======================",
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",

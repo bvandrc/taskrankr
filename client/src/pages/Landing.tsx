@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { VariantProps } from 'class-variance-authority'
 import { isStandalonePWA } from 'is-standalone-pwa'
 import type { LucideIcon } from 'lucide-react'
@@ -23,7 +24,7 @@ import { InlineLink } from '@/components/primitives/InlineText'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
-import { AuthPaths } from '~/shared/constants'
+import { AuthPaths, TestPaths } from '~/shared/constants'
 
 const CaptionedIcon = ({
   icon: Icon,
@@ -82,8 +83,14 @@ const LandingButtonWithCaption = ({
 
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
+  const queryClient = useQueryClient()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)
+
+  const devLogin = async () => {
+    await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
+    queryClient.invalidateQueries({ queryKey: [AuthPaths.USER] })
+  }
 
   return (
     <div className="max-h-screen bg-background text-foreground flex flex-col">
@@ -159,6 +166,23 @@ const Landing = () => {
             Try as Guest
           </LandingButtonWithCaption>
         </div>
+
+        {import.meta.env.DEV && (
+          <div className="mt-4 flex flex-col items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={devLogin}
+              className="border-dashed border-amber-500/50 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              data-testid="button-dev-login"
+            >
+              Dev Login
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Local dev only — bypasses Replit Auth
+            </p>
+          </div>
+        )}
 
         {!isStandalone && (
           <div className="mt-auto py-[8vh] flex justify-center">

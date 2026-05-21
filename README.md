@@ -35,8 +35,6 @@ Database and auth are provisioned automatically by Replit.
 
 ### Locally (Docker)
 
-> **Note:** Replit Auth (login) requires a live Replit repl and cannot be replicated locally. The app will run in guest mode only — all data is stored in the browser.
-
 **Prerequisites:** Docker Desktop, Node.js 20+
 
 ```bash
@@ -46,17 +44,20 @@ npm install
 # 2. Start Postgres
 npm run local:db:up
 
-# 3. Build the app
-npm run build
-
-# 4. Run DB migrations (first time only, or after schema changes)
+# 3. Run DB migrations (first time only, or after schema changes)
 npm run local:migrate
 
-# 5. Start the server — visit http://localhost:5000
-npm run local:start
+# 4. Start the dev server — visit http://localhost:5000
+npm run local:dev
 ```
 
 To stop Postgres: `npm run local:db:down`
+
+#### Guest mode vs. Login mode
+
+`npm run local:dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. On the landing page you will see a **Dev Login** button (dashed amber outline, below the main buttons). Click it to log in as the built-in test user and use the app in full authenticated mode with real database sync.
+
+> **Production build:** `npm run local:start` runs the compiled bundle without the Vite dev server. It does **not** show the Dev Login button (only available in dev mode).
 
 ## License
 

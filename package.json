@@ -16,7 +16,7 @@
     "__c1": "====================[ Build & Development ]======================",
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
-    "start": "cross-env NODE_ENV=production node dist/index.cjs",
+    "prod:start": "cross-env NODE_ENV=production node dist/index.cjs",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

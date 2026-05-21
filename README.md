@@ -61,7 +61,7 @@ To stop Postgres: `npm run local:db:down`
 
 `npm run dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. The **Log In / Sign Up** button on the landing page will automatically detect that Replit Auth is unavailable and log you in as the built-in test user instead, giving you full authenticated mode with real database sync.
 
-> **Production build:** `npm run build && npm run start` does not register the test login endpoint, so only guest mode is available. Use `npm run build && npm run local:start` to run the built app in dev mode (test login enabled).
+> **Production build:** `npm run build && npm run prod:start` does not register the test login endpoint, so only guest mode is available. Use `npm run build && npm run local:start` to run the built app in dev mode (test login enabled).
 
 ## License
 

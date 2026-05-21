@@ -6,7 +6,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 
 - **Run Dev Server**: `npm run dev`
 - **Build**: `npm run build` (runs `script/build.ts`)
-- **Start (production)**: `npm run start`
+- **Start (production)**: `npm run prod:start`
 - **Typecheck**: `npm run ts:check` (or `npm run check` for ts + cypress ts + lint)
 - **Lint / Format**: `npm run lint` / `npm run format` (Biome)
 - **DB Push / Generate / Migrate**: `npm run db:push` / `npm run db:generate` / `npm run db:migrate`

@@ -27,9 +27,13 @@ A multi-user task management app with priority, ease, enjoyment, and time rating
 
 ### On Replit
 
-1. Fork the repl
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
+```bash
+# 1. Fork the repl, then install dependencies
+npm install
+
+# 2. Start the development server — visit the preview URL
+npm run dev
+```
 
 Database and auth are provisioned automatically by Replit.
 
@@ -55,9 +59,9 @@ To stop Postgres: `npm run local:db:down`
 
 #### Guest mode vs. Login mode
 
-`npm run local:dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. On the landing page you will see a **Dev Login** button (dashed amber outline, below the main buttons). Click it to log in as the built-in test user and use the app in full authenticated mode with real database sync.
+`npm run local:dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. The **Log In / Sign Up** button on the landing page will automatically detect that Replit Auth is unavailable and log you in as the built-in test user instead, giving you full authenticated mode with real database sync.
 
-> **Production build:** `npm run local:start` runs the compiled bundle without the Vite dev server. It does **not** show the Dev Login button (only available in dev mode).
+> **Production build:** `npm run local:start` does not register the test login endpoint, so only guest mode is available.
 
 ## License
 

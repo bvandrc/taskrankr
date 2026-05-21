@@ -12,8 +12,6 @@
     "local:db:up": "docker compose up -d",
     "local:db:down": "docker compose down",
     "local:migrate": "drizzle-kit migrate",
-    "local:dev": "cross-env NODE_ENV=development tsx server/index.ts",
-    "local:start": "cross-env NODE_ENV=production node dist/index.cjs",
     "__c1": "====================[ Build & Development ]======================",
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",

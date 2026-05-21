@@ -52,16 +52,16 @@ npm run local:db:up
 npm run local:migrate
 
 # 4. Start the dev server — visit http://localhost:5000
-npm run local:dev
+npm run dev
 ```
 
 To stop Postgres: `npm run local:db:down`
 
 #### Guest mode vs. Login mode
 
-`npm run local:dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. The **Log In / Sign Up** button on the landing page will automatically detect that Replit Auth is unavailable and log you in as the built-in test user instead, giving you full authenticated mode with real database sync.
+`npm run dev` runs in **development mode**, which enables a dev-only bypass for Replit Auth. The **Log In / Sign Up** button on the landing page will automatically detect that Replit Auth is unavailable and log you in as the built-in test user instead, giving you full authenticated mode with real database sync.
 
-> **Production build:** `npm run local:start` does not register the test login endpoint, so only guest mode is available.
+> **Production build:** `npm run build && npm run start` does not register the test login endpoint, so only guest mode is available.
 
 ## License
 

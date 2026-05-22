@@ -33,7 +33,12 @@ export async function setupVite(server: Server, app: Express) {
   app.use(vite.middlewares)
 
   app.use('*', async (req, res, next) => {
-    const url = req.originalUrl
+    const url = req.originalUrl.split('?')[0]
+
+    // Guard against unregistered API routes falling through to the SPA shell.
+    if (url.startsWith('/api/')) {
+      return next()
+    }
 
     try {
       const clientTemplate = path.resolve(

@@ -25,11 +25,43 @@ A multi-user task management app with priority, ease, enjoyment, and time rating
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up your PostgreSQL database and add `DATABASE_URL` to environment
-4. Push the schema: `npm run db:push`
-5. Start the development server: `npm run dev`
+### On Replit
+
+```bash
+# 1. Fork the repl, then install dependencies
+npm install
+
+# 2. Start the development server — visit the preview URL
+npm run dev
+```
+
+Database and auth are provisioned automatically by Replit.
+
+### Locally (Docker)
+
+**Prerequisites:** Docker Desktop, Node.js 20+
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start Postgres
+npm run local:db:up
+
+# 3. Run DB migrations (first time only, or after schema changes)
+npm run db:migrate
+
+# 4. Start the dev server — visit http://localhost:5000
+npm run dev
+```
+
+To stop Postgres: `npm run local:db:down`
+
+#### Guest mode vs. Login mode
+
+Both `npm run dev` and `npm run build && npm run local:start` run in **development mode**: the **Log In / Sign Up** button automatically bypasses Replit Auth and logs you in as the built-in test user, giving you full authenticated mode with real database sync. The only difference is that `npm run dev` uses the Vite dev server, while `local:start` serves the pre-built static files.
+
+> `npm run build && npm run prod:start` runs in production mode — test login is disabled and only guest mode is available.
 
 ## License
 

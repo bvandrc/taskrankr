@@ -98,8 +98,8 @@ export const SyncProvider = ({
       try {
         debugLog.log('sync', 'loadServerData:start', { force })
         const [tasksResult, settingsResult] = await Promise.all([
-          tsr.tasks.list.query(),
-          tsr.settings.get.query(),
+          tsr.tasks.list(),
+          tsr.settings.get(),
         ])
 
         if (tasksResult.status === 200) {
@@ -138,8 +138,7 @@ export const SyncProvider = ({
       !hasLoadedServerData.current &&
       !hasPendingSync
     ) {
-      // biome-ignore lint/nursery/noFloatingPromises: from replit, TODO: investigate
-      loadServerData()
+      void loadServerData()
     }
   }, [isAuthenticated, isOnline, isInitialized, hasPendingSync, loadServerData])
 
@@ -174,7 +173,7 @@ export const SyncProvider = ({
 
         switch (op.type) {
           case SyncOperationType.CREATE_TASK: {
-            const result = await tsr.tasks.create.mutate({ body: op.data })
+            const result = await tsr.tasks.create({ body: op.data })
             if (result.status === 201) {
               idMap.set(op.tempId, result.body.id)
               replaceTaskId(op.tempId, result.body.id)
@@ -201,7 +200,7 @@ export const SyncProvider = ({
               const localTimeSpent = localTask?.timeSpent
               if (localTimeSpent) body.timeSpent = localTimeSpent
             }
-            const result = await tsr.tasks.update.mutate({
+            const result = await tsr.tasks.update({
               params: { id: realId },
               body,
             })
@@ -231,7 +230,7 @@ export const SyncProvider = ({
               success = true
               break
             }
-            const result = await tsr.tasks.delete.mutate({
+            const result = await tsr.tasks.delete({
               params: { id: realId },
             })
             if (result.status === 204) {
@@ -251,7 +250,7 @@ export const SyncProvider = ({
               break
             }
             const realOrderedIds = op.orderedIds.map((id) => resolveId(id))
-            const result = await tsr.tasks.reorderSubtasks.mutate({
+            const result = await tsr.tasks.reorderSubtasks({
               params: { id: realParentId },
               body: { orderedIds: realOrderedIds },
             })
@@ -301,7 +300,7 @@ export const SyncProvider = ({
       // the synced fields. `acknowledgeSettingsSync` retains any fields the
       // user changed mid-flight so we don't clobber concurrent edits.
       if (settingsSnapshot !== null) {
-        const result = await tsr.settings.update.mutate({
+        const result = await tsr.settings.update({
           body: settingsSnapshot,
         })
         if (result.status === 200) {

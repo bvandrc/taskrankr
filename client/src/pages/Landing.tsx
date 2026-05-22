@@ -42,13 +42,13 @@ const CaptionedIcon = ({
   </div>
 )
 
-type LandingButtonProps = {
+type LandingButtonProps = React.PropsWithChildren<{
   href?: string
   onClick?: () => void
   variant?: VariantProps<typeof buttonVariants>['variant']
   className?: string
   'data-testid'?: string
-} & React.PropsWithChildren
+}>
 
 const LandingButton = ({
   children,

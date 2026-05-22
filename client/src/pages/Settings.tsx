@@ -40,11 +40,11 @@ import { toastError, toastInfo } from '@/hooks/useToasts'
 import { APP_VERSION } from '@/lib/changelog'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { Routes } from '@/lib/constants'
-import { queryClient } from '@/lib/query-client'
-import { QueryKeys, tsr } from '@/lib/ts-rest'
+import { tsr } from '@/lib/ts-rest'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
 import { useSettings } from '@/providers/SettingsProvider'
+import { useSync } from '@/providers/SyncProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import { AuthPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
@@ -249,6 +249,7 @@ const ExportButton = () => {
 const ImportButton = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const { forceSync } = useSync()
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -259,7 +260,7 @@ const ImportButton = () => {
       const text = await file.text()
       const data = JSON.parse(text)
 
-      const result = await tsr.tasks.import.mutate({
+      const result = await tsr.tasks.import({
         body: { tasks: data.tasks || data },
       })
       if (result.status !== 200) {
@@ -270,7 +271,7 @@ const ImportButton = () => {
         return
       }
 
-      queryClient.invalidateQueries({ queryKey: QueryKeys.getTasks })
+      void forceSync()
       toastInfo({ title: 'Tasks imported successfully' })
     } catch (err) {
       if (err instanceof SyntaxError || err instanceof TypeError) {

@@ -3,7 +3,6 @@
  */
 
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { QueryClientProvider } from '@tanstack/react-query'
 import { Route, Switch, useLocation } from 'wouter'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -11,7 +10,7 @@ import { Toaster } from '@/components/primitives/overlays/Toaster'
 import { TooltipProvider } from '@/components/primitives/overlays/Tooltip'
 import { Spinner } from '@/components/primitives/Spinner'
 import { TaskFormDialogProvider } from '@/components/TaskForm/TaskFormDialogProvider'
-import { useAuth } from '@/hooks/useAuth'
+import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { toastInfo } from '@/hooks/useToasts'
 import {
   clearGuestStorage,
@@ -30,7 +29,6 @@ import { TasksProvider } from '@/providers/TasksProvider'
 import { StatusBanner } from './components/appInfo/StatusBanner'
 import { WhatsNewDialog } from './components/appInfo/WhatsNewDialog'
 import { Routes } from './lib/constants'
-import { queryClient } from './lib/query-client'
 
 const Completed = lazy(() => import('@/pages/Completed'))
 const Settings = lazy(() => import('@/pages/Settings'))
@@ -141,7 +139,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <TooltipProvider>
           <BannersProvider>
             <GuestModeProvider>
@@ -150,7 +148,7 @@ const App = () => {
             </GuestModeProvider>
           </BannersProvider>
         </TooltipProvider>
-      </QueryClientProvider>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }

@@ -39,7 +39,8 @@ export default defineConfig({
         runtimeCaching,
       },
       devOptions: {
-        enabled: true,
+        // SW is never active in dev — main.tsx unregisters any stale SW on non-PROD load.
+        enabled: false,
       },
     }),
     ...(process.env.NODE_ENV !== 'production' &&
@@ -91,7 +92,7 @@ export default defineConfig({
             },
             {
               name: 'api-vendor',
-              test: /\/(@tanstack\/react-query|@ts-rest)\//g,
+              test: /\/@ts-rest\//g,
             },
             {
               name: 'forms-vendor',

@@ -100,6 +100,13 @@ export async function setupAuth(app: Express) {
    * dangerous, but that never happens here. Existing sessions remain valid
    * because the session middleware above always runs regardless of this result.
    */
+  if (!process.env.REPL_ID) {
+    console.warn(
+      '[Auth] REPL_ID not set — Replit OAuth login routes disabled (use test login or guest mode in dev).',
+    )
+    return
+  }
+
   let config: Awaited<ReturnType<typeof getOidcConfig>> | null = null
   try {
     config = await getOidcConfig()

@@ -15,7 +15,9 @@ export function registerAuthRoutes(app: Express): void {
     res.json(
       authConfigSchema.parse({
         replitAuthEnabled: !!process.env.REPL_ID,
-        testLoginEnabled: process.env.NODE_ENV !== 'production',
+        testLoginEnabled:
+          process.env.NODE_ENV !== 'production' ||
+          process.env.SERVE_STATIC === 'true',
       }),
     )
   })

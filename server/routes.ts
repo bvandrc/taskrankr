@@ -230,7 +230,10 @@ export async function registerRoutes(
   await setupAuth(app)
   registerAuthRoutes(app)
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.SERVE_STATIC === 'true'
+  ) {
     registerTestRoutes(app)
   }
 

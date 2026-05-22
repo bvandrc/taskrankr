@@ -6,6 +6,12 @@ import { getVitePrebuilder } from 'cypress-vite'
 
 import { checkUserMode } from './cypress/support/utils/test-runner'
 
+try {
+  process.loadEnvFile('.env.local')
+} catch {
+  // file is optional; missing is fine
+}
+
 const { vitePrebuild, vitePreprocessor } = getVitePrebuilder({})
 
 const processResultsDir = (resultsDir: string) =>
@@ -19,7 +25,11 @@ export default defineConfig({
   fixturesFolder: false,
   animationDistanceThreshold: 3,
   e2e: {
-    baseUrl: 'http://localhost:5000',
+    baseUrl:
+      process.env.CYPRESS_BASE_URL ??
+      (process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : 'http://localhost:5000'),
     specPattern: [
       'cypress/e2e/create-task.cy.ts',
       // 'cypress/e2e/create-subtasks.cy.ts',

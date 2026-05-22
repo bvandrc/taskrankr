@@ -2,6 +2,9 @@ import { mapValues } from 'es-toolkit'
 
 import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
 
+const IS_PROD = process.env.NODE_ENV === 'production'
+const SERVE_STATIC = process.env.SERVE_STATIC === 'true'
+
 /**
  * True in dev and when running the compiled bundle locally via `local:start`.
  * Guards test-only routes and features that must not appear in production.
@@ -11,12 +14,10 @@ import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
  * `SERVE_STATIC` branch remains runtime-evaluated and carries the flag for
  * `local:start`. See the replit.md Gotchas section for details.
  */
-export const IS_TEST_ENV =
-  process.env.NODE_ENV !== 'production' || process.env.SERVE_STATIC === 'true'
+export const IS_TEST_ENV = !IS_PROD || SERVE_STATIC
 
 /** True when the server should serve the compiled frontend from `dist/public`. */
-export const IS_STATIC_SERVING =
-  process.env.NODE_ENV === 'production' || process.env.SERVE_STATIC === 'true'
+export const IS_STATIC_SERVING = IS_PROD || SERVE_STATIC
 
 type BaseErrors = typeof BASE_ERRORS
 

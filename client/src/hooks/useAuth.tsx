@@ -84,8 +84,12 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const refreshUser = useCallback(async () => {
-    const result = await fetchUser()
-    setUser(result)
+    try {
+      const result = await fetchUser()
+      setUser(result)
+    } catch {
+      setUser(null)
+    }
   }, [])
 
   useEffect(() => {

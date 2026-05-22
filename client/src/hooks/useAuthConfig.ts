@@ -19,7 +19,11 @@ export function useAuthConfig() {
   const [data, setData] = useState<AuthConfig | undefined>(undefined)
 
   useEffect(() => {
-    void fetchAuthConfig().then(setData)
+    void fetchAuthConfig()
+      .then(setData)
+      .catch((err: unknown) => {
+        console.error('[useAuthConfig] Failed to fetch auth config:', err)
+      })
   }, [])
 
   const replitAuthEnabled = data?.replitAuthEnabled ?? true

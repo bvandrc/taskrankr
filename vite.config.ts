@@ -99,7 +99,7 @@ export default defineConfig({
             },
             {
               name: 'api-vendor',
-              test: /\/(@tanstack\/react-query|@ts-rest)\//g,
+              test: /\/@ts-rest\//g,
             },
             {
               name: 'forms-vendor',

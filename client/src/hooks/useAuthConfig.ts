@@ -4,7 +4,7 @@
  * and provides `devLogin` to authenticate via the test backdoor when applicable.
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 
 import { AuthPaths, TestPaths } from '~/shared/constants'
 import { type AuthConfig, authConfigSchema } from '~/shared/schema'
@@ -16,24 +16,21 @@ async function fetchAuthConfig(): Promise<AuthConfig> {
 }
 
 export function useAuthConfig() {
-  const queryClient = useQueryClient()
+  const [data, setData] = useState<AuthConfig | undefined>(undefined)
 
-  const { data } = useQuery<AuthConfig>({
-    queryKey: [AuthPaths.CONFIG],
-    queryFn: fetchAuthConfig,
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-  })
+  useEffect(() => {
+    void fetchAuthConfig().then(setData)
+  }, [])
 
   const replitAuthEnabled = data?.replitAuthEnabled ?? true
   const testLoginEnabled = data?.testLoginEnabled ?? false
 
   const useDevLogin = !replitAuthEnabled && testLoginEnabled
 
-  const devLogin = async () => {
+  const devLogin = async (onSuccess?: () => void) => {
     const res = await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
     if (!res.ok) throw new Error(`Test login failed: ${res.status}`)
-    queryClient.invalidateQueries({ queryKey: [AuthPaths.USER] })
+    onSuccess?.()
   }
 
   return { replitAuthEnabled, testLoginEnabled, useDevLogin, devLogin }

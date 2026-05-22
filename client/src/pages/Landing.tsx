@@ -20,6 +20,7 @@ import {
 import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
 import { InlineLink } from '@/components/primitives/InlineText'
+import { useAuth } from '@/hooks/useAuth'
 import { useAuthConfig } from '@/hooks/useAuthConfig'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -84,6 +85,7 @@ const LandingButtonWithCaption = ({
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
   const { useDevLogin, devLogin } = useAuthConfig()
+  const { refreshUser } = useAuth()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)
 
@@ -147,7 +149,7 @@ const Landing = () => {
         <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-4 gap-2 justify-center">
           <LandingButtonWithCaption
             href={useDevLogin ? undefined : AuthPaths.LOGIN}
-            onClick={useDevLogin ? devLogin : undefined}
+            onClick={useDevLogin ? () => devLogin(refreshUser) : undefined}
             caption={
               useDevLogin
                 ? 'Bypasses Replit Auth for local dev'

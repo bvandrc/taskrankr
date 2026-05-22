@@ -6,6 +6,7 @@ import type { Express } from 'express'
 
 import { AuthPaths } from '~/shared/constants'
 import { authConfigSchema } from '~/shared/schema'
+import { IS_TEST_ENV } from '../../constants'
 import { isAuthenticated, type UserSession } from './replitAuth'
 import { authStorage } from './storage'
 
@@ -15,9 +16,7 @@ export function registerAuthRoutes(app: Express): void {
     res.json(
       authConfigSchema.parse({
         replitAuthEnabled: !!process.env.REPL_ID,
-        testLoginEnabled:
-          process.env.NODE_ENV !== 'production' ||
-          process.env.SERVE_STATIC === 'true',
+        testLoginEnabled: IS_TEST_ENV,
       }),
     )
   })

@@ -21,7 +21,7 @@ import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
 import { InlineLink } from '@/components/primitives/InlineText'
 import { useAuth } from '@/hooks/useAuth'
-import { useAuthConfig } from '@/hooks/useAuthConfig'
+import { devLogin, useAuthConfig } from '@/hooks/useAuthConfig'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
@@ -84,7 +84,7 @@ const LandingButtonWithCaption = ({
 
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
-  const { useDevLogin, devLogin } = useAuthConfig()
+  const { useDevLogin } = useAuthConfig()
   const { refreshUser } = useAuth()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)

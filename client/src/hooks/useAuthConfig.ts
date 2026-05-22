@@ -15,6 +15,12 @@ async function fetchAuthConfig(): Promise<AuthConfig> {
   return authConfigSchema.parse(await res.json())
 }
 
+export async function devLogin(onSuccess?: () => void): Promise<void> {
+  const res = await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
+  if (!res.ok) throw new Error(`Test login failed: ${res.status}`)
+  onSuccess?.()
+}
+
 export function useAuthConfig() {
   const [data, setData] = useState<AuthConfig | undefined>(undefined)
 
@@ -28,14 +34,7 @@ export function useAuthConfig() {
 
   const replitAuthEnabled = data?.replitAuthEnabled ?? true
   const testLoginEnabled = data?.testLoginEnabled ?? false
-
   const useDevLogin = !replitAuthEnabled && testLoginEnabled
 
-  const devLogin = async (onSuccess?: () => void) => {
-    const res = await fetch(TestPaths.TEST_LOGIN, { method: 'POST' })
-    if (!res.ok) throw new Error(`Test login failed: ${res.status}`)
-    onSuccess?.()
-  }
-
-  return { replitAuthEnabled, testLoginEnabled, useDevLogin, devLogin }
+  return { replitAuthEnabled, testLoginEnabled, useDevLogin }
 }

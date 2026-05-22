@@ -138,8 +138,7 @@ export const SyncProvider = ({
       !hasLoadedServerData.current &&
       !hasPendingSync
     ) {
-      // biome-ignore lint/nursery/noFloatingPromises: from replit, TODO: investigate
-      loadServerData()
+      void loadServerData()
     }
   }, [isAuthenticated, isOnline, isInitialized, hasPendingSync, loadServerData])
 

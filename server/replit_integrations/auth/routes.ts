@@ -5,22 +5,11 @@
 import type { Express } from 'express'
 
 import { AuthPaths } from '~/shared/constants'
-import { authConfigSchema } from '~/shared/schema'
-import { IS_TEST_ENV } from '../../constants'
 import { isAuthenticated, type UserSession } from './replitAuth'
 import { authStorage } from './storage'
 
 // Register auth-specific routes
 export function registerAuthRoutes(app: Express): void {
-  app.get(AuthPaths.CONFIG, (_req, res) => {
-    res.json(
-      authConfigSchema.parse({
-        replitAuthEnabled: !!process.env.REPL_ID,
-        testLoginEnabled: IS_TEST_ENV,
-      }),
-    )
-  })
-
   // Get current authenticated user
   app.get(AuthPaths.USER, isAuthenticated, async (req, res) => {
     try {

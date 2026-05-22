@@ -35,16 +35,8 @@ export async function setupVite(server: Server, app: Express) {
   app.use('*', async (req, res, next) => {
     const url = req.originalUrl.split('?')[0]
 
-    // Vite owns modules, deps, and static assets — only bare navigations need the SPA shell.
-    if (
-      url.startsWith('/api/') ||
-      url.startsWith('/@') ||
-      url.startsWith('/src/') ||
-      url.startsWith('/node_modules/') ||
-      /\.(?:js|ts|tsx|jsx|css|html|ico|png|svg|woff2?|json|map|txt|webp|jpe?g|gif|avif)$/i.test(
-        url,
-      )
-    ) {
+    // Guard against unregistered API routes falling through to the SPA shell.
+    if (url.startsWith('/api/')) {
       return next()
     }
 

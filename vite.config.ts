@@ -36,13 +36,6 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackAllowlist: [/^\/(?!api\/|login|callback)/],
-        navigateFallbackDenylist: [
-          /^\/api\//,
-          /^\/src\//,
-          /^\/@/,
-          /^\/node_modules\//,
-          /\.(?:js|ts|tsx|jsx|css|html|ico|png|svg|woff2?|json|map|txt|webp|jpe?g|gif|avif)$/i,
-        ],
         runtimeCaching,
       },
       devOptions: {

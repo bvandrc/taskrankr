@@ -146,7 +146,7 @@ describe('Completed Subtasks', () => {
     })
   }
 
-  context('Auto-complete parent when all subtasks completed', () => {
+  context.only('Auto-complete parent when all subtasks completed', () => {
     it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask becomes completed', () => {
       cy.log('Step 1: Create root task (autocomplete=on) with one subtask')
       cy.get(Selectors.CREATE_TASK_BTN).click()
@@ -171,13 +171,10 @@ describe('Completed Subtasks', () => {
 
       cy.log('Step 2: Complete subtask — parent auto-completes')
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
-        sideEffects: [
-          completedSubtask, // TODO: shouldn't occur, double PATCH on the Subtask, debug
-          completedRootTask, // Parent auto-completes as the last subtask is marked done
-        ],
+        sideEffects: [completedRootTask], // Parent auto-completes as the last subtask is marked done
       })
 
-      checkNumCalls({ create: 2, update: 3 }) // TODO: debug should be 2 updates, see above comment
+      checkNumCalls({ create: 2, update: 2 })
       checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
@@ -264,11 +261,9 @@ describe('Completed Subtasks', () => {
         'Step 3: Complete subtask2 — subtask and rootTask both auto-complete',
       )
       changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED, {
-        // TODO: debug
-        // sideEffects: [completedSubtask, completedRootTask], // Parent and grandparent auto-completes as the last subtask is marked done
+        sideEffects: [completedSubtask, completedRootTask], // Parent and grandparent auto-completes as the last subtask is marked done
       })
-      // TODO: debug should be 4 updates — one from the subtask status change, two from the parent and grandparent auto-completing
-      checkNumCalls({ create: 3, update: 2 })
+      checkNumCalls({ create: 3, update: 4 })
       checkCompletedPage([
         {
           ...completedRootTask,

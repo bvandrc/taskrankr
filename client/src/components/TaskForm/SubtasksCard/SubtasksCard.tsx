@@ -98,21 +98,21 @@ export const SubtasksCard = ({
 
   const allSubtasks = useMemo(() => {
     const collectDescendants = (
-      parentId_: number,
+      parentId: number,
       depth: number,
-      parentSortMode: SubtaskSortMode,
-      parentShowNumbers: boolean,
+      childrenSortMode: SubtaskSortMode,
+      childrenShowNumbers: boolean,
     ): Subtask[] => {
       const sortedChildren = (() => {
-        const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
+        const unsortedChildren = getDirectSubtasks(allTasks, parentId)
 
-        if (parentSortMode === SubtaskSortMode.MANUAL) {
+        if (childrenSortMode === SubtaskSortMode.MANUAL) {
           return sortTasksByManualOrder(
             unsortedChildren,
             // order
             depth === 0
               ? subtaskOrder
-              : (getById(allTasks, parentId_)?.subtaskOrder ?? []),
+              : (getById(allTasks, parentId)?.subtaskOrder ?? []),
           )
         } else {
           return [...unsortedChildren].sort((a, b) => {
@@ -130,7 +130,7 @@ export const SubtasksCard = ({
           ...child,
           depth,
           subtaskIndex:
-            parentShowNumbers && parentSortMode === SubtaskSortMode.MANUAL
+            childrenShowNumbers && childrenSortMode === SubtaskSortMode.MANUAL
               ? i
               : undefined,
         })

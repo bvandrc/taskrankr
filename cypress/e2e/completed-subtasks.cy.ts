@@ -146,7 +146,7 @@ describe('Completed Subtasks', () => {
     })
   }
 
-  context.only('Auto-complete parent when all subtasks completed', () => {
+  context('Auto-complete parent when all subtasks completed', () => {
     it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask becomes completed', () => {
       cy.log('Step 1: Create root task (autocomplete=on) with one subtask')
       cy.get(Selectors.CREATE_TASK_BTN).click()

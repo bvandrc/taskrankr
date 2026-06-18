@@ -101,7 +101,7 @@ const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] =>
       const cmp = compareByField(a, b, field)
       if (cmp !== 0) return cmp
     }
-    return a.createdAt.getTime() - b.createdAt.getTime()
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   })
 
 /** Sorts tasks by their position in a user-defined sequence of IDs (the saved manual order). */

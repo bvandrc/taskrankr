@@ -11,6 +11,7 @@ export const tsr = initClient(contract, {
   baseUrl: '',
   baseHeaders: {},
   credentials: 'include',
+  validateResponse: true,
 })
 
 export type ClientInferRequestBody<T extends AppRouteMutation> =

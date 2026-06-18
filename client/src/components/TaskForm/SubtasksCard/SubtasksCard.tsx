@@ -37,7 +37,6 @@ import { useSettings } from '@/providers/SettingsProvider'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import {
   type MutateTask,
-  SortOption,
   SubtaskSortMode,
   type Task,
   taskSchemaDefaults,
@@ -103,17 +102,13 @@ export const SubtasksCard = ({
     const collectDescendants = (
       parentId_: number,
       depth: number,
-      parentSortMode: SubtaskSortMode,
+      effectiveSortMode: SubtaskSortMode,
       parentShowNumbers: boolean,
     ): Subtask[] => {
       const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
-        sortMode: parentSortMode,
-        // DATE_CREATED primary sort is newest-first; the tiebreaker in sortTasksByField already handles creation order (oldest-first).
-        fieldSortOrder:
-          settings.sortBy === SortOption.DATE_CREATED
-            ? []
-            : SORT_ORDER_MAP[settings.sortBy],
+        sortMode: effectiveSortMode,
+        fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
         manualOrder:
           depth === 0
             ? subtaskOrder
@@ -127,15 +122,19 @@ export const SubtasksCard = ({
           ...child,
           depth,
           subtaskIndex:
-            parentShowNumbers && parentSortMode === SubtaskSortMode.MANUAL
+            parentShowNumbers && effectiveSortMode === SubtaskSortMode.MANUAL
               ? i
               : undefined,
         })
+        const childEffectiveSortMode =
+          child.subtaskSortMode === SubtaskSortMode.INHERIT
+            ? effectiveSortMode
+            : child.subtaskSortMode
         result.push(
           ...collectDescendants(
             child.id,
             depth + 1,
-            child.subtaskSortMode,
+            childEffectiveSortMode,
             child.subtasksShowNumbers,
           ),
         )
@@ -143,7 +142,23 @@ export const SubtasksCard = ({
       return result
     }
 
-    return collectDescendants(task.id, 0, sortMode, showNumbers)
+    // If the edited task's own sortMode is INHERIT, walk up to the nearest
+    // ancestor that has a concrete mode so depth-0 subtasks sort correctly.
+    let initialEffectiveSortMode = sortMode
+    if (sortMode === SubtaskSortMode.INHERIT) {
+      let currentId = task.parentId
+      while (currentId != null) {
+        const ancestor = getById(allTasks, currentId)
+        if (!ancestor) break
+        if (ancestor.subtaskSortMode !== SubtaskSortMode.INHERIT) {
+          initialEffectiveSortMode = ancestor.subtaskSortMode
+          break
+        }
+        currentId = ancestor.parentId
+      }
+    }
+
+    return collectDescendants(task.id, 0, initialEffectiveSortMode, showNumbers)
   }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the

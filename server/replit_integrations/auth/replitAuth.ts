@@ -47,8 +47,6 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // Must stay runtime-evaluated (not NODE_ENV) so esbuild doesn't bake it
-      // true in local:preview, which would break Cypress cookie replay.
       secure: IS_PROD,
       maxAge: sessionTtl,
     },

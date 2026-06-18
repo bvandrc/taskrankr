@@ -20,7 +20,7 @@ npm run db:migrate
 npm run dev
 ```
 
-In **development mode** (`npm run dev`), the Log In button auto-logs you in as the built-in test user — Replit Auth is bypassed. Use `npm run build && npm run prod:start` to run in full production mode (auth required).
+In **development mode** (`npm run dev`), the Log In button auto-logs you in as the built-in test user — Replit Auth is bypassed. Use `npm run build && npm run prod:preview` to run in full production mode (auth required).
 
 ## Commands
 
@@ -71,7 +71,7 @@ client/          React frontend
       storage.ts
       task-tree-utils.ts
 server/          Node.js/Express backend
-  constants.ts   IS_TEST_ENV, IS_STATIC_SERVING, SERVE_STATIC pattern
+  constants.ts   IS_PROD, IS_TEST_ENV, SERVE_STATIC exports
 shared/
   contract.ts    ts-rest API contract
   schema/        Drizzle + Zod schemas (tasks.zod.ts, settings.zod.ts, ...)
@@ -111,7 +111,7 @@ migrations/      Drizzle migration files
 - **Stale dev server after `npm install`**: Restart the server before debugging "Invalid hook call" errors — a clean restart often fixes it.
 - **Vite dedupe**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Don't remove these; avoid editing `vite.config.ts` when a client-side change suffices. If a new package causes duplicate-React errors, add it to `optimizeDeps.include`.
 - **Service worker in dev**: Disabled (`devOptions.enabled: false`). Do not re-enable — a stale SW intercepts Vite module requests and breaks HMR.
-- **esbuild bakes `NODE_ENV`**: `process.env.NODE_ENV` is replaced statically at build time. Use `IS_TEST_ENV` / `IS_STATIC_SERVING` from `server/constants.ts` for conditions that must stay live at runtime.
+- **esbuild bakes `NODE_ENV`**: `process.env.NODE_ENV` is replaced statically at build time. Use `IS_TEST_ENV` from `server/constants.ts` for conditions that must stay live at runtime (e.g. test routes, cookie `secure` flag) — it uses `TEST_ENV` env var as a runtime escape hatch that esbuild cannot bake.
 
 ## Key Docs
 

@@ -2,11 +2,11 @@ import { mapValues } from 'es-toolkit'
 
 import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
 
-export const IS_PROD = process.env.NODE_ENV === 'production'
+// Runtime-evaluated — intentionally NOT process.env.NODE_ENV, which esbuild bakes.
+// prod:preview sets IS_PROD=true; dev and local:preview leave it unset (false).
+export const IS_PROD = process.env.IS_PROD === 'true'
 
 // Default true; opt-out via SERVE_STATIC=false (dev only).
-// IS_PROD is folded in so the compiled bundle always serves static files
-// without needing the env var — esbuild bakes IS_PROD=true.
 export const SERVE_STATIC = IS_PROD || process.env.SERVE_STATIC !== 'false'
 
 type BaseErrors = typeof BASE_ERRORS

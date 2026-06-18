@@ -522,9 +522,14 @@ export const TasksProvider = ({
       // PUT (e.g. flipping `inheritCompletionState` on a task with all
       // children done auto-completes the task itself, deriving status,
       // completedAt, and timeSpent in the same call).
-      const primaryPatch = result.mutations.find((m) => m.id === id)?.patch
-      const primaryData: Partial<Task> = { ...enqueuePrimary, ...primaryPatch }
-      enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: primaryData })
+      enqueue({
+        type: SyncOperationType.UPDATE_TASK,
+        id,
+        data: {
+          ...enqueuePrimary, // primary data
+          ...result.mutations.find((m) => m.id === id)?.patch, // primary patch
+        },
+      })
       enqueueCascadeOps(result.mutations, id)
 
       // `applyMutations` already wrote to `tasksRef`, so the looked-up task

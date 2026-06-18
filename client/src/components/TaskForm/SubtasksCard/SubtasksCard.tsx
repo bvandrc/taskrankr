@@ -103,25 +103,29 @@ export const SubtasksCard = ({
       parentSortMode: SubtaskSortMode,
       parentShowNumbers: boolean,
     ): Subtask[] => {
-      let children = getDirectSubtasks(allTasks, parentId_)
+      const sortedChildren = (() => {
+        const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
 
-      if (parentSortMode === SubtaskSortMode.MANUAL) {
-        const order =
-          depth === 0
-            ? subtaskOrder
-            : (getById(allTasks, parentId_)?.subtaskOrder ?? [])
-        children = sortTasksByManualOrder(children, order)
-      } else {
-        children = [...children].sort((a, b) => {
-          const ac = a.status === TaskStatus.COMPLETED ? 1 : 0
-          const bc = b.status === TaskStatus.COMPLETED ? 1 : 0
-          return ac - bc
-        })
-      }
+        if (parentSortMode === SubtaskSortMode.MANUAL) {
+          return sortTasksByManualOrder(
+            unsortedChildren,
+            // order
+            depth === 0
+              ? subtaskOrder
+              : (getById(allTasks, parentId_)?.subtaskOrder ?? []),
+          )
+        } else {
+          return [...unsortedChildren].sort((a, b) => {
+            const ac = a.status === TaskStatus.COMPLETED ? 1 : 0
+            const bc = b.status === TaskStatus.COMPLETED ? 1 : 0
+            return ac - bc
+          })
+        }
+      })()
 
       const result: Subtask[] = []
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i]
+      for (let i = 0; i < sortedChildren.length; i++) {
+        const child = sortedChildren[i]
         result.push({
           ...child,
           depth,

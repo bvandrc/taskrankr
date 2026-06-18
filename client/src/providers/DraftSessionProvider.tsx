@@ -157,12 +157,15 @@ export const DraftSessionProvider = ({
   const draftSubtaskOrderOverridesRef = useRef(draftSubtaskOrderOverrides)
   draftSubtaskOrderOverridesRef.current = draftSubtaskOrderOverrides
 
-  const setDraftTasks = (callback: (prev: LocalTask[]) => LocalTask[]) =>
-    setDraftTasksState((prev) => {
-      const next = callback(prev)
-      draftTasksRef.current = next
-      return next
-    })
+  const setDraftTasks = useCallback(
+    (callback: (prev: LocalTask[]) => LocalTask[]) =>
+      setDraftTasksState((prev) => {
+        const next = callback(prev)
+        draftTasksRef.current = next
+        return next
+      }),
+    [],
+  )
 
   const draftTaskIds = useMemo(
     () => new Set(draftTasks.map((t) => t.id)),
@@ -271,7 +274,7 @@ export const DraftSessionProvider = ({
       )
       return true
     },
-    [],
+    [setDraftTasks],
   )
 
   // ---------------------------------------------------------------------------
@@ -280,36 +283,39 @@ export const DraftSessionProvider = ({
   // value is stable across draft churn.
   // ---------------------------------------------------------------------------
 
-  const createDraftTask = useCallback((data: CreateTaskContent): LocalTask => {
-    const tempId = draftIdRef.current--
-    const newTask = buildLocalTask({
-      ...data,
-      id: tempId,
-      status: data.status ?? TaskStatus.OPEN,
-    })
+  const createDraftTask = useCallback(
+    (data: CreateTaskContent): LocalTask => {
+      const tempId = draftIdRef.current--
+      const newTask = buildLocalTask({
+        ...data,
+        id: tempId,
+        status: data.status ?? TaskStatus.OPEN,
+      })
 
-    setDraftTasks((prev) => {
-      let updated = [...prev, newTask]
-      if (data.parentId != null) {
-        // If parent is itself a draft and MANUAL, append to its
-        // subtaskOrder.
-        updated = updated.map((t) => {
-          if (t.id !== data.parentId) return t
-          if (t.subtaskSortMode === SubtaskSortMode.MANUAL) {
-            return { ...t, subtaskOrder: [...t.subtaskOrder, tempId] }
-          }
-          return t
-        })
-      }
-      return updated
-    })
-    debugLog.log('task', 'createDraft', {
-      tempId,
-      name: data.name,
-      parentId: data.parentId,
-    })
-    return newTask
-  }, [])
+      setDraftTasks((prev) => {
+        let updated = [...prev, newTask]
+        if (data.parentId != null) {
+          // If parent is itself a draft and MANUAL, append to its
+          // subtaskOrder.
+          updated = updated.map((t) => {
+            if (t.id !== data.parentId) return t
+            if (t.subtaskSortMode === SubtaskSortMode.MANUAL) {
+              return { ...t, subtaskOrder: [...t.subtaskOrder, tempId] }
+            }
+            return t
+          })
+        }
+        return updated
+      })
+      debugLog.log('task', 'createDraft', {
+        tempId,
+        name: data.name,
+        parentId: data.parentId,
+      })
+      return newTask
+    },
+    [setDraftTasks],
+  )
 
   const updateDraftTask = useCallback(
     (id: number, updates: UpdateTaskContent): LocalTask => {
@@ -324,40 +330,43 @@ export const DraftSessionProvider = ({
       // biome-ignore lint/style/noNonNullAssertion: id was verified by caller as a draft
       return updated!
     },
-    [],
+    [setDraftTasks],
   )
 
-  const deleteDraftTask = useCallback((id: number) => {
-    setDraftTasks((prev) => {
-      const idsToDelete = collectDescendantIds(prev, [id], {
-        includeRoots: true,
+  const deleteDraftTask = useCallback(
+    (id: number) => {
+      setDraftTasks((prev) => {
+        const idsToDelete = collectDescendantIds(prev, [id], {
+          includeRoots: true,
+        })
+
+        // Drop any assignment overrides whose new parent is being deleted.
+        setDraftAssignedParents((prevAssigned) =>
+          rewriteMap(prevAssigned, (newParentId) =>
+            idsToDelete.has(newParentId) ? null : newParentId,
+          ),
+        )
+
+        // Drop overrides whose key (real parent) is being deleted, AND strip
+        // deleted draft ids out of any remaining overrides whose key is still
+        // alive (otherwise stale negative ids leak into commit and sync).
+        setDraftSubtaskOrderOverrides((prevOverrides) =>
+          rewriteMap(prevOverrides, (order, pid) => {
+            if (idsToDelete.has(pid)) return null
+            const filtered = order.filter((sid) => !idsToDelete.has(sid))
+            return filtered.length !== order.length ? filtered : order
+          }),
+        )
+
+        return removeIds(prev, idsToDelete).map((t) => ({
+          ...t,
+          subtaskOrder: t.subtaskOrder.filter((sid) => !idsToDelete.has(sid)),
+        }))
       })
-
-      // Drop any assignment overrides whose new parent is being deleted.
-      setDraftAssignedParents((prevAssigned) =>
-        rewriteMap(prevAssigned, (newParentId) =>
-          idsToDelete.has(newParentId) ? null : newParentId,
-        ),
-      )
-
-      // Drop overrides whose key (real parent) is being deleted, AND strip
-      // deleted draft ids out of any remaining overrides whose key is still
-      // alive (otherwise stale negative ids leak into commit and sync).
-      setDraftSubtaskOrderOverrides((prevOverrides) =>
-        rewriteMap(prevOverrides, (order, pid) => {
-          if (idsToDelete.has(pid)) return null
-          const filtered = order.filter((sid) => !idsToDelete.has(sid))
-          return filtered.length !== order.length ? filtered : order
-        }),
-      )
-
-      return removeIds(prev, idsToDelete).map((t) => ({
-        ...t,
-        subtaskOrder: t.subtaskOrder.filter((sid) => !idsToDelete.has(sid)),
-      }))
-    })
-    debugLog.log('task', 'deleteDraft', { id })
-  }, [])
+      debugLog.log('task', 'deleteDraft', { id })
+    },
+    [setDraftTasks],
+  )
 
   const reorderDraftSubtasks = useCallback(
     (parentId: number, orderedIds: number[]) => {
@@ -367,7 +376,7 @@ export const DraftSessionProvider = ({
         ),
       )
     },
-    [],
+    [setDraftTasks],
   )
 
   const assignDraftSubtask = useCallback(
@@ -391,7 +400,7 @@ export const DraftSessionProvider = ({
         draftParentId,
       })
     },
-    [],
+    [setDraftTasks],
   )
 
   const discardDraftSession = useCallback(() => {
@@ -400,7 +409,7 @@ export const DraftSessionProvider = ({
     setDraftSubtaskOrderOverrides(new Map())
     draftIdRef.current = -100_000_000
     debugLog.log('task', 'discardDraftSession', {})
-  }, [])
+  }, [setDraftTasks])
 
   // ---------------------------------------------------------------------------
   // Draft-aware mutators exposed to dialog consumers. Route to the draft

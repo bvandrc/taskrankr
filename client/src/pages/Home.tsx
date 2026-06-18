@@ -123,7 +123,7 @@ const Home = () => {
   const { isInitialized, deleteDemoData } = useTaskMutations()
   const { settings, updateSettings } = useSettings()
   const { openCreateDialog } = useTaskDialog()
-  const [search, setSearch] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const sortBy = settings.sortBy
   const setSortBy = (value: SortOption) => updateSettings({ sortBy: value })
@@ -185,7 +185,10 @@ const Home = () => {
   const displayedTasks = useMemo(() => {
     const sortOrder = SORT_ORDER_MAP[sortBy]
     const sortedInProgress = inProgressTask
-      ? filterAndSortTree([inProgressTask], search, sortOrder)
+      ? filterAndSortTree([inProgressTask], {
+          searchTerm,
+          fieldSortOrder: sortOrder,
+        })
       : []
 
     // Pinned roots sort priority-first when alwaysSortPinnedByPriority is on;
@@ -194,16 +197,18 @@ const Home = () => {
       settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
         ? [SortOption.PRIORITY, ...sortOrder]
         : sortOrder
-    const sortedPinned = filterAndSortTree(
-      pinnedTasks,
-      search,
-      pinnedRootSortOrder,
-      sortOrder,
-    )
+    const sortedPinned = filterAndSortTree(pinnedTasks, {
+      searchTerm,
+      fieldSortOrder: pinnedRootSortOrder,
+      descendantFieldSortOrder: sortOrder,
+    })
 
-    const sortedTree = filterAndSortTree(taskTree, search, sortOrder)
+    const sortedTree = filterAndSortTree(taskTree, {
+      searchTerm,
+      fieldSortOrder: sortOrder,
+    })
     return [...sortedInProgress, ...sortedPinned, ...sortedTree]
-  }, [taskTree, inProgressTask, pinnedTasks, search, sortBy, settings])
+  }, [taskTree, inProgressTask, pinnedTasks, searchTerm, sortBy, settings])
 
   return (
     <TaskListPageWrapper isLoading={!isInitialized} data-testid="home-page">
@@ -217,14 +222,14 @@ const Home = () => {
             fieldConfig={settings.fieldConfig}
           />
         }
-        searchVal={search}
-        setSearchVal={setSearch}
+        searchVal={searchTerm}
+        setSearchVal={setSearchTerm}
       />
 
       <TaskListTreeLayout>
         {displayedTasks.length === 0 ? (
           <EmptyState
-            search={search}
+            search={searchTerm}
             onCreateClick={() => openCreateDialog()}
           />
         ) : (

@@ -1,5 +1,4 @@
 import path from 'node:path'
-import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -27,7 +26,6 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
-    runtimeErrorOverlay(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
@@ -46,6 +44,9 @@ export default defineConfig({
     ...(process.env.NODE_ENV !== 'production' &&
     process.env.REPL_ID !== undefined
       ? [
+          await import('@replit/vite-plugin-runtime-error-modal').then((m) =>
+            m.default(),
+          ),
           await import('@replit/vite-plugin-cartographer').then((m) =>
             m.cartographer(),
           ),

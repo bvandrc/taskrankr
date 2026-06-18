@@ -186,14 +186,14 @@ export const filterAndSortTree = (
   {
     searchTerm,
     fieldSortOrder,
-    descendantFieldSortOrder,
+    childFieldSortOrder,
   }: {
     searchTerm: string
     fieldSortOrder: SortBy[]
-    descendantFieldSortOrder?: SortBy[]
+    childFieldSortOrder?: SortBy[]
   },
 ): TaskWithSubtasks[] => {
-  const childOrder = descendantFieldSortOrder ?? fieldSortOrder
+  const childOrder = childFieldSortOrder ?? fieldSortOrder
   // Sort the full tree with childOrder (correctly handles all MANUAL subtask
   // modes at every level). Then re-sort just the root level with fieldSortOrder
   // when a different root order was requested.

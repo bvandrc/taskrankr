@@ -200,7 +200,7 @@ const Home = () => {
     const sortedPinned = filterAndSortTree(pinnedTasks, {
       searchTerm,
       fieldSortOrder: pinnedRootSortOrder,
-      descendantFieldSortOrder: sortOrder,
+      childFieldSortOrder: sortOrder,
     })
 
     const sortedTree = filterAndSortTree(taskTree, {

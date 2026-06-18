@@ -1,7 +1,0 @@
-{
-  "name": "npm-run-path",
-  "version": "4.0.1",
-  "description": "Vendor stub — Replit firewall blocks registry versions",
-  "main": "index.js",
-  "license": "MIT"
-}

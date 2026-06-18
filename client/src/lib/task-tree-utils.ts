@@ -118,7 +118,7 @@ const sortTasksByManualOrder = <T extends Task>(
     )
   })
 
-/** Sorts tasks respecting the parent's sort mode: by manual id order or by rank fields. */
+/** Sorts tasks respecting the parent's sort mode: by manual id order, or by rank fields. */
 export const sortTasksByMode = <T extends Task>(
   tasks: T[],
   { sortMode, fieldSortOrder, manualOrder }: TaskSortArgs,

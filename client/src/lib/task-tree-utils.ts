@@ -38,7 +38,6 @@ export enum SortDirection {
 
 /** Default sort direction per field (DESC = best-first). */
 export const SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
-  date_created: SortDirection.DESC,
   date_completed: SortDirection.DESC,
   priority: SortDirection.DESC,
   ease: SortDirection.ASC,
@@ -64,9 +63,6 @@ const getLevelWeight = (
 
 /** Compares two tasks by a single field, respecting its sort direction. */
 const compareByField = (a: Task, b: Task, field: SortBy): number => {
-  if (field === SortBy.DATE_CREATED) {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  }
   if (field === SortBy.DATE_COMPLETED) {
     return (
       new Date(b.completedAt ?? b.createdAt).getTime() -
@@ -135,7 +131,6 @@ export const sortTasksByMode = <T extends Task>(
     : sortTasksByField(tasks, fieldSortOrder)
 
 export const SORT_ORDER_MAP = {
-  date_created: [SortBy.DATE_CREATED],
   priority: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
   ease: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
   enjoyment: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],

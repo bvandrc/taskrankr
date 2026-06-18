@@ -18,12 +18,9 @@ const SORT_INFO_CONFIG = Object.values(SortOption).map((key) => ({
   name: SORT_LABELS[key],
   sortOrderInfo: SORT_ORDER_MAP[key].map((field) => ({
     attr: field,
-    value:
-      field === SortOption.DATE_CREATED
-        ? 'newest'
-        : Object.values(RANK_FIELD_ENUMS[field]).at(
-            SORT_DIRECTIONS[field] === SortDirection.DESC ? -1 : 0,
-          ),
+    value: Object.values(RANK_FIELD_ENUMS[field]).at(
+      SORT_DIRECTIONS[field] === SortDirection.DESC ? -1 : 0,
+    ),
   })),
 }))
 
@@ -56,14 +53,11 @@ export const SortInfo = ({ defaultExpanded = false }: SortInfoProps) => (
             )}
           >
             {item.sortOrderInfo.map((c) => {
-              const style =
-                c.attr !== SortOption.DATE_CREATED
-                  ? getRankFieldStyle(
-                      c.attr,
-                      c.value satisfies string as RankFieldValueMap[typeof c.attr],
-                      '',
-                    )
-                  : ''
+              const style = getRankFieldStyle(
+                c.attr,
+                c.value as RankFieldValueMap[typeof c.attr],
+                '',
+              )
               return (
                 <li
                   key={`${c.attr} ${c.value}`}

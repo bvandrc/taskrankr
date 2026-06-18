@@ -66,7 +66,7 @@ export const userSettings = pgTable('user_settings', {
   alwaysSortPinnedByPriority: boolean('always_sort_pinned_by_priority')
     .default(true)
     .notNull(),
-  sortBy: sortByPgEnum('sort_by').default(SortOption.DATE_CREATED).notNull(),
+  sortBy: sortByPgEnum('sort_by').default(SortOption.PRIORITY).notNull(),
   fieldConfig: jsonb('field_config')
     .$type<FieldConfig>()
     .default(DEFAULT_FIELD_CONFIG)
@@ -79,7 +79,7 @@ const userSettingsSchemaRefine = {
   autoPinNewTasks: (s) => s.default(true),
   enableInProgressStatus: (s) => s.default(true),
   alwaysSortPinnedByPriority: (s) => s.default(true),
-  sortBy: (s) => s.default(SortOption.DATE_CREATED),
+  sortBy: (s) => s.default(SortOption.PRIORITY),
   fieldConfig: fieldConfigSchema.default(DEFAULT_FIELD_CONFIG),
 } satisfies DrizzleZodDefaultRefine<typeof userSettings>
 

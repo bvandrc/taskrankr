@@ -41,13 +41,6 @@ const SortButtons = ({
   fieldConfig: FieldConfig
 }) => (
   <div className="flex items-center gap-1 pr-1">
-    <SortButton
-      label="Date"
-      value={SortOption.DATE_CREATED}
-      className="min-w-12 max-w-16"
-      current={sortBy}
-      onSelect={setSortBy}
-    />
     {RANK_FIELDS_COLUMNS.map((field) =>
       fieldConfig[field.name].visible ? (
         <SortButton

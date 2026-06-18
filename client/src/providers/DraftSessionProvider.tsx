@@ -253,15 +253,17 @@ export const DraftSessionProvider = ({
         draftPatches.set(m.id, m.patch)
       }
       if (draftPatches.size === 0) return true
-      setDraftTasks((prev) =>
-        prev.map(
+      setDraftTasks((prev) => {
+        const next = prev.map(
           (t): LocalTask =>
             draftPatches.has(t.id)
               ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
                 { ...t, ...draftPatches.get(t.id)! }
               : t,
-        ),
-      )
+        )
+        draftTasksRef.current = next
+        return next
+      })
       return true
     },
     [],
@@ -307,13 +309,15 @@ export const DraftSessionProvider = ({
   const updateDraftTask = useCallback(
     (id: number, updates: UpdateTaskContent): LocalTask => {
       let updated: LocalTask | undefined
-      setDraftTasks((prev) =>
-        prev.map((t): LocalTask => {
+      setDraftTasks((prev) => {
+        const next = prev.map((t): LocalTask => {
           if (t.id !== id) return t
           updated = { ...t, ...updates }
           return updated
-        }),
-      )
+        })
+        draftTasksRef.current = next
+        return next
+      })
       // biome-ignore lint/style/noNonNullAssertion: id was verified by caller as a draft
       return updated!
     },

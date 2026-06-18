@@ -37,6 +37,7 @@ import { useSettings } from '@/providers/SettingsProvider'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import {
   type MutateTask,
+  SortOption,
   SubtaskSortMode,
   type Task,
   taskSchemaDefaults,
@@ -108,7 +109,13 @@ export const SubtasksCard = ({
       const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
         sortMode: parentSortMode,
-        fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
+        // DATE_CREATED sorts newest-first as a primary key, which inverts
+        // creation order. The oldest-first tiebreaker in sortTasksByField
+        // already handles it, so skip it as a primary field here.
+        fieldSortOrder:
+          settings.sortBy === SortOption.DATE_CREATED
+            ? []
+            : SORT_ORDER_MAP[settings.sortBy],
         manualOrder:
           depth === 0
             ? subtaskOrder

@@ -1,0 +1,10 @@
+{
+  "name": "npm-run-path",
+  "version": "4.0.0",
+  "description": "Local stub — satisfies execa@4 interface without a registry fetch",
+  "license": "MIT",
+  "main": "index.js",
+  "engines": {
+    "node": ">=8"
+  }
+}

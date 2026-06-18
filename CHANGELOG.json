@@ -3,7 +3,10 @@
     "version": "0.2.7",
     "date": "2026-06-18",
     "title": "Bugfixes",
-    "changes": ["Subtask ordering bugfixes"]
+    "changes": [
+      "Bugfix: Subtask ordering in task form",
+      "Bugfix: Parent task autocompletion"
+    ]
   },
   {
     "version": "0.2.6",

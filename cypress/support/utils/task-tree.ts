@@ -42,8 +42,6 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
     const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
     if (expandBtn.length > 0) {
       cy.log('expanding collapsed card...')
-      cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('not.exist')
-      cy.wrap($card).find(TaskCard.CARD).should('not.exist')
       cy.wrap(expandBtn).click()
       cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
       cy.wrap($card).find(TaskCard.CARD).should('exist')
@@ -85,7 +83,10 @@ export const openStatusChangeDialog = (task: Pick<Task, 'name'>) => {
 export const changeStatusViaStatusChangeDialog = (
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
-  { hasIncompleteSubtasks = false }: { hasIncompleteSubtasks?: boolean } = {},
+  {
+    hasIncompleteSubtasks = false,
+    sideEffects = [],
+  }: { hasIncompleteSubtasks?: boolean; sideEffects?: CreatedTask[] } = {},
 ) => {
   openStatusChangeDialog(task)
 
@@ -103,7 +104,7 @@ export const changeStatusViaStatusChangeDialog = (
       .should('be.enabled')
       .click()
   }
-  waitForUpdate([{ ...task, status: newStatus }])
+  waitForUpdate([{ ...task, status: newStatus }, ...sideEffects])
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }
 

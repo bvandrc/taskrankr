@@ -140,14 +140,9 @@ export class TaskMutationService {
    * when all children are done, reverting when any child is not. Returns the
    * status corrections so callers can enqueue sync ops.
    */
-  static reconcileInheritCompletionState<T extends Task>(
-    tasks: T[],
-  ): {
-    tasks: T[]
-    corrections: { id: number; status: TaskStatus }[]
-  } {
+  static reconcileInheritCompletionState<T extends Task>(tasks: T[]) {
     const corrections: { id: number; status: TaskStatus }[] = []
-    let updated = tasks
+    let updated: T[] = tasks
     let changed = true
 
     while (changed) {
@@ -258,15 +253,20 @@ export class TaskMutationService {
     }
 
     const effective = buffer.overlay(current)
-    if (
-      updates.inheritCompletionState &&
-      effective.status === TaskStatus.COMPLETED
-    ) {
-      const children = (await this.io.getDirectSubtasks(id)).map((c) =>
-        buffer.overlay(c),
-      )
-      if (getHasIncomplete(children)) {
-        buffer.add(id, REVERT_COMPLETION_PATCH)
+    if (updates.inheritCompletionState) {
+      if (effective.status === TaskStatus.COMPLETED) {
+        const children = (await this.io.getDirectSubtasks(id)).map((c) =>
+          buffer.overlay(c),
+        )
+        if (getHasIncomplete(children)) {
+          buffer.add(id, REVERT_COMPLETION_PATCH)
+        }
+      } else {
+        // Skip leaves: an empty children list vacuously satisfies `every`.
+        const children = await this.io.getDirectSubtasks(id)
+        if (children.length > 0) {
+          await this.walkAutoCompleteParent(id, buffer)
+        }
       }
     }
 

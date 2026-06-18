@@ -13,7 +13,6 @@ import express, {
   type Response,
 } from 'express'
 
-import { IS_STATIC_SERVING } from './constants'
 import { log } from './log'
 import { registerRoutes } from './routes'
 import { serveStatic } from './static'
@@ -77,10 +76,7 @@ app.use((req, res, next) => {
     throw err
   })
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (IS_STATIC_SERVING) {
+  if (process.env.NODE_ENV !== 'development') {
     serveStatic(app)
   } else {
     const { setupVite } = await import('./vite')

@@ -122,8 +122,5 @@
       "@esbuild-kit/esm-loader": "npm:tsx@^4"
     },
     "glob": "^12"
-  },
-  "optionalDependencies": {
-    "bufferutil": "4.1.0"
   }
 }

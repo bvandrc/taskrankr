@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.2.7",
+    "date": "2026-06-18",
+    "title": "Bugfixes",
+    "changes": ["Subtask ordering bugfixes"]
+  },
+  {
     "version": "0.2.6",
     "date": "2026-05-14",
     "title": "Bugfixes",

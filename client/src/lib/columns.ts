@@ -4,7 +4,6 @@ import { type RankField, SortOption } from '~/shared/schema'
 import { RANK_FIELD_ENUMS } from './constants'
 
 export const SORT_LABELS = {
-  [SortOption.DATE_CREATED]: 'Date Created',
   [SortOption.PRIORITY]: 'Priority',
   [SortOption.EASE]: 'Ease',
   [SortOption.ENJOYMENT]: 'Enjoyment',

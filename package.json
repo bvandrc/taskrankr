@@ -14,7 +14,7 @@
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
     "prod:preview": "cross-env NODE_ENV=production node dist/index.cjs",
-    "local:preview": "cross-env NODE_ENV=development SERVE_STATIC=true node --env-file-if-exists=.env.local dist/index.cjs",
+    "local:preview": "cross-env SERVE_STATIC=true node --env-file-if-exists=.env.local dist/index.cjs",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

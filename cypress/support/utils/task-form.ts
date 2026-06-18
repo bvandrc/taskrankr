@@ -159,7 +159,6 @@ export const checkTaskFormSubtasks = (
   subtasks: Pick<Task, 'name' | 'status'>[],
 ) => {
   // TODO: test how they are nested
-  cy.wait(200) // TODO: debug and remove
   cy.get(TaskForm.SUBTASKS_CARD).scrollIntoView()
   cy.get(TaskForm.SUBTASK_ROW)
     .should('have.length', subtasks.length)

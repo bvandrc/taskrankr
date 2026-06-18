@@ -41,13 +41,6 @@ const SortButtons = ({
   fieldConfig: FieldConfig
 }) => (
   <div className="flex items-center gap-1 pr-1">
-    <SortButton
-      label="Date"
-      value={SortOption.DATE_CREATED}
-      className="min-w-12 max-w-16"
-      current={sortBy}
-      onSelect={setSortBy}
-    />
     {RANK_FIELDS_COLUMNS.map((field) =>
       fieldConfig[field.name].visible ? (
         <SortButton
@@ -191,14 +184,16 @@ const Home = () => {
         })
       : []
 
-    const pinnedSort =
+    // Pinned roots sort priority-first when alwaysSortPinnedByPriority is on;
+    // their subtasks always follow the user's normal sort order.
+    const pinnedRootSortOrder =
       settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
         ? [SortOption.PRIORITY, ...sortOrder]
         : sortOrder
     const sortedPinned = filterAndSortTree(pinnedTasks, {
       searchTerm,
-      fieldSortOrder: pinnedSort,
-      childFieldSortOrder: pinnedSort !== sortOrder ? sortOrder : undefined,
+      fieldSortOrder: pinnedRootSortOrder,
+      childFieldSortOrder: sortOrder,
     })
 
     const sortedTree = filterAndSortTree(taskTree, {

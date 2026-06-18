@@ -3,7 +3,12 @@
  * lists.
  */
 
-import type { ValueOf } from 'type-fest'
+import type {
+  AllUnionFields,
+  MergeExclusive,
+  Simplify,
+  ValueOf,
+} from 'type-fest'
 
 import type { TaskWithSubtasks } from '@/types'
 import {
@@ -33,7 +38,6 @@ export enum SortDirection {
 
 /** Default sort direction per field (DESC = best-first). */
 export const SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
-  date_created: SortDirection.DESC,
   date_completed: SortDirection.DESC,
   priority: SortDirection.DESC,
   ease: SortDirection.ASC,
@@ -59,9 +63,6 @@ const getLevelWeight = (
 
 /** Compares two tasks by a single field, respecting its sort direction. */
 const compareByField = (a: Task, b: Task, field: SortBy): number => {
-  if (field === SortBy.DATE_CREATED) {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  }
   if (field === SortBy.DATE_COMPLETED) {
     return (
       new Date(b.completedAt ?? b.createdAt).getTime() -
@@ -76,11 +77,8 @@ const compareByField = (a: Task, b: Task, field: SortBy): number => {
 
 /** Sorts tasks by a passed sort order of fields; earlier fields take priority.
  *  Completed tasks always sort to the bottom. */
-export const sortTasksByField = <T extends Task>(
-  tasks: T[],
-  order: SortBy[],
-): T[] =>
-  [...tasks].sort((a, b) => {
+const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] => {
+  return [...tasks].sort((a, b) => {
     const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
     const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
     if (aCompleted !== bCompleted) return aCompleted - bCompleted
@@ -91,9 +89,27 @@ export const sortTasksByField = <T extends Task>(
     }
     return a.createdAt.getTime() - b.createdAt.getTime()
   })
+}
+
+type TaskSortArgs = Simplify<
+  MergeExclusive<
+    {
+      sortMode: SubtaskSortMode.INHERIT
+      /** Field order of direct subtasks */
+      fieldSortOrder: SortBy[]
+    },
+    {
+      sortMode: SubtaskSortMode.MANUAL
+      /** Manual order of direct subtasks */
+      manualOrder: number[]
+    }
+  >
+>
+
+type TaskSortArgsComplete = Required<AllUnionFields<TaskSortArgs>>
 
 /** Sorts tasks by their position in a user-defined sequence of IDs (the saved manual order). */
-export const sortTasksByManualOrder = <T extends Task>(
+const sortTasksByManualOrder = <T extends Task>(
   tasks: T[],
   order: number[],
 ): T[] =>
@@ -106,8 +122,16 @@ export const sortTasksByManualOrder = <T extends Task>(
     )
   })
 
+/** Sorts tasks respecting the parent's sort mode: by manual id order, or by rank fields. */
+export const sortTasksByMode = <T extends Task>(
+  tasks: T[],
+  { sortMode, fieldSortOrder, manualOrder }: TaskSortArgsComplete,
+): T[] =>
+  sortMode === SubtaskSortMode.MANUAL
+    ? sortTasksByManualOrder(tasks, manualOrder)
+    : sortTasksByField(tasks, fieldSortOrder)
+
 export const SORT_ORDER_MAP = {
-  date_created: [SortBy.DATE_CREATED],
   priority: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
   ease: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
   enjoyment: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
@@ -116,33 +140,22 @@ export const SORT_ORDER_MAP = {
 
 export const sortTaskTree = (
   tasks: TaskWithSubtasks[],
-  {
-    sortMode,
-    fieldSortOrder,
-    manualOrder,
-    childFieldSortOrder,
-  }: {
-    sortMode?: SubtaskSortMode
-    fieldSortOrder: SortBy[]
-    manualOrder?: number[]
-    childFieldSortOrder?: SortBy[]
-  },
+  { sortMode, fieldSortOrder, manualOrder = [] }: TaskSortArgsComplete,
 ): TaskWithSubtasks[] => {
-  const inheritedSort = childFieldSortOrder ?? fieldSortOrder
   const withSortedChildren = tasks.map(({ subtasks, ...task }) => ({
     ...task,
     subtasks: sortTaskTree(subtasks, {
-      fieldSortOrder: inheritedSort,
       sortMode: task.subtaskSortMode,
+      fieldSortOrder,
       manualOrder: task.subtaskOrder,
     }),
   }))
 
-  if (sortMode === SubtaskSortMode.MANUAL && manualOrder) {
-    return sortTasksByManualOrder(withSortedChildren, manualOrder)
-  }
-
-  return sortTasksByField(withSortedChildren, fieldSortOrder)
+  return sortTasksByMode(withSortedChildren, {
+    sortMode,
+    fieldSortOrder,
+    manualOrder,
+  })
 }
 
 // *****************************************************************************
@@ -182,11 +195,24 @@ export const filterAndSortTree = (
     fieldSortOrder: SortBy[]
     childFieldSortOrder?: SortBy[]
   },
-) =>
-  sortTaskTree(filterTaskTree(tasks, searchTerm), {
-    fieldSortOrder,
-    childFieldSortOrder,
+): TaskWithSubtasks[] => {
+  const childOrder = childFieldSortOrder ?? fieldSortOrder
+  // Sort the full tree with childOrder (correctly handles all MANUAL subtask
+  // modes at every level). Then re-sort just the root level with fieldSortOrder
+  // when a different root order was requested.
+  const sorted = sortTaskTree(filterTaskTree(tasks, searchTerm), {
+    sortMode: SubtaskSortMode.INHERIT,
+    fieldSortOrder: childOrder,
+    manualOrder: [],
   })
+  return childOrder === fieldSortOrder
+    ? sorted
+    : sortTasksByMode(sorted, {
+        sortMode: SubtaskSortMode.INHERIT, // at root, no manual order
+        fieldSortOrder,
+        manualOrder: [], // irrelevant whe sortMode is INHERIT
+      })
+}
 
 // *****************************************************************************
 // Hiding

@@ -28,16 +28,17 @@ import {
   getDirectSubtasks,
   isEffectivelyHiddenInTree,
   mapById,
-  sortTasksByManualOrder,
+  SORT_ORDER_MAP,
+  sortTasksByMode,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
+import { useSettings } from '@/providers/SettingsProvider'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import {
   type MutateTask,
   SubtaskSortMode,
   type Task,
-  TaskStatus,
   taskSchemaDefaults,
 } from '~/shared/schema'
 import { CollapsibleCard } from '../../primitives/CollapsibleCard'
@@ -65,6 +66,7 @@ export const SubtasksCard = ({
   disableAddSubtask = false,
 }: SubtasksCardProps) => {
   const { tasksWithDrafts: allTasks } = useDraftSession()
+  const { settings } = useSettings()
   const form = useFormContext<MutateTask>()
 
   const task = getById(allTasks, taskProp.id) ?? taskProp
@@ -98,30 +100,20 @@ export const SubtasksCard = ({
 
   const allSubtasks = useMemo(() => {
     const collectDescendants = (
-      parentId_: number,
+      parentId: number,
       depth: number,
-      parentSortMode: SubtaskSortMode,
-      parentShowNumbers: boolean,
+      childrenSortMode: SubtaskSortMode,
+      childrenShowNumbers: boolean,
     ): Subtask[] => {
-      const sortedChildren = (() => {
-        const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
-
-        if (parentSortMode === SubtaskSortMode.MANUAL) {
-          return sortTasksByManualOrder(
-            unsortedChildren,
-            // order
-            depth === 0
-              ? subtaskOrder
-              : (getById(allTasks, parentId_)?.subtaskOrder ?? []),
-          )
-        } else {
-          return [...unsortedChildren].sort((a, b) => {
-            const ac = a.status === TaskStatus.COMPLETED ? 1 : 0
-            const bc = b.status === TaskStatus.COMPLETED ? 1 : 0
-            return ac - bc
-          })
-        }
-      })()
+      const unsortedChildren = getDirectSubtasks(allTasks, parentId)
+      const sortedChildren = sortTasksByMode(unsortedChildren, {
+        sortMode: childrenSortMode,
+        fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
+        manualOrder:
+          depth === 0
+            ? subtaskOrder
+            : (getById(allTasks, parentId)?.subtaskOrder ?? []),
+      })
 
       const result: Subtask[] = []
       for (let i = 0; i < sortedChildren.length; i++) {
@@ -130,7 +122,7 @@ export const SubtasksCard = ({
           ...child,
           depth,
           subtaskIndex:
-            parentShowNumbers && parentSortMode === SubtaskSortMode.MANUAL
+            childrenShowNumbers && childrenSortMode === SubtaskSortMode.MANUAL
               ? i
               : undefined,
         })
@@ -147,7 +139,7 @@ export const SubtasksCard = ({
     }
 
     return collectDescendants(task.id, 0, sortMode, showNumbers)
-  }, [task, allTasks, sortMode, subtaskOrder, showNumbers])
+  }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the
   // live preview reflects the unsaved form value rather than the persisted one.

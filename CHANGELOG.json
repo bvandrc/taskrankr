@@ -4,8 +4,8 @@
     "date": "2026-06-18",
     "title": "Bugfixes",
     "changes": [
-      "Subtask ordering bugfixes",
-      "Parent task autocompletion bugfix"
+      "Bugfix: Subtask ordering in task form",
+      "Bugfix: Parent task autocompletion"
     ]
   },
   {

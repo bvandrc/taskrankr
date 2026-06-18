@@ -57,7 +57,7 @@ const EmptyState = ({ search }: { search: string | undefined }) => (
 const Completed = () => {
   const { tasks: allTasks } = useTasks()
   const { isInitialized } = useTaskMutations()
-  const [search, setSearch] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const completedTasks = useMemo(() => {
     const taskById = mapById(allTasks)
@@ -88,8 +88,12 @@ const Completed = () => {
   }, [allTasks])
 
   const displayedTasks = useMemo(
-    () => filterAndSortTree(completedTasks, search, ['date_completed']),
-    [completedTasks, search],
+    () =>
+      filterAndSortTree(completedTasks, {
+        searchTerm,
+        fieldSortOrder: ['date_completed'],
+      }),
+    [completedTasks, searchTerm],
   )
 
   return (
@@ -100,13 +104,13 @@ const Completed = () => {
       <TaskListPageHeader
         title="Completed Tasks"
         ColumnHeaders={displayedTasks.length > 0 && <ColumnHeaders />}
-        searchVal={search}
-        setSearchVal={setSearch}
+        searchVal={searchTerm}
+        setSearchVal={setSearchTerm}
       />
 
       <TaskListTreeLayout>
         {displayedTasks.length === 0 ? (
-          <EmptyState search={search} />
+          <EmptyState search={searchTerm} />
         ) : (
           displayedTasks.map((task) => (
             <TaskCard

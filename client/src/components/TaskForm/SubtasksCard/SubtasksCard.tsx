@@ -156,13 +156,21 @@ export const SubtasksCard = ({
     return map
   }, [allTasks, task.id, autoHideCompleted])
 
-  const hiddenSubtaskIds = useMemo(() => {
-    return new Set(
-      allSubtasks
-        .filter((s) => isEffectivelyHiddenInTree(s, taskById))
-        .map((s) => s.id),
-    )
-  }, [allSubtasks, taskById])
+  // Walk in tree order (parent before children) so hidden status propagates
+  // transitively — descendants of a hidden parent are also hidden even if the
+  // intermediate parent has autoHideCompleted: false.
+  const hiddenSubtaskIds = useMemo(
+    () =>
+      allSubtasks.reduce((set, subtask) => {
+        if (
+          isEffectivelyHiddenInTree(subtask, taskById) ||
+          (subtask.parentId != null && set.has(subtask.parentId))
+        )
+          set.add(subtask.id)
+        return set
+      }, new Set<number>()),
+    [allSubtasks, taskById],
+  )
 
   const hiddenCount = hiddenSubtaskIds.size
 

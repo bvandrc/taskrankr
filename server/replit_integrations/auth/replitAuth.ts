@@ -18,6 +18,7 @@ import { Strategy, type VerifyFunction } from 'openid-client/passport'
 import passport from 'passport'
 
 import { AuthPaths } from '~/shared/constants'
+import { IS_PROD } from '../../constants'
 import { authStorage } from './storage'
 
 const getOidcConfig = memoize(
@@ -46,9 +47,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // Disabled outside production so Cypress and local dev can set/replay the
-      // session cookie without TLS.
-      secure: process.env.NODE_ENV === 'production',
+      secure: IS_PROD,
       maxAge: sessionTtl,
     },
   })

@@ -57,11 +57,21 @@ npm run dev
 
 To stop Postgres: `npm run local:db:down`
 
-#### Guest mode vs. Login mode
+#### Which script to use
 
-Both `npm run dev` and `npm run build && npm run local:start` run in **development mode**: the **Log In / Sign Up** button automatically bypasses Replit Auth and logs you in as the built-in test user, giving you full authenticated mode with real database sync. The only difference is that `npm run dev` uses the Vite dev server, while `local:start` serves the pre-built static files.
+Three scripts serve distinct purposes and can't be collapsed further:
 
-> `npm run build && npm run prod:start` runs in production mode — test login is disabled and only guest mode is available.
+| Script | Frontend | Test login | Use when |
+|---|---|---|---|
+| `npm run dev` | Vite dev server (HMR) | ✓ auto-bypass | Active development |
+| `npm run build && npm run local:preview` | Compiled `dist/` | ✓ auto-bypass | E2E tests against the compiled artifact |
+| `npm run build && npm run prod:preview` | Compiled `dist/` | ✗ | Production / prod simulation |
+
+**`dev`** runs TypeScript directly via `tsx` and uses the Vite dev server with hot module replacement. The Log In button auto-logs you in as the built-in test user (Replit Auth is bypassed). Use this for day-to-day development.
+
+**`local:preview`** serves the pre-built static files and also keeps test routes enabled — which is what Cypress relies on for session setup. Use this to run E2E tests against the real compiled artifact (`npm run cy:run:user` / `npm run cy:run:guest`).
+
+**`prod:preview`** runs the compiled bundle with test routes stripped. The Log In button triggers real Replit Auth (requires `REPL_ID` in env). Use this to simulate or run a production deployment.
 
 ## License
 

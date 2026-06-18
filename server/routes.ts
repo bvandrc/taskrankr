@@ -16,7 +16,7 @@ import type { Express } from 'express'
 import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
-import { ERRORS, IS_TEST_ENV } from './constants'
+import { ERRORS, IS_PROD } from './constants'
 import {
   authStorage,
   isAuthenticated,
@@ -230,7 +230,7 @@ export async function registerRoutes(
   await setupAuth(app)
   registerAuthRoutes(app)
 
-  if (IS_TEST_ENV) {
+  if (!IS_PROD) {
     registerTestRoutes(app)
   }
 

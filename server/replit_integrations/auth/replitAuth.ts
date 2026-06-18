@@ -18,7 +18,7 @@ import { Strategy, type VerifyFunction } from 'openid-client/passport'
 import passport from 'passport'
 
 import { AuthPaths } from '~/shared/constants'
-import { IS_TEST_ENV } from '../../constants'
+import { IS_PROD } from '../../constants'
 import { authStorage } from './storage'
 
 const getOidcConfig = memoize(
@@ -49,7 +49,7 @@ export function getSession() {
       httpOnly: true,
       // Must stay runtime-evaluated (not NODE_ENV) so esbuild doesn't bake it
       // true in local:preview, which would break Cypress cookie replay.
-      secure: !IS_TEST_ENV,
+      secure: IS_PROD,
       maxAge: sessionTtl,
     },
   })

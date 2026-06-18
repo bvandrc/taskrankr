@@ -28,16 +28,18 @@ import {
   getDirectSubtasks,
   isEffectivelyHiddenInTree,
   mapById,
+  SORT_ORDER_MAP,
+  sortTasksByField,
   sortTasksByIdOrder,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
+import { useSettings } from '@/providers/SettingsProvider'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import {
   type MutateTask,
   SubtaskSortMode,
   type Task,
-  TaskStatus,
   taskSchemaDefaults,
 } from '~/shared/schema'
 import { CollapsibleCard } from '../../primitives/CollapsibleCard'
@@ -65,6 +67,7 @@ export const SubtasksCard = ({
   disableAddSubtask = false,
 }: SubtasksCardProps) => {
   const { tasksWithDrafts: allTasks } = useDraftSession()
+  const { settings } = useSettings()
   const form = useFormContext<MutateTask>()
 
   const task = getById(allTasks, taskProp.id) ?? taskProp
@@ -112,11 +115,7 @@ export const SubtasksCard = ({
             : (getById(allTasks, parentId_)?.subtaskOrder ?? [])
         children = sortTasksByIdOrder(children, order)
       } else {
-        children = [...children].sort((a, b) => {
-          const ac = a.status === TaskStatus.COMPLETED ? 1 : 0
-          const bc = b.status === TaskStatus.COMPLETED ? 1 : 0
-          return ac - bc
-        })
+        children = sortTasksByField(children, SORT_ORDER_MAP[settings.sortBy])
       }
 
       const result: Subtask[] = []
@@ -143,7 +142,7 @@ export const SubtasksCard = ({
     }
 
     return collectDescendants(task.id, 0, sortMode, showNumbers)
-  }, [task, allTasks, sortMode, subtaskOrder, showNumbers])
+  }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the
   // live preview reflects the unsaved form value rather than the persisted one.

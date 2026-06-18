@@ -28,7 +28,7 @@ import {
   getDirectSubtasks,
   isEffectivelyHiddenInTree,
   mapById,
-  sortTasksByIdOrder,
+  sortTasksByManualOrder,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
@@ -110,7 +110,7 @@ export const SubtasksCard = ({
           depth === 0
             ? subtaskOrder
             : (getById(allTasks, parentId_)?.subtaskOrder ?? [])
-        children = sortTasksByIdOrder(children, order)
+        children = sortTasksByManualOrder(children, order)
       } else {
         children = [...children].sort((a, b) => {
           const ac = a.status === TaskStatus.COMPLETED ? 1 : 0

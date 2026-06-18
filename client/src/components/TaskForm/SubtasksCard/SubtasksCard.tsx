@@ -126,15 +126,11 @@ export const SubtasksCard = ({
               ? i
               : undefined,
         })
-        const childEffectiveSortMode =
-          child.subtaskSortMode === SubtaskSortMode.INHERIT
-            ? effectiveSortMode
-            : child.subtaskSortMode
         result.push(
           ...collectDescendants(
             child.id,
             depth + 1,
-            childEffectiveSortMode,
+            child.subtaskSortMode,
             child.subtasksShowNumbers,
           ),
         )
@@ -142,23 +138,7 @@ export const SubtasksCard = ({
       return result
     }
 
-    // If the edited task's own sortMode is INHERIT, walk up to the nearest
-    // ancestor that has a concrete mode so depth-0 subtasks sort correctly.
-    let initialEffectiveSortMode = sortMode
-    if (sortMode === SubtaskSortMode.INHERIT) {
-      let currentId = task.parentId
-      while (currentId != null) {
-        const ancestor = getById(allTasks, currentId)
-        if (!ancestor) break
-        if (ancestor.subtaskSortMode !== SubtaskSortMode.INHERIT) {
-          initialEffectiveSortMode = ancestor.subtaskSortMode
-          break
-        }
-        currentId = ancestor.parentId
-      }
-    }
-
-    return collectDescendants(task.id, 0, initialEffectiveSortMode, showNumbers)
+    return collectDescendants(task.id, 0, sortMode, showNumbers)
   }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the

@@ -4,7 +4,7 @@ A multi-user, offline-first task manager with hierarchical tasks, a status workf
 
 ## Local Dev Setup
 
-**Prerequisites**: Docker Desktop, Node.js 20+
+**Prerequisites**: Docker Desktop, Node.js 24+
 
 ```bash
 # First time only — copy and fill in your env:
@@ -71,7 +71,7 @@ client/          React frontend
       storage.ts
       task-tree-utils.ts
 server/          Node.js/Express backend
-  constants.ts   IS_PROD, IS_TEST_ENV, SERVE_STATIC exports
+  constants.ts   IS_PROD export (runtime flag for prod:preview)
 shared/
   contract.ts    ts-rest API contract
   schema/        Drizzle + Zod schemas (tasks.zod.ts, settings.zod.ts, ...)
@@ -111,7 +111,7 @@ migrations/      Drizzle migration files
 - **Stale dev server after `npm install`**: Restart the server before debugging "Invalid hook call" errors — a clean restart often fixes it.
 - **Vite dedupe**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Don't remove these; avoid editing `vite.config.ts` when a client-side change suffices. If a new package causes duplicate-React errors, add it to `optimizeDeps.include`.
 - **Service worker in dev**: Disabled (`devOptions.enabled: false`). Do not re-enable — a stale SW intercepts Vite module requests and breaks HMR.
-- **esbuild bakes `NODE_ENV`**: `process.env.NODE_ENV` is replaced statically at build time. Use `IS_TEST_ENV` from `server/constants.ts` for conditions that must stay live at runtime (e.g. test routes, cookie `secure` flag) — it uses `TEST_ENV` env var as a runtime escape hatch that esbuild cannot bake.
+- **esbuild bakes `NODE_ENV`**: `process.env.NODE_ENV` is replaced statically at build time. For conditions that must stay live at runtime (e.g. test routes, cookie `secure` flag), use `IS_PROD` from `server/constants.ts` — it reads `process.env.IS_PROD`, which esbuild cannot bake. `prod:preview` sets `IS_PROD=true`; `dev` and `local:preview` leave it unset.
 
 ## Key Docs
 

@@ -24,6 +24,7 @@ import {
   type MutateTaskContent,
   useTaskMutations,
 } from '@/providers/TasksProvider'
+import type { LocalTask } from '@/types'
 import type { CreateTask, Task } from '~/shared/schema'
 import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
 import { ConfirmDeleteDialog } from '../ConfirmDeleteDialog'
@@ -348,24 +349,21 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const handleSubmit = async (data: MutateTaskContent) => {
+  const handleSubmit = (data: MutateTaskContent): LocalTask | undefined => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
 
-    // Guard: when saving a completed task that has newly-added incomplete
-    // subtasks, warn the user that the parent will be re-opened. Skip this
-    // branch when re-called from the dialog's onConfirm — at that point
-    // pendingSaveFormData is already set, signalling the user has confirmed.
-    if (
-      isRoot &&
-      pendingSaveFormData === null &&
-      data.status === TaskStatus.COMPLETED &&
-      incompleteDraftSubtasks.length > 0
-    ) {
-      setPendingSaveFormData(data)
-      setShowSaveOpenSubtasksConfirm(true)
-      return
+    if (top.taskId === null) {
+      // Fresh create with no draft: just create directly.
+      const localTask = createTask({
+        ...data,
+        parentId: freshCreateParentId ?? undefined,
+      } as CreateTask)
+      // Defensive: any stray drafts get committed (shouldn't exist here).
+      if (hasDraftSession) commitDraftSession()
+      resetAndClose()
+      return localTask
     }
 
     setShowSaveOpenSubtasksConfirm(false)

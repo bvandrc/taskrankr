@@ -74,21 +74,6 @@ const compareByField = (a: Task, b: Task, field: SortBy): number => {
   return direction === SortDirection.DESC ? valB - valA : valA - valB
 }
 
-/** Sorts tasks by a passed sort order of fields; earlier fields take priority.
- *  Completed tasks always sort to the bottom. */
-const sortTasksByField = <T extends Task>(tasks: T[], fields: SortBy[]): T[] =>
-  [...tasks].sort((a, b) => {
-    const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
-    const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
-    if (aCompleted !== bCompleted) return aCompleted - bCompleted
-
-    for (const field of fields) {
-      const cmp = compareByField(a, b, field)
-      if (cmp !== 0) return cmp
-    }
-    return 0
-  })
-
 type TaskSortArgsUnique = MergeExclusive<
   {
     sortMode: SubtaskSortMode.INHERIT
@@ -104,8 +89,26 @@ type TaskSortArgsUnique = MergeExclusive<
 
 type TaskSortArgs = Required<AllUnionFields<TaskSortArgsUnique>>
 
-/** Sorts tasks by a passed sort order of ids; earlier ids take priority. */
-const sortTasksByIdOrder = <T extends Task>(tasks: T[], order: number[]): T[] =>
+/** Sorts tasks by a passed sort order of fields; earlier fields take priority.
+ *  Completed tasks always sort to the bottom. */
+const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] =>
+  [...tasks].sort((a, b) => {
+    const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
+    const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
+    if (aCompleted !== bCompleted) return aCompleted - bCompleted
+
+    for (const field of order) {
+      const cmp = compareByField(a, b, field)
+      if (cmp !== 0) return cmp
+    }
+    return 0
+  })
+
+/** Sorts tasks by their position in a user-defined sequence of IDs (the saved manual order). */
+const sortTasksByManualOrder = <T extends Task>(
+  tasks: T[],
+  order: number[],
+): T[] =>
   [...tasks].sort((a, b) => {
     const indexA = order.indexOf(a.id)
     const indexB = order.indexOf(b.id)
@@ -121,7 +124,7 @@ export const sortTasksByMode = <T extends Task>(
   { sortMode, fieldSortOrder, manualOrder }: TaskSortArgs,
 ): T[] =>
   sortMode === SubtaskSortMode.MANUAL
-    ? sortTasksByIdOrder(tasks, manualOrder)
+    ? sortTasksByManualOrder(tasks, manualOrder)
     : sortTasksByField(tasks, fieldSortOrder)
 
 export const SORT_ORDER_MAP = {

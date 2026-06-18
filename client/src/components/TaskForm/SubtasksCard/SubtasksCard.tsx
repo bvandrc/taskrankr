@@ -100,19 +100,19 @@ export const SubtasksCard = ({
 
   const allSubtasks = useMemo(() => {
     const collectDescendants = (
-      parentId_: number,
+      parentId: number,
       depth: number,
       effectiveSortMode: SubtaskSortMode,
       parentShowNumbers: boolean,
     ): Subtask[] => {
-      const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
+      const unsortedChildren = getDirectSubtasks(allTasks, parentId)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
         sortMode: effectiveSortMode,
         fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
         manualOrder:
           depth === 0
             ? subtaskOrder
-            : (getById(allTasks, parentId_)?.subtaskOrder ?? []),
+            : (getById(allTasks, parentId)?.subtaskOrder ?? []),
       })
 
       const result: Subtask[] = []

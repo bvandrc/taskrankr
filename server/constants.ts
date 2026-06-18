@@ -6,9 +6,6 @@ import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
 // prod:preview sets IS_PROD=true; dev and local:preview leave it unset (false).
 export const IS_PROD = process.env.IS_PROD === 'true'
 
-// Default true; opt-out via SERVE_STATIC=false (dev only).
-export const SERVE_STATIC = IS_PROD || process.env.SERVE_STATIC !== 'false'
-
 type BaseErrors = typeof BASE_ERRORS
 
 /**

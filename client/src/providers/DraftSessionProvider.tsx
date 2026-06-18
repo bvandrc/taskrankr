@@ -137,7 +137,7 @@ export const DraftSessionProvider = ({
   const settingsRef = useRef(settings)
   settingsRef.current = settings
 
-  const [draftTasks, setDraftTasks] = useState<LocalTask[]>([])
+  const [draftTasks, setDraftTasksState] = useState<LocalTask[]>([])
   // realTaskId -> draft parent id for the duration of the session.
   const [draftAssignedParents, setDraftAssignedParents] = useState<
     Map<number, number>
@@ -156,6 +156,13 @@ export const DraftSessionProvider = ({
   draftAssignedParentsRef.current = draftAssignedParents
   const draftSubtaskOrderOverridesRef = useRef(draftSubtaskOrderOverrides)
   draftSubtaskOrderOverridesRef.current = draftSubtaskOrderOverrides
+
+  const setDraftTasks = (callback: (prev: LocalTask[]) => LocalTask[]) =>
+    setDraftTasksState((prev) => {
+      const next = callback(prev)
+      draftTasksRef.current = next
+      return next
+    })
 
   const draftTaskIds = useMemo(
     () => new Set(draftTasks.map((t) => t.id)),
@@ -253,17 +260,15 @@ export const DraftSessionProvider = ({
         draftPatches.set(m.id, m.patch)
       }
       if (draftPatches.size === 0) return true
-      setDraftTasks((prev) => {
-        const next = prev.map(
+      setDraftTasks((prev) =>
+        prev.map(
           (t): LocalTask =>
             draftPatches.has(t.id)
               ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
                 { ...t, ...draftPatches.get(t.id)! }
               : t,
-        )
-        draftTasksRef.current = next
-        return next
-      })
+        ),
+      )
       return true
     },
     [],
@@ -309,15 +314,13 @@ export const DraftSessionProvider = ({
   const updateDraftTask = useCallback(
     (id: number, updates: UpdateTaskContent): LocalTask => {
       let updated: LocalTask | undefined
-      setDraftTasks((prev) => {
-        const next = prev.map((t): LocalTask => {
+      setDraftTasks((prev) =>
+        prev.map((t): LocalTask => {
           if (t.id !== id) return t
           updated = { ...t, ...updates }
           return updated
-        })
-        draftTasksRef.current = next
-        return next
-      })
+        }),
+      )
       // biome-ignore lint/style/noNonNullAssertion: id was verified by caller as a draft
       return updated!
     },
@@ -392,7 +395,7 @@ export const DraftSessionProvider = ({
   )
 
   const discardDraftSession = useCallback(() => {
-    setDraftTasks([])
+    setDraftTasks(() => [])
     setDraftAssignedParents(new Map())
     setDraftSubtaskOrderOverrides(new Map())
     draftIdRef.current = -100_000_000

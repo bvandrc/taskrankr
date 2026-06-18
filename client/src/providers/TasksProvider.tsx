@@ -518,17 +518,12 @@ export const TasksProvider = ({
 
       applyMutations(result.mutations)
 
-      // Fold any service-derived status on the primary id into the primary
+      // Fold all service-derived fields for the primary id into the primary
       // PUT (e.g. flipping `inheritCompletionState` on a task with all
-      // children done auto-completes the task itself in the same call).
+      // children done auto-completes the task itself, deriving status,
+      // completedAt, and timeSpent in the same call).
       const primaryPatch = result.mutations.find((m) => m.id === id)?.patch
-      const primaryData: Partial<Task> = { ...enqueuePrimary }
-      if (
-        primaryPatch?.status !== undefined &&
-        primaryPatch.status !== enqueuePrimary.status
-      ) {
-        primaryData.status = primaryPatch.status
-      }
+      const primaryData: Partial<Task> = { ...enqueuePrimary, ...primaryPatch }
       enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: primaryData })
       enqueueCascadeOps(result.mutations, id)
 

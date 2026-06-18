@@ -137,23 +137,13 @@ export const SORT_ORDER_MAP = {
 
 export const sortTaskTree = (
   tasks: TaskWithSubtasks[],
-  {
-    sortMode,
-    fieldSortOrder,
-    manualOrder = [],
-    descendantFieldSortOrder,
-  }: TaskSortArgs & {
-    /** When set, all recursive (descendant) calls use this field order instead
-     *  of `fieldSortOrder`, so only the top-level list is sorted differently. */
-    descendantFieldSortOrder?: SortBy[]
-  },
+  { sortMode, fieldSortOrder, manualOrder = [] }: TaskSortArgs,
 ): TaskWithSubtasks[] => {
-  const childFieldSortOrder = descendantFieldSortOrder ?? fieldSortOrder
   const withSortedChildren = tasks.map(({ subtasks, ...rest }) => ({
     ...rest,
     subtasks: sortTaskTree(subtasks, {
       sortMode: rest.subtaskSortMode,
-      fieldSortOrder: childFieldSortOrder,
+      fieldSortOrder,
       manualOrder: rest.subtaskOrder,
     }),
   }))
@@ -196,13 +186,24 @@ export const filterAndSortTree = (
   searchTerm: string,
   fieldSortOrder: SortBy[],
   descendantFieldSortOrder?: SortBy[],
-) =>
-  sortTaskTree(filterTaskTree(tasks, searchTerm), {
-    sortMode: SubtaskSortMode.INHERIT, // manual doesn't matter at root
-    fieldSortOrder,
-    manualOrder: [], // doesn't matter when SubtaskSortMode.INHERIT
-    descendantFieldSortOrder,
+) => {
+  const childOrder = descendantFieldSortOrder ?? fieldSortOrder
+  // Sort the full tree with childOrder (correctly handles all MANUAL subtask
+  // modes at every level). Then re-sort just the root level with fieldSortOrder
+  // when a different root order was requested.
+  const sorted = sortTaskTree(filterTaskTree(tasks, searchTerm), {
+    sortMode: SubtaskSortMode.INHERIT,
+    fieldSortOrder: childOrder,
+    manualOrder: [],
   })
+  return childOrder === fieldSortOrder
+    ? sorted
+    : sortTasksByMode(sorted, {
+        sortMode: SubtaskSortMode.INHERIT,
+        fieldSortOrder,
+        manualOrder: [],
+      })
+}
 
 // *****************************************************************************
 // Hiding

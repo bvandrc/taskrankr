@@ -2,22 +2,12 @@ import { mapValues } from 'es-toolkit'
 
 import { type AppError, ERRORS as BASE_ERRORS } from '~/shared/constants'
 
-const IS_PROD = process.env.NODE_ENV === 'production'
-const SERVE_STATIC = process.env.SERVE_STATIC === 'true'
+// Runtime-evaluated — intentionally NOT process.env.NODE_ENV, which esbuild bakes.
+// prod:preview sets IS_PROD=true; dev and local:preview leave it unset (false).
+export const IS_PROD = process.env.IS_PROD === 'true'
 
-/**
- * True in dev and when running the compiled bundle locally via `local:start`.
- * Guards test-only routes and features that must not appear in production.
- *
- * NOTE: esbuild statically replaces `process.env.NODE_ENV` with `"production"`
- * at build time, so the NODE_ENV branch is dead in the bundle. The
- * `SERVE_STATIC` branch remains runtime-evaluated and carries the flag for
- * `local:start`. See the replit.md Gotchas section for details.
- */
-export const IS_TEST_ENV = !IS_PROD || SERVE_STATIC
-
-/** True when the server should serve the compiled frontend from `dist/public`. */
-export const IS_STATIC_SERVING = IS_PROD || SERVE_STATIC
+// Default true; opt-out via SERVE_STATIC=false (dev only).
+export const SERVE_STATIC = IS_PROD || process.env.SERVE_STATIC !== 'false'
 
 type BaseErrors = typeof BASE_ERRORS
 

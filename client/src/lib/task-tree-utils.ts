@@ -137,13 +137,23 @@ export const SORT_ORDER_MAP = {
 
 export const sortTaskTree = (
   tasks: TaskWithSubtasks[],
-  { sortMode, fieldSortOrder, manualOrder = [] }: TaskSortArgs,
+  {
+    sortMode,
+    fieldSortOrder,
+    manualOrder = [],
+    descendantFieldSortOrder,
+  }: TaskSortArgs & {
+    /** When set, all recursive (descendant) calls use this field order instead
+     *  of `fieldSortOrder`, so only the top-level list is sorted differently. */
+    descendantFieldSortOrder?: SortBy[]
+  },
 ): TaskWithSubtasks[] => {
+  const childFieldSortOrder = descendantFieldSortOrder ?? fieldSortOrder
   const withSortedChildren = tasks.map(({ subtasks, ...rest }) => ({
     ...rest,
     subtasks: sortTaskTree(subtasks, {
       sortMode: rest.subtaskSortMode,
-      fieldSortOrder,
+      fieldSortOrder: childFieldSortOrder,
       manualOrder: rest.subtaskOrder,
     }),
   }))
@@ -185,11 +195,13 @@ export const filterAndSortTree = (
   tasks: TaskWithSubtasks[],
   searchTerm: string,
   fieldSortOrder: SortBy[],
+  descendantFieldSortOrder?: SortBy[],
 ) =>
   sortTaskTree(filterTaskTree(tasks, searchTerm), {
     sortMode: SubtaskSortMode.INHERIT, // manual doesn't matter at root
     fieldSortOrder,
     manualOrder: [], // doesn't matter when SubtaskSortMode.INHERIT
+    descendantFieldSortOrder,
   })
 
 // *****************************************************************************

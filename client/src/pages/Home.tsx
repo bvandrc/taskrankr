@@ -188,19 +188,17 @@ const Home = () => {
       ? filterAndSortTree([inProgressTask], search, sortOrder)
       : []
 
+    // Pinned roots sort priority-first when alwaysSortPinnedByPriority is on;
+    // their subtasks always follow the user's normal sort order.
+    const pinnedRootSortOrder =
+      settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
+        ? [SortOption.PRIORITY, ...sortOrder]
+        : sortOrder
     const sortedPinned = filterAndSortTree(
       pinnedTasks,
       search,
-      // maybe do priority-first sort order
-      (() => {
-        const sortWithPriorityFirst =
-          settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
-            ? [SortOption.PRIORITY, ...sortOrder]
-            : sortOrder
-        return sortWithPriorityFirst !== sortOrder
-          ? sortWithPriorityFirst
-          : sortOrder
-      })(),
+      pinnedRootSortOrder,
+      sortOrder,
     )
 
     const sortedTree = filterAndSortTree(taskTree, search, sortOrder)

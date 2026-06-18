@@ -22,13 +22,14 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import {
   filterAndSortTree,
   getTaskStatuses,
+  isEffectivelyHiddenInTree,
+  mapById,
   SORT_ORDER_MAP,
 } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
 import { type FieldConfig, SortOption, TaskStatus } from '~/shared/schema'
-import { isEffectivelyHiddenInTree, mapById } from '~/shared/utils/task-utils'
 
 const SortButtons = ({
   sortBy,
@@ -40,13 +41,6 @@ const SortButtons = ({
   fieldConfig: FieldConfig
 }) => (
   <div className="flex items-center gap-1 pr-1">
-    <SortButton
-      label="Date"
-      value={SortOption.DATE_CREATED}
-      className="min-w-12 max-w-16"
-      current={sortBy}
-      onSelect={setSortBy}
-    />
     {RANK_FIELDS_COLUMNS.map((field) =>
       fieldConfig[field.name].visible ? (
         <SortButton
@@ -67,7 +61,7 @@ const DeleteDemoDataButton = ({ onClick }: { onClick: () => void }) => (
     <Button
       variant="ghost"
       size="sm"
-      className="text-destructive bg-destructive/10 hover:text-destructive hover:bg-destructive/15"
+      className="text-danger bg-danger/10 hover:text-danger hover:bg-danger/15"
       onClick={onClick}
       data-testid="button-delete-demo-data"
     >
@@ -122,7 +116,7 @@ const Home = () => {
   const { isInitialized, deleteDemoData } = useTaskMutations()
   const { settings, updateSettings } = useSettings()
   const { openCreateDialog } = useTaskDialog()
-  const [search, setSearch] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const sortBy = settings.sortBy
   const setSortBy = (value: SortOption) => updateSettings({ sortBy: value })
@@ -184,26 +178,33 @@ const Home = () => {
   const displayedTasks = useMemo(() => {
     const sortOrder = SORT_ORDER_MAP[sortBy]
     const sortedInProgress = inProgressTask
-      ? filterAndSortTree([inProgressTask], search, sortOrder)
+      ? filterAndSortTree([inProgressTask], {
+          searchTerm,
+          fieldSortOrder: sortOrder,
+        })
       : []
 
-    const pinnedSort =
+    // Pinned roots sort priority-first when alwaysSortPinnedByPriority is on;
+    // their subtasks always follow the user's normal sort order.
+    const pinnedRootSortOrder =
       settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
         ? [SortOption.PRIORITY, ...sortOrder]
         : sortOrder
-    const sortedPinned = filterAndSortTree(
-      pinnedTasks,
-      search,
-      pinnedSort,
-      pinnedSort !== sortOrder ? sortOrder : undefined,
-    )
+    const sortedPinned = filterAndSortTree(pinnedTasks, {
+      searchTerm,
+      fieldSortOrder: pinnedRootSortOrder,
+      childFieldSortOrder: sortOrder,
+    })
 
-    const sortedTree = filterAndSortTree(taskTree, search, sortOrder)
+    const sortedTree = filterAndSortTree(taskTree, {
+      searchTerm,
+      fieldSortOrder: sortOrder,
+    })
     return [...sortedInProgress, ...sortedPinned, ...sortedTree]
-  }, [taskTree, inProgressTask, pinnedTasks, search, sortBy, settings])
+  }, [taskTree, inProgressTask, pinnedTasks, searchTerm, sortBy, settings])
 
   return (
-    <TaskListPageWrapper isLoading={!isInitialized}>
+    <TaskListPageWrapper isLoading={!isInitialized} data-testid="home-page">
       <TaskListPageHeader
         title="Home (Open Tasks)"
         showTitle={false}
@@ -214,14 +215,14 @@ const Home = () => {
             fieldConfig={settings.fieldConfig}
           />
         }
-        searchVal={search}
-        setSearchVal={setSearch}
+        searchVal={searchTerm}
+        setSearchVal={setSearchTerm}
       />
 
       <TaskListTreeLayout>
         {displayedTasks.length === 0 ? (
           <EmptyState
-            search={search}
+            search={searchTerm}
             onCreateClick={() => openCreateDialog()}
           />
         ) : (

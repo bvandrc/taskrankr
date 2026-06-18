@@ -343,16 +343,19 @@ export const TaskForm = ({
                         >
                           Time Spent
                         </FormLabel>
-                        <TimeInput
-                          durationMs={form.watch('timeSpent') || 0}
-                          onDurationChange={(ms) =>
-                            form.setValue('timeSpent', ms, {
-                              shouldValidate: true,
-                            })
-                          }
-                          className="w-16 h-8 text-xs bg-secondary/20 border-white/5 text-center"
-                          data-testid="time-spent-input"
-                        />
+                        <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
+                          <TimeInput
+                            durationMs={form.watch('timeSpent') || 0}
+                            onDurationChange={(ms) =>
+                              form.setValue('timeSpent', ms, {
+                                shouldValidate: true,
+                              })
+                            }
+                            disabled={hasIncompleteSubtasks}
+                            className="w-16 h-8 text-xs bg-secondary/20 border-white/5 text-center"
+                            data-testid="time-spent-input"
+                          />
+                        </SubtaskBlockedTooltip>
                       </div>
                       <FormMessage className="text-[11px] text-right" />
                     </FormItem>

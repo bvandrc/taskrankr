@@ -6,6 +6,12 @@ import { getVitePrebuilder } from 'cypress-vite'
 
 import { checkUserMode } from './cypress/support/utils/test-runner'
 
+try {
+  process.loadEnvFile('.env.local')
+} catch {
+  // file is optional; missing is fine
+}
+
 const { vitePrebuild, vitePreprocessor } = getVitePrebuilder({})
 
 const processResultsDir = (resultsDir: string) =>
@@ -19,7 +25,11 @@ export default defineConfig({
   fixturesFolder: false,
   animationDistanceThreshold: 3,
   e2e: {
-    baseUrl: 'http://localhost:5000',
+    baseUrl:
+      process.env.CYPRESS_BASE_URL ??
+      (process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : `http://localhost:${process.env.PORT || 5000}`),
     specPattern: [
       'cypress/e2e/create-task.cy.ts',
       'cypress/e2e/create-subtasks.cy.ts',
@@ -48,7 +58,7 @@ export default defineConfig({
 
       installTerminalReporter(on, {
         outputVerbose: false,
-        compactLogs: 15,
+        compactLogs: 50,
         outputCompactLogs: false, // print all logs to file
         routeTrimLength: 1000, // don't print all GET data
         printLogsToConsole: 'onFail',

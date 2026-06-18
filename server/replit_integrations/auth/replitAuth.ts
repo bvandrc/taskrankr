@@ -19,6 +19,7 @@ import passport from 'passport'
 import type { Jsonifiable } from 'type-fest'
 
 import { AuthPaths } from '~/shared/constants'
+import { IS_PROD } from '../../constants'
 import { authStorage } from './storage'
 
 const getOidcConfig = memoize(
@@ -47,9 +48,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // Disabled outside production so Cypress and local dev can set/replay the
-      // session cookie without TLS.
-      secure: process.env.NODE_ENV === 'production',
+      secure: IS_PROD,
       maxAge: sessionTtl,
     },
   })
@@ -101,6 +100,13 @@ export async function setupAuth(app: Express) {
    * dangerous, but that never happens here. Existing sessions remain valid
    * because the session middleware above always runs regardless of this result.
    */
+  if (!process.env.REPL_ID) {
+    console.warn(
+      '[Auth] REPL_ID not set — Replit OAuth login routes disabled (use test login or guest mode in dev).',
+    )
+    return
+  }
+
   let config: Awaited<ReturnType<typeof getOidcConfig>> | null = null
   try {
     config = await getOidcConfig()

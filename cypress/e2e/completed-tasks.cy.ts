@@ -6,7 +6,6 @@ import {
   isLoggedIn,
 } from '@cypress/support/utils'
 import { checkNumCalls } from '@cypress/support/utils/intercepts'
-import { goToCompletedPage } from '@cypress/support/utils/navigation'
 import {
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -14,7 +13,7 @@ import {
 } from '@cypress/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
-  expandAndCheckTree,
+  checkCompletedPage,
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
 
@@ -33,6 +32,7 @@ describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via New Task Form',
       setupTask: () => {
+        cy.log('Step 1: Create task already marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         fillTaskForm(DefaultTask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
@@ -45,6 +45,7 @@ describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via Edit Form',
       setupTask: () => {
+        cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         fillTaskForm(DefaultTask)
         clickSubmitBtnCreate({
@@ -52,6 +53,7 @@ describe('Completed Tasks', () => {
         })
         checkNumCalls({ create: 1, update: 0 })
 
+        cy.log('Step 2: Edit task, mark as completed')
         openTaskEditForm(DefaultTask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnUpdate({
@@ -63,12 +65,15 @@ describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via Change Status Dialog',
       setupTask: () => {
+        cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         fillTaskForm(DefaultTask)
         clickSubmitBtnCreate({
           newTasks: [{ ...DefaultTask, status: TaskStatus.PINNED }],
         })
         checkNumCalls({ create: 1, update: 0 })
+
+        cy.log('Step 2: Complete task via status change dialog')
         changeStatusViaStatusChangeDialog(DefaultTask, TaskStatus.COMPLETED)
         checkNumCalls({ create: 1, update: 1 })
       },
@@ -78,13 +83,8 @@ describe('Completed Tasks', () => {
       setupTask()
       const completedTask = { ...DefaultTask, status: TaskStatus.COMPLETED }
 
-      cy.log('Check task is not in main tree')
-      cy.contains(completedTask.name).should('not.exist')
-
-      cy.log('Check task is in completed page tree')
       checkTasksExistBackend([completedTask])
-      goToCompletedPage()
-      expandAndCheckTree(completedTask)
+      checkCompletedPage([completedTask])
     })
   }
 })

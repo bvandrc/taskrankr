@@ -6,6 +6,10 @@ import {
   checkNumCalls,
 } from '@cypress/support/utils/intercepts'
 import {
+  goToCompletedPage,
+  goToHomePage,
+} from '@cypress/support/utils/navigation'
+import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -19,7 +23,7 @@ import {
 
 import { TaskStatus } from '~/shared/schema'
 
-const { TaskForm } = Selectors
+const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
 describe('Create Subtasks', () => {
   const rootTask = {
@@ -44,10 +48,21 @@ describe('Create Subtasks', () => {
     name: 'E2E Subtask 3',
   } as const satisfies CreatedTask
 
+  const completedRootTask = {
+    ...rootTask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
+  const completedSubtask = {
+    ...subtask,
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
+
   beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
+    cy.log('Open new task form and fill root task')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
       fillTaskForm(rootTask)
@@ -55,6 +70,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create a subtask, check appears in tree', () => {
+    cy.log('Step 1: Add subtask and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -72,7 +88,7 @@ describe('Create Subtasks', () => {
     expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
-    // test EDIT
+    cy.log('Step 2: Edit root task, add a second subtask')
     openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask])
@@ -94,6 +110,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create multiple subtasks, check appear in tree', () => {
+    cy.log('Step 1: Add two subtasks and create')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -121,7 +138,7 @@ describe('Create Subtasks', () => {
     expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 0 })
 
-    // test EDIT
+    cy.log('Step 2: Edit root task, add a third subtask')
     openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2])
@@ -143,6 +160,7 @@ describe('Create Subtasks', () => {
   })
 
   it('create nested subtasks, ensure appear in tree', () => {
+    cy.log('Step 1: Add subtask with two nested children')
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -172,6 +190,7 @@ describe('Create Subtasks', () => {
       clickSubmitBtnCreate()
     })
 
+    cy.log('Step 2: Submit root task and verify nested tree')
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2, subtask3])
       clickSubmitBtnCreate({
@@ -186,5 +205,69 @@ describe('Create Subtasks', () => {
     checkNumCalls({ create: 4, update: 0 })
 
     // TODO: test EDIT
+  })
+
+  context('Adding subtasks to a completed task', () => {
+    beforeEach(() => {
+      cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
+
+      cy.log('Navigate to completed page and open the edit form')
+      goToCompletedPage()
+      openTaskEditForm(completedRootTask)
+    })
+
+    it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
+      cy.log('Add an open subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(subtask)
+        clickSubmitBtnCreate()
+      })
+
+      const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
+
+      cy.log('Click Save — dialog warns that the parent will be re-opened')
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          newTasks: [subtask],
+          updatedTasks: [openRootTask],
+          confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
+        })
+      })
+
+      cy.log(
+        'Parent task is now visible on home page with the new open subtask, no longer on completed page',
+      )
+      cy.contains(rootTask.name).should('not.exist')
+      cy.contains(subtask.name).should('not.exist')
+      goToHomePage()
+      expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
+    })
+
+    it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
+      cy.log('Add a completed subtask')
+      getTaskForm(0).within(() => {
+        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      })
+      getTaskForm(1).within(() => {
+        fillTaskForm(completedSubtask)
+        cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
+        clickSubmitBtnCreate()
+      })
+      getTaskForm(0).within(() => {
+        clickSubmitBtnUpdate({
+          updatedTasks: [completedRootTask],
+          newTasks: [completedSubtask],
+        })
+      })
+
+      cy.log(
+        'Completed page still shows parent task with its new completed subtask',
+      )
+      expandAndCheckTree({ ...completedRootTask, subtasks: [completedSubtask] })
+    })
   })
 })

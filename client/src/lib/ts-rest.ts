@@ -1,22 +1,18 @@
 /**
- * @fileoverview @ts-rest client configuration and QueryKey definitions
+ * @fileoverview ts-rest client configuration
  */
 
-import type { QueryKey } from '@tanstack/react-query'
 import type { AppRouteMutation, ClientInferRequest } from '@ts-rest/core'
-import { initTsrReactQuery } from '@ts-rest/react-query/v5'
+import { initClient } from '@ts-rest/core'
 
 import { contract } from '~/shared/contract'
 
-export const tsr = initTsrReactQuery(contract, {
+export const tsr = initClient(contract, {
   baseUrl: '',
   baseHeaders: {},
   credentials: 'include',
+  validateResponse: true,
 })
 
 export type ClientInferRequestBody<T extends AppRouteMutation> =
   ClientInferRequest<T>['body']
-
-export const QueryKeys = {
-  getTasks: ['tasks'],
-} as const satisfies Record<string, QueryKey>

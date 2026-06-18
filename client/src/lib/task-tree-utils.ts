@@ -3,7 +3,12 @@
  * lists.
  */
 
-import type { ValueOf } from 'type-fest'
+import type {
+  AllUnionFields,
+  MergeExclusive,
+  Simplify,
+  ValueOf,
+} from 'type-fest'
 
 import type { TaskWithSubtasks } from '@/types'
 import {
@@ -33,7 +38,6 @@ export enum SortDirection {
 
 /** Default sort direction per field (DESC = best-first). */
 export const SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
-  date_created: SortDirection.DESC,
   date_completed: SortDirection.DESC,
   priority: SortDirection.DESC,
   ease: SortDirection.ASC,
@@ -59,9 +63,6 @@ const getLevelWeight = (
 
 /** Compares two tasks by a single field, respecting its sort direction. */
 const compareByField = (a: Task, b: Task, field: SortBy): number => {
-  if (field === SortBy.DATE_CREATED) {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  }
   if (field === SortBy.DATE_COMPLETED) {
     return (
       new Date(b.completedAt ?? b.createdAt).getTime() -
@@ -76,24 +77,39 @@ const compareByField = (a: Task, b: Task, field: SortBy): number => {
 
 /** Sorts tasks by a passed sort order of fields; earlier fields take priority.
  *  Completed tasks always sort to the bottom. */
-export const sortTasksByField = <T extends Task>(
-  tasks: T[],
-  fields: SortBy[],
-): T[] =>
-  [...tasks].sort((a, b) => {
+const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] => {
+  return [...tasks].sort((a, b) => {
     const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
     const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
     if (aCompleted !== bCompleted) return aCompleted - bCompleted
 
-    for (const field of fields) {
+    for (const field of order) {
       const cmp = compareByField(a, b, field)
       if (cmp !== 0) return cmp
     }
-    return 0
+    return a.createdAt.getTime() - b.createdAt.getTime()
   })
+}
 
-/** Sorts tasks by a passed sort order of ids; earlier ids take priority. */
-export const sortTasksByIdOrder = <T extends Task>(
+type TaskSortArgs = Simplify<
+  MergeExclusive<
+    {
+      sortMode: SubtaskSortMode.INHERIT
+      /** Field order of direct subtasks */
+      fieldSortOrder: SortBy[]
+    },
+    {
+      sortMode: SubtaskSortMode.MANUAL
+      /** Manual order of direct subtasks */
+      manualOrder: number[]
+    }
+  >
+>
+
+type TaskSortArgsComplete = Required<AllUnionFields<TaskSortArgs>>
+
+/** Sorts tasks by their position in a user-defined sequence of IDs (the saved manual order). */
+const sortTasksByManualOrder = <T extends Task>(
   tasks: T[],
   order: number[],
 ): T[] =>
@@ -106,8 +122,16 @@ export const sortTasksByIdOrder = <T extends Task>(
     )
   })
 
+/** Sorts tasks respecting the parent's sort mode: by manual id order, or by rank fields. */
+export const sortTasksByMode = <T extends Task>(
+  tasks: T[],
+  { sortMode, fieldSortOrder, manualOrder }: TaskSortArgsComplete,
+): T[] =>
+  sortMode === SubtaskSortMode.MANUAL
+    ? sortTasksByManualOrder(tasks, manualOrder)
+    : sortTasksByField(tasks, fieldSortOrder)
+
 export const SORT_ORDER_MAP = {
-  date_created: [SortBy.DATE_CREATED],
   priority: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
   ease: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
   enjoyment: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
@@ -116,27 +140,22 @@ export const SORT_ORDER_MAP = {
 
 export const sortTaskTree = (
   tasks: TaskWithSubtasks[],
-  sort: SortBy[],
-  parentSortMode?: SubtaskSortMode,
-  parentSubtaskOrder?: number[],
-  childSort?: SortBy[],
+  { sortMode, fieldSortOrder, manualOrder = [] }: TaskSortArgsComplete,
 ): TaskWithSubtasks[] => {
-  const inheritedSort = childSort ?? sort
-  const withSortedChildren = tasks.map((task) => ({
+  const withSortedChildren = tasks.map(({ subtasks, ...task }) => ({
     ...task,
-    subtasks: sortTaskTree(
-      task.subtasks,
-      inheritedSort,
-      task.subtaskSortMode,
-      task.subtaskOrder,
-    ),
+    subtasks: sortTaskTree(subtasks, {
+      sortMode: task.subtaskSortMode,
+      fieldSortOrder,
+      manualOrder: task.subtaskOrder,
+    }),
   }))
 
-  if (parentSortMode === SubtaskSortMode.MANUAL && parentSubtaskOrder) {
-    return sortTasksByIdOrder(withSortedChildren, parentSubtaskOrder)
-  }
-
-  return sortTasksByField(withSortedChildren, sort)
+  return sortTasksByMode(withSortedChildren, {
+    sortMode,
+    fieldSortOrder,
+    manualOrder,
+  })
 }
 
 // *****************************************************************************
@@ -167,14 +186,58 @@ export const filterRootTasks = (tasks: Task[], searchTerm: string): Task[] => {
 
 export const filterAndSortTree = (
   tasks: TaskWithSubtasks[],
-  searchTerm: string,
-  sort: SortBy[],
-  childSort?: SortBy[],
-) =>
-  sortTaskTree(
-    filterTaskTree(tasks, searchTerm),
-    sort,
-    undefined,
-    undefined,
-    childSort,
+  {
+    searchTerm,
+    fieldSortOrder,
+    childFieldSortOrder,
+  }: {
+    searchTerm: string
+    fieldSortOrder: SortBy[]
+    childFieldSortOrder?: SortBy[]
+  },
+): TaskWithSubtasks[] => {
+  const childOrder = childFieldSortOrder ?? fieldSortOrder
+  // Sort the full tree with childOrder (correctly handles all MANUAL subtask
+  // modes at every level). Then re-sort just the root level with fieldSortOrder
+  // when a different root order was requested.
+  const sorted = sortTaskTree(filterTaskTree(tasks, searchTerm), {
+    sortMode: SubtaskSortMode.INHERIT,
+    fieldSortOrder: childOrder,
+    manualOrder: [],
+  })
+  return childOrder === fieldSortOrder
+    ? sorted
+    : sortTasksByMode(sorted, {
+        sortMode: SubtaskSortMode.INHERIT, // at root, no manual order
+        fieldSortOrder,
+        manualOrder: [], // irrelevant whe sortMode is INHERIT
+      })
+}
+
+// *****************************************************************************
+// Hiding
+// *****************************************************************************
+
+/**
+ * true iff `task` is hidden purely because its parent has `autoHideCompleted`
+ * enabled and the task is COMPLETED. (i.e., ignore the user-set `hidden` flag)
+ */
+export const isAutoHiddenByParent = (
+  task: Pick<Task, 'status'>,
+  parent: Pick<Task, 'autoHideCompleted'> | undefined,
+): boolean =>
+  Boolean(parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED)
+
+/**
+ * true iff `task` should be considered hidden in the UI, accounting for both
+ * the user-set `hidden` flag and parent-driven auto-hide of COMPLETED subtasks.
+ */
+export const isEffectivelyHiddenInTree = (
+  task: Pick<Task, 'hidden' | 'status' | 'parentId'>,
+  taskById: Map<number, Task>,
+): boolean =>
+  task.hidden ||
+  isAutoHiddenByParent(
+    task,
+    task.parentId != null ? taskById.get(task.parentId) : undefined,
   )

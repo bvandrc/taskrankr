@@ -1,5 +1,4 @@
 export enum SortOption {
-  DATE_CREATED = 'date_created',
   PRIORITY = 'priority',
   EASE = 'ease',
   ENJOYMENT = 'enjoyment',

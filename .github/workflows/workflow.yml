@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -60,7 +60,6 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test_${{ matrix.suite }}
       SESSION_SECRET: ci-test-session-secret
-      NODE_ENV: development
       PORT: 5000
 
     steps:
@@ -70,7 +69,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Cache Cypress binary
@@ -85,8 +84,11 @@ jobs:
       - name: Run database migrations
         run: npm run db:migrate
 
+      - name: Build
+        run: npm run build
+
       - name: Start server
-        run: npm run dev &
+        run: npm run local:preview &
 
       - name: Wait for server to be ready
         run: |

@@ -14,11 +14,15 @@ import {
   TaskListTreeLayout,
 } from '@/components/TaskListPage'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
-import { filterAndSortTree, getDirectSubtasks } from '@/lib/task-tree-utils'
+import {
+  filterAndSortTree,
+  getDirectSubtasks,
+  isEffectivelyHiddenInTree,
+  mapById,
+} from '@/lib/task-tree-utils'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
 import { TaskStatus } from '~/shared/schema'
-import { isEffectivelyHiddenInTree, mapById } from '~/shared/utils/task-utils'
 
 const ColumnHeaders = () => (
   <div className="flex items-center gap-1 shrink-0 justify-end">
@@ -53,7 +57,7 @@ const EmptyState = ({ search }: { search: string | undefined }) => (
 const Completed = () => {
   const { tasks: allTasks } = useTasks()
   const { isInitialized } = useTaskMutations()
-  const [search, setSearch] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const completedTasks = useMemo(() => {
     const taskById = mapById(allTasks)
@@ -84,22 +88,29 @@ const Completed = () => {
   }, [allTasks])
 
   const displayedTasks = useMemo(
-    () => filterAndSortTree(completedTasks, search, ['date_completed']),
-    [completedTasks, search],
+    () =>
+      filterAndSortTree(completedTasks, {
+        searchTerm,
+        fieldSortOrder: ['date_completed'],
+      }),
+    [completedTasks, searchTerm],
   )
 
   return (
-    <TaskListPageWrapper isLoading={!isInitialized}>
+    <TaskListPageWrapper
+      isLoading={!isInitialized}
+      data-testid="completed-page"
+    >
       <TaskListPageHeader
         title="Completed Tasks"
         ColumnHeaders={displayedTasks.length > 0 && <ColumnHeaders />}
-        searchVal={search}
-        setSearchVal={setSearch}
+        searchVal={searchTerm}
+        setSearchVal={setSearchTerm}
       />
 
       <TaskListTreeLayout>
         {displayedTasks.length === 0 ? (
-          <EmptyState search={search} />
+          <EmptyState search={searchTerm} />
         ) : (
           displayedTasks.map((task) => (
             <TaskCard

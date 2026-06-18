@@ -2,10 +2,10 @@ import { useState } from 'react'
 import type { QueryKey } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 
+import { toastError } from '@/hooks/useToasts'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
-import { useToast } from './useToast'
 
 const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
 
@@ -24,7 +24,6 @@ export function validateFile(file: File): string | null {
  */
 export function useAttachments(queryKey: QueryKey) {
   const queryClient = useQueryClient()
-  const { toast } = useToast()
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleDelete = async (id: number) => {
@@ -37,7 +36,7 @@ export function useAttachments(queryKey: QueryKey) {
         queryClient.invalidateQueries({ queryKey: ALL_ATTACHMENTS_QUERY_KEY }),
       ])
     } catch {
-      toast({ title: 'Failed to delete attachment', variant: 'destructive' })
+      toastError({ title: 'Failed to delete attachment' })
     } finally {
       setDeletingId(null)
     }
@@ -55,7 +54,7 @@ export function useAttachments(queryKey: QueryKey) {
         document.body.removeChild(a)
       }
     } catch {
-      toast({ title: 'Failed to get download link', variant: 'destructive' })
+      toastError({ title: 'Failed to get download link' })
     }
   }
 

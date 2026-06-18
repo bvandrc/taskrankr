@@ -1,12 +1,16 @@
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
+import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
 type TaskTreeNode = Pick<Task, 'name' | 'status'> & {
   subtasks?: TaskTreeNode[]
 }
+
+const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
+  nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
 export const getTaskCardTitle = (task: Pick<Task, 'name'>) =>
   cy
@@ -38,8 +42,6 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
     const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
     if (expandBtn.length > 0) {
       cy.log('expanding collapsed card...')
-      cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('not.exist')
-      cy.wrap($card).find(TaskCard.CARD).should('not.exist')
       cy.wrap(expandBtn).click()
       cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
       cy.wrap($card).find(TaskCard.CARD).should('exist')
@@ -81,9 +83,41 @@ export const openStatusChangeDialog = (task: Pick<Task, 'name'>) => {
 export const changeStatusViaStatusChangeDialog = (
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
+  {
+    hasIncompleteSubtasks = false,
+    sideEffects = [],
+  }: { hasIncompleteSubtasks?: boolean; sideEffects?: CreatedTask[] } = {},
 ) => {
   openStatusChangeDialog(task)
-  cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).click()
-  waitForUpdate([{ ...task, status: newStatus }])
+
+  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_HOURS).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_MINUTES).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+
+  if (hasIncompleteSubtasks) {
+    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).should('be.disabled')
+  } else {
+    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN)
+      .should('be.enabled')
+      .click()
+  }
+  waitForUpdate([{ ...task, status: newStatus }, ...sideEffects])
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
+}
+
+export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
+  cy.log('Check task is not in main tree')
+  checkIsAtHomePage()
+  flattenTree(completedTasks).forEach((task) => {
+    cy.contains(task.name).should('not.exist')
+  })
+
+  cy.log('Check task is in completed page')
+  goToCompletedPage()
+  for (const task of completedTasks) {
+    expandAndCheckTree(task)
+  }
 }

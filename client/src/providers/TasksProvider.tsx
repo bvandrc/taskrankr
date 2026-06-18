@@ -25,26 +25,17 @@ import {
 } from 'react'
 import { omit } from 'es-toolkit'
 
-import { toast } from '@/hooks/useToast'
+import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { createDemoTasks } from '@/lib/demo-tasks'
 import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
 import {
   buildLocalTask,
   clientKeyMap,
-  statusToStatusPatch,
   withClientKeys,
 } from '@/lib/task-provider-utils'
-import {
-  collectDescendantIds,
-  getById,
-  getChildrenLatestCompletedAt,
-  getDirectSubtasks,
-  getHasIncompleteSubtasks,
-  mapById,
-  removeIds,
-  updateItem,
-} from '@/lib/task-tree-utils'
+import { makeTaskService } from '@/lib/task-service-adapter'
+import { getById, mapById, removeIds, updateItem } from '@/lib/task-tree-utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import {
   type SyncOperation,
@@ -60,6 +51,10 @@ import {
   taskSchema,
   type UpdateTask,
 } from '~/shared/schema'
+import {
+  type MutationPatch,
+  TaskMutationService,
+} from '~/shared/service/task-mutation-service'
 
 export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
   /** Preserved across draft → real promotion. */
@@ -68,65 +63,6 @@ export type CreateTaskContent = Omit<CreateTask, 'userId' | 'id'> & {
 export type UpdateTaskContent = Omit<UpdateTask, 'id'>
 export type MutateTaskContent = CreateTaskContent | UpdateTaskContent
 export type DeleteTaskArgs = Pick<Task, 'id' | 'name'>
-
-/**
- * Walks the tree until fixed point, auto-completing parents with
- * `inheritCompletionState` once all their children are completed and
- * auto-reverting them when any child is not completed. Returns the
- * reconciled tasks plus the list of status corrections so callers can
- * enqueue sync ops.
- */
-function reconcileInheritCompletionState<T extends Task>(
-  tasks: T[],
-): {
-  tasks: T[]
-  corrections: { id: number; status: TaskStatus }[]
-} {
-  const corrections: { id: number; status: TaskStatus }[] = []
-  let updated = tasks
-  let changed = true
-
-  while (changed) {
-    changed = false
-    const parents = updated.filter((t) => t.inheritCompletionState)
-    for (const parent of parents) {
-      const children = getDirectSubtasks(updated, parent.id)
-      if (children.length === 0) continue
-
-      const allChildrenCompleted = children.every(
-        (c) => c.status === TaskStatus.COMPLETED,
-      )
-
-      if (allChildrenCompleted && parent.status !== TaskStatus.COMPLETED) {
-        const latestCompletedAt = getChildrenLatestCompletedAt(children)
-
-        updated = updateItem(updated, parent.id, (t) => ({
-          ...t,
-          status: TaskStatus.COMPLETED,
-          completedAt: latestCompletedAt ?? new Date(),
-          inProgressStartedAt: null,
-        }))
-
-        corrections.push({ id: parent.id, status: TaskStatus.COMPLETED })
-        changed = true
-      } else if (
-        !allChildrenCompleted &&
-        parent.status === TaskStatus.COMPLETED
-      ) {
-        updated = updateItem(updated, parent.id, (t) => ({
-          ...t,
-          status: TaskStatus.OPEN,
-          completedAt: null,
-          inProgressStartedAt: null,
-        }))
-        corrections.push({ id: parent.id, status: TaskStatus.OPEN })
-        changed = true
-      }
-    }
-  }
-
-  return { tasks: updated, corrections }
-}
 
 /**
  * Topologically orders a set of tasks so that any task with a parent in the
@@ -182,11 +118,14 @@ interface TasksContextValue {
  */
 interface TaskMutationsContextValue {
   isInitialized: boolean
-  // Task mutations
-  createTask: (data: CreateTaskContent) => LocalTask
-  updateTask: (id: number, updates: UpdateTaskContent) => LocalTask
-  setTaskStatus: (id: number, status: TaskStatus) => LocalTask
-  deleteTask: (id: number) => void
+  // Task mutations. All return Promises because the shared `TaskMutationService`
+  // they delegate to is async (its I/O contract is `MaybePromise`); on the
+  // client every adapter callback is sync, so resolution lands in the
+  // current microtask in practice.
+  createTask: (data: CreateTaskContent) => Promise<LocalTask>
+  updateTask: (id: number, updates: UpdateTaskContent) => Promise<LocalTask>
+  setTaskStatus: (id: number, status: TaskStatus) => Promise<LocalTask>
+  deleteTask: (id: number) => Promise<void>
   reorderSubtasks: (parentId: number, orderedIds: number[]) => void
   deleteDemoData: () => void
   subscribeToIdReplacement: (
@@ -272,19 +211,26 @@ export const TasksProvider = ({
   const reconcileAndSetTasks = useCallback(
     (incomingTasks: LocalTask[], source: string) => {
       const { tasks: reconciled, corrections } =
-        reconcileInheritCompletionState(incomingTasks)
+        TaskMutationService.reconcileInheritCompletionState(incomingTasks)
       setTasks(reconciled)
       if (corrections.length > 0) {
         debugLog.log('reconcile', `inheritCompletionState:${source}`, {
           corrections,
         })
+        const reconciledById = mapById(reconciled)
         enqueueMany(
           corrections.map(
             (c) =>
               ({
                 type: SyncOperationType.UPDATE_TASK,
                 id: c.id,
-                data: { status: c.status },
+                data: {
+                  status: c.status,
+                  timeSpent:
+                    (c.status === TaskStatus.COMPLETED
+                      ? reconciledById.get(c.id)?.timeSpent
+                      : undefined) || undefined,
+                },
               }) as const,
           ),
         )
@@ -412,8 +358,66 @@ export const TasksProvider = ({
     [replaceTempIdInQueue],
   )
 
+  const settingsRef = useRef(settings)
+  useEffect(() => {
+    settingsRef.current = settings
+  }, [settings])
+
+  /**
+   * Stable `TaskMutationService` instance whose I/O adapter always sees the
+   * freshest in-memory state.
+   */
+  const service = useMemo(() => makeTaskService(tasksRef, settingsRef), [])
+
+  /**
+   * Applies the service's mutations atomically and eagerly syncs `tasksRef`
+   * so a follow-on mutation in the same async sequence sees the latest
+   * state without waiting for React's next render.
+   */
+  const applyMutations = useCallback((mutations: MutationPatch[]) => {
+    if (mutations.length === 0) return
+    const byId = new Map(mutations.map((m) => [m.id, m.patch]))
+    setTasks((prev) => {
+      const next = prev.map(
+        (t): LocalTask =>
+          byId.has(t.id)
+            ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
+              { ...t, ...byId.get(t.id)! }
+            : t,
+      )
+      tasksRef.current = next
+      return next
+    })
+  }, [])
+
+  /**
+   * Enqueues a sync op for each cascade mutation. Sends only the user-intent
+   * (`status` for status-changes; the full patch otherwise) — computed
+   * fields (`completedAt`, `timeSpent` flush, etc.) are re-derived by the
+   * server's `TaskMutationService` so omitting them avoids stale-clock drift.
+   */
+  const enqueueCascadeOps = useCallback(
+    (mutations: MutationPatch[], skipPrimaryId?: number) => {
+      for (const m of mutations) {
+        if (m.id === skipPrimaryId) continue
+        let data: Partial<Task>
+        if (m.patch.status !== undefined) {
+          data = { status: m.patch.status }
+          if (m.patch.status === TaskStatus.COMPLETED) {
+            const ts = getById(tasksRef.current, m.id)?.timeSpent
+            if (ts) data.timeSpent = ts
+          }
+        } else {
+          data = m.patch
+        }
+        enqueue({ type: SyncOperationType.UPDATE_TASK, id: m.id, data })
+      }
+    },
+    [enqueue],
+  )
+
   const createTask = useCallback(
-    (data: CreateTaskContent): LocalTask => {
+    async (data: CreateTaskContent): Promise<LocalTask> => {
       const tempId = nextIdRef.current--
       storage.set(storageKeys.nextId, nextIdRef.current)
 
@@ -425,34 +429,56 @@ export const TasksProvider = ({
 
       const newTask = buildLocalTask({ ...data, id: tempId, status: newStatus })
 
+      const result = await service.resolveCreate({
+        ...omit(data, ['clientKey']),
+        parentId: data.parentId ?? null,
+        status: newStatus,
+        timeSpent: data.timeSpent ?? 0,
+        inProgressStartedAt: null,
+        completedAt: null,
+        createdAt: new Date(),
+      })
+
+      if (!result.ok) {
+        toastError({
+          title: `Cannot create task "${data.name}"`,
+          description: result.error.message,
+        })
+
+        nextIdRef.current++
+        storage.set(storageKeys.nextId, nextIdRef.current)
+        throw new Error(result.error.message)
+      }
+
+      const cascadeById = new Map(result.mutations.map((m) => [m.id, m.patch]))
       setTasks((prev) => {
-        let updated = [...prev, newTask]
+        let next: LocalTask[] = [...prev, newTask]
         if (data.parentId) {
-          updated = updated.map((t) => {
+          next = next.map((t): LocalTask => {
             if (t.id !== data.parentId) return t
             const changes: Partial<Task> = {}
             if (t.subtaskSortMode === SubtaskSortMode.MANUAL) {
               changes.subtaskOrder = [...t.subtaskOrder, tempId]
             }
-            if (
-              t.inheritCompletionState &&
-              t.status === TaskStatus.COMPLETED &&
-              newTask.status !== TaskStatus.COMPLETED
-            ) {
-              changes.status = TaskStatus.OPEN
-              changes.completedAt = null
-              changes.inProgressStartedAt = null
-            }
+            const cascade = cascadeById.get(t.id)
+            if (cascade) Object.assign(changes, cascade)
             return { ...t, ...changes }
           })
         }
-        return updated
+        for (const [id, patch] of cascadeById) {
+          if (id === data.parentId) continue
+          next = updateItem(next, id, (t) => ({ ...t, ...patch }))
+        }
+        tasksRef.current = next
+        return next
       })
+
       enqueue({
         type: SyncOperationType.CREATE_TASK,
         tempId,
         data: { ...omit(data, ['clientKey']), status: newStatus },
       })
+      enqueueCascadeOps(result.mutations)
       debugLog.log('task', 'create', {
         tempId,
         name: data.name,
@@ -461,210 +487,101 @@ export const TasksProvider = ({
 
       return newTask
     },
-    [settings.autoPinNewTasks, enqueue, storageKeys],
+    [
+      settings.autoPinNewTasks,
+      enqueue,
+      enqueueCascadeOps,
+      service,
+      storageKeys,
+    ],
+  )
+
+  const runUpdate = useCallback(
+    async (
+      id: number,
+      updates: Partial<Task>,
+      enqueuePrimary: Partial<Task>,
+      errorTitle: string,
+    ): Promise<LocalTask> => {
+      const result = await service.resolveUpdate(id, updates)
+
+      if (!result.ok) {
+        const taskName = getById(tasksRef.current, id)?.name
+        toastError({
+          title: `${errorTitle}${taskName ? `: "${taskName}"` : ''}`,
+          description: result.error.message,
+        })
+        // Throw (not return-fallback) so awaiting callers can keep dialogs
+        // open / abort follow-on work. Mirrors `createTask`.
+        throw new Error(result.error.message)
+      }
+
+      applyMutations(result.mutations)
+
+      // Fold all service-derived fields for the primary id into the primary
+      // PUT (e.g. flipping `inheritCompletionState` on a task with all
+      // children done auto-completes the task itself, deriving status,
+      // completedAt, and timeSpent in the same call).
+      enqueue({
+        type: SyncOperationType.UPDATE_TASK,
+        id,
+        data: {
+          ...enqueuePrimary, // primary data
+          ...result.mutations.find((m) => m.id === id)?.patch, // primary patch
+        },
+      })
+      enqueueCascadeOps(result.mutations, id)
+
+      // `applyMutations` already wrote to `tasksRef`, so the looked-up task
+      // already reflects the primary patch.
+      // biome-ignore lint/style/noNonNullAssertion: resolveUpdate succeeded ⇒ id exists
+      return getById(tasksRef.current, id)!
+    },
+    [applyMutations, enqueue, enqueueCascadeOps, service],
   )
 
   const updateTask = useCallback(
-    (id: number, updates: UpdateTaskContent): LocalTask => {
-      const updatedTask = updateTaskById(id, () => updates)
-      enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: updates })
+    (id: number, updates: UpdateTaskContent) => {
       debugLog.log('task', 'update', { id, updates })
-
-      if (
-        updates.inheritCompletionState === true &&
-        updatedTask &&
-        updatedTask.status === TaskStatus.COMPLETED &&
-        getHasIncompleteSubtasks(tasksRef.current, id)
-      ) {
-        updateTaskById(id, () => ({
-          status: TaskStatus.OPEN,
-          completedAt: null,
-          inProgressStartedAt: null,
-        }))
-        enqueue({
-          type: SyncOperationType.UPDATE_TASK,
-          id,
-          data: { status: TaskStatus.OPEN },
-        })
-      }
-
-      if (updates.parentId != null && updatedTask) {
-        const parent = getById(tasksRef.current, updates.parentId)
-        if (
-          parent?.inheritCompletionState &&
-          parent.status === TaskStatus.COMPLETED &&
-          updatedTask.status !== TaskStatus.COMPLETED
-        ) {
-          updateTaskById(parent.id, () => ({
-            status: TaskStatus.OPEN,
-            completedAt: null,
-            inProgressStartedAt: null,
-          }))
-        }
-      }
-
-      // biome-ignore lint/style/noNonNullAssertion: from Replit. Maybe we should investigate? Throw an error if not defined?
-      return updatedTask!
+      return runUpdate(id, updates, updates, 'Cannot update task')
     },
-    [enqueue, updateTaskById],
+    [runUpdate],
   )
 
   const setTaskStatus = useCallback(
-    (id: number, status: TaskStatus): LocalTask => {
-      if (status === TaskStatus.COMPLETED) {
-        const hasIncompleteSubtasks = getHasIncompleteSubtasks(
-          tasksRef.current,
-          id,
-        )
-        if (hasIncompleteSubtasks) {
-          toast({
-            title: 'Cannot complete task',
-            description: 'All subtasks must be completed first.',
-            variant: 'destructive',
-          })
-          const existing = getById(tasksRef.current, id)
-          if (existing) return existing
-        }
-      }
-
-      const updatedTask = updateTaskById(
-        id,
-        () => statusToStatusPatch(status),
-        // Clear IN_PROGRESS status from other tasks when setting a new task to IN_PROGRESS
-        status === TaskStatus.IN_PROGRESS
-          ? (t) =>
-              t.status === TaskStatus.IN_PROGRESS
-                ? {
-                    status: TaskStatus.PINNED,
-                    inProgressStartedAt: null,
-                  }
-                : {}
-          : undefined,
-      )
-
-      enqueue({ type: SyncOperationType.UPDATE_TASK, id, data: { status } })
+    (id: number, status: TaskStatus) => {
       debugLog.log('task', 'setStatus', { id, status })
-
-      if (status === TaskStatus.COMPLETED && updatedTask?.parentId) {
-        const autoCompletedParents: number[] = []
-
-        setTasks((prev) => {
-          let updated = prev
-          let currentParentId: number | null = updatedTask.parentId
-
-          while (currentParentId !== null) {
-            const parent = getById(updated, currentParentId)
-            if (
-              !parent?.inheritCompletionState ||
-              parent.status === TaskStatus.COMPLETED
-            )
-              break
-
-            const thisChildren = getDirectSubtasks(updated, parent.id)
-            if (!thisChildren.every((t) => t.status === TaskStatus.COMPLETED))
-              break
-
-            const latestCompletedAt = getChildrenLatestCompletedAt(thisChildren)
-
-            updated = updateItem(updated, parent.id, (t) => ({
-              ...t,
-              status: TaskStatus.COMPLETED,
-              completedAt: latestCompletedAt ?? new Date(),
-              inProgressStartedAt: null,
-            }))
-            autoCompletedParents.push(parent.id)
-
-            currentParentId = parent.parentId
-          }
-
-          return updated === prev ? prev : updated
-        })
-
-        for (const parentId of autoCompletedParents) {
-          enqueue({
-            type: SyncOperationType.UPDATE_TASK,
-            id: parentId,
-            data: { status: TaskStatus.COMPLETED },
-          })
-          debugLog.log('task', 'inheritCompletion', { parentId })
-        }
+      const enqueuePrimary: Partial<Task> = { status }
+      if (status === TaskStatus.COMPLETED) {
+        const ts = getById(tasksRef.current, id)?.timeSpent
+        if (ts) enqueuePrimary.timeSpent = ts
       }
-
-      if (status !== TaskStatus.COMPLETED && updatedTask?.parentId) {
-        const autoRevertedParents: number[] = []
-
-        setTasks((prev) => {
-          let updated = prev
-          let currentParentId: number | null = updatedTask.parentId
-
-          while (currentParentId !== null) {
-            const parent = getById(updated, currentParentId)
-            if (!parent?.inheritCompletionState) break
-            if (parent.status !== TaskStatus.COMPLETED) break
-
-            updated = updateItem(updated, parent.id, (t) => ({
-              ...t,
-              status: TaskStatus.OPEN,
-              completedAt: null,
-              inProgressStartedAt: null,
-            }))
-            autoRevertedParents.push(parent.id)
-
-            currentParentId = parent.parentId
-          }
-
-          return updated === prev ? prev : updated
-        })
-
-        for (const parentId of autoRevertedParents) {
-          enqueue({
-            type: SyncOperationType.UPDATE_TASK,
-            id: parentId,
-            data: { status: TaskStatus.OPEN },
-          })
-          debugLog.log('task', 'inheritCompletion:revert', { parentId })
-        }
-      }
-
-      // biome-ignore lint/style/noNonNullAssertion: from Replit. Maybe we should investigate? Throw an error if not defined?
-      return updatedTask!
+      return runUpdate(id, { status }, enqueuePrimary, 'Cannot complete task')
     },
-    [enqueue, updateTaskById],
+    [runUpdate],
   )
 
   const deleteTask = useCallback(
-    (id: number) => {
+    async (id: number) => {
+      const result = await service.resolveDelete(id)
+      if (!result.ok) return
+      const deleted = new Set(result.deletedIds)
+      const cascadeById = new Map(result.mutations.map((m) => [m.id, m.patch]))
       setTasks((prev) => {
-        const taskToDelete = getById(prev, id)
-        if (!taskToDelete) return prev
-
-        const idsToDelete = collectDescendantIds(prev, [id], {
-          includeRoots: true,
-        })
-
-        let totalTime = 0
-        for (const t of prev) {
-          if (idsToDelete.has(t.id)) totalTime += t.timeSpent
-        }
-
-        let updated = removeIds(prev, idsToDelete)
-
-        if (taskToDelete.parentId) {
-          updated = updateItem(updated, taskToDelete.parentId, (t) => ({
-            ...t,
-            ...(totalTime > 0
-              ? { timeSpent: (t.timeSpent ?? 0) + totalTime }
-              : {}),
-            subtaskOrder: t.subtaskOrder.filter((sid) => !idsToDelete.has(sid)),
-          }))
-        }
-
-        return updated
+        const next = removeIds(prev, deleted).map(
+          (t): LocalTask =>
+            cascadeById.has(t.id)
+              ? // biome-ignore lint/style/noNonNullAssertion: presence checked above
+                { ...t, ...cascadeById.get(t.id)! }
+              : t,
+        )
+        tasksRef.current = next
+        return next
       })
       enqueue({ type: SyncOperationType.DELETE_TASK, id })
       debugLog.log('task', 'delete', { id })
     },
-    [enqueue],
+    [enqueue, service],
   )
 
   const reorderSubtasks = useCallback(

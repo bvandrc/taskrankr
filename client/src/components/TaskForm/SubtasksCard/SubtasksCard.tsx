@@ -26,19 +26,21 @@ import { useFormFieldsWithDefaults } from '@/hooks/useFormFieldsWithDefaults'
 import {
   getById,
   getDirectSubtasks,
-  sortTasksByIdOrder,
+  isEffectivelyHiddenInTree,
+  mapById,
+  SORT_ORDER_MAP,
+  sortTasksByMode,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
+import { useSettings } from '@/providers/SettingsProvider'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import {
   type MutateTask,
   SubtaskSortMode,
   type Task,
-  TaskStatus,
   taskSchemaDefaults,
 } from '~/shared/schema'
-import { isEffectivelyHiddenInTree, mapById } from '~/shared/utils/task-utils'
 import { CollapsibleCard } from '../../primitives/CollapsibleCard'
 import { type Subtask, SubtaskRowItem } from './SubtaskRowItem'
 import { SubtasksSettings } from './SubtasksSettings'
@@ -64,6 +66,7 @@ export const SubtasksCard = ({
   disableAddSubtask = false,
 }: SubtasksCardProps) => {
   const { tasksWithDrafts: allTasks } = useDraftSession()
+  const { settings } = useSettings()
   const form = useFormContext<MutateTask>()
 
   const task = getById(allTasks, taskProp.id) ?? taskProp
@@ -97,35 +100,29 @@ export const SubtasksCard = ({
 
   const allSubtasks = useMemo(() => {
     const collectDescendants = (
-      parentId_: number,
+      parentId: number,
       depth: number,
-      parentSortMode: SubtaskSortMode,
-      parentShowNumbers: boolean,
+      childrenSortMode: SubtaskSortMode,
+      childrenShowNumbers: boolean,
     ): Subtask[] => {
-      let children = getDirectSubtasks(allTasks, parentId_)
-
-      if (parentSortMode === SubtaskSortMode.MANUAL) {
-        const order =
+      const unsortedChildren = getDirectSubtasks(allTasks, parentId)
+      const sortedChildren = sortTasksByMode(unsortedChildren, {
+        sortMode: childrenSortMode,
+        fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
+        manualOrder:
           depth === 0
             ? subtaskOrder
-            : (getById(allTasks, parentId_)?.subtaskOrder ?? [])
-        children = sortTasksByIdOrder(children, order)
-      } else {
-        children = [...children].sort((a, b) => {
-          const ac = a.status === TaskStatus.COMPLETED ? 1 : 0
-          const bc = b.status === TaskStatus.COMPLETED ? 1 : 0
-          return ac - bc
-        })
-      }
+            : (getById(allTasks, parentId)?.subtaskOrder ?? []),
+      })
 
       const result: Subtask[] = []
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i]
+      for (let i = 0; i < sortedChildren.length; i++) {
+        const child = sortedChildren[i]
         result.push({
           ...child,
           depth,
           subtaskIndex:
-            parentShowNumbers && parentSortMode === SubtaskSortMode.MANUAL
+            childrenShowNumbers && childrenSortMode === SubtaskSortMode.MANUAL
               ? i
               : undefined,
         })
@@ -142,7 +139,7 @@ export const SubtasksCard = ({
     }
 
     return collectDescendants(task.id, 0, sortMode, showNumbers)
-  }, [task, allTasks, sortMode, subtaskOrder, showNumbers])
+  }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the
   // live preview reflects the unsaved form value rather than the persisted one.
@@ -155,13 +152,21 @@ export const SubtasksCard = ({
     return map
   }, [allTasks, task.id, autoHideCompleted])
 
-  const hiddenSubtaskIds = useMemo(() => {
-    return new Set(
-      allSubtasks
-        .filter((s) => isEffectivelyHiddenInTree(s, taskById))
-        .map((s) => s.id),
-    )
-  }, [allSubtasks, taskById])
+  // Walk in tree order (parent before children) so hidden status propagates
+  // transitively — descendants of a hidden parent are also hidden even if the
+  // intermediate parent has autoHideCompleted: false.
+  const hiddenSubtaskIds = useMemo(
+    () =>
+      allSubtasks.reduce((set, subtask) => {
+        if (
+          isEffectivelyHiddenInTree(subtask, taskById) ||
+          (subtask.parentId != null && set.has(subtask.parentId))
+        )
+          set.add(subtask.id)
+        return set
+      }, new Set<number>()),
+    [allSubtasks, taskById],
+  )
 
   const hiddenCount = hiddenSubtaskIds.size
 

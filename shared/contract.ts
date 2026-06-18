@@ -70,7 +70,7 @@ const tasksContract = c.router({
     summary: 'Create a new task',
   },
   update: {
-    method: 'PUT',
+    method: 'PATCH',
     path: `${ApiPaths.TASKS}/:id`,
     pathParams: z.object({ id: zId }),
     body: insertTaskSchema.omit({ userId: true }).partial(),
@@ -126,7 +126,7 @@ const tasksContract = c.router({
     summary: 'Import tasks from JSON',
   },
   reorderSubtasks: {
-    method: 'PUT',
+    method: 'PATCH',
     path: `${ApiPaths.TASKS}/:id/reorder`,
     pathParams: z.object({ id: zId }),
     body: z.object({
@@ -151,7 +151,7 @@ const settingsContract = c.router({
     summary: 'Get user settings',
   },
   update: {
-    method: 'PUT',
+    method: 'PATCH',
     path: ApiPaths.SETTINGS,
     body: insertUserSettingsSchema.omit({ userId: true }).partial(),
     responses: {

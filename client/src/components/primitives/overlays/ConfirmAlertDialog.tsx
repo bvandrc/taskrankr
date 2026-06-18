@@ -1,37 +1,56 @@
 /**
- * @fileoverview Action dialog for subtask deletion — offers Cancel, Delete, or Remove as Subtask
+ * @fileoverview Generic confirm/cancel alert dialog dialog built on @radix-ui AlertDialog
+ * primitives.
+ *
+ * Renders via an explicit portal so it stacks correctly above any
+ * ancestor Dialog (z-[110] > Dialog's z-50).
  */
 
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 
 import { cn } from '@/lib/utils'
+import { type ButtonProps, buttonVariants } from '../Button'
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCloseButton,
+  AlertDialogCancel,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
   AlertDialogPortal,
   AlertDialogTitle,
-} from '../../primitives/overlays/AlertDialog'
+} from './AlertDialog'
 
-interface SubtaskActionDialogProps {
+export interface ConfirmAlertDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  taskName: string
-  onDelete: () => void
-  onRemoveAsSubtask: () => void
+  title: string
+  description: React.ReactNode
+  /**
+   * @default "Cancel"
+   */
+  cancelLabel?: string
+  confirmLabel: string
+  onConfirm: () => void
+  confirmBtnVariant?: ButtonProps['variant']
+  'data-testid'?: string
 }
 
-export const SubtaskActionDialog = ({
+/**
+ * Generic confirm/cancel alert dialog.
+ */
+export const ConfirmAlertDialog = ({
   open,
   onOpenChange,
-  taskName,
-  onDelete,
-  onRemoveAsSubtask,
-}: SubtaskActionDialogProps) => (
+  title,
+  description,
+  cancelLabel = 'Cancel',
+  confirmLabel,
+  onConfirm,
+  confirmBtnVariant = 'default',
+  'data-testid': testId,
+}: ConfirmAlertDialogProps) => (
   <AlertDialog open={open} onOpenChange={onOpenChange}>
     <AlertDialogPortal>
       <AlertDialogOverlay className="z-[110]" />
@@ -43,31 +62,25 @@ export const SubtaskActionDialog = ({
           'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
           'bg-card border-white/10',
         )}
+        data-testid={testId}
       >
-        <AlertDialogCloseButton
-          onClose={() => onOpenChange(false)}
-          data-testid="button-close-subtask-action"
-        />
         <AlertDialogHeader>
-          <AlertDialogTitle>What would you like to do?</AlertDialogTitle>
-          <AlertDialogDescription>
-            for "{taskName}" subtask
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogAction
-            onClick={onDelete}
-            className="bg-danger/70 hover:bg-danger/90 text-white"
-            data-testid="button-subtask-delete"
+          <AlertDialogCancel
+            className="bg-secondary/50 border-white/5 hover:bg-white/10"
+            data-testid="button-cancel"
           >
-            Delete Permanently
-          </AlertDialogAction>
+            {cancelLabel}
+          </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onRemoveAsSubtask}
-            className="bg-secondary/80 hover:bg-secondary text-foreground"
-            data-testid="button-remove-as-subtask"
+            onClick={onConfirm}
+            className={buttonVariants({ variant: confirmBtnVariant })}
+            data-testid="button-confirm"
           >
-            Remove as Subtask
+            {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogPrimitive.Content>

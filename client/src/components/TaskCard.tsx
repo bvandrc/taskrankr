@@ -11,7 +11,11 @@ import { useExpandedTasks } from '@/hooks/useExpandedTasks'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { STANDARD_DATE_FORMAT } from '@/lib/constants'
 import { getRankFieldStyle } from '@/lib/rank-field-styles'
-import { getHasIncomplete, getTaskStatuses } from '@/lib/task-tree-utils'
+import {
+  getHasIncomplete,
+  getTaskStatuses,
+  isAutoHiddenByParent,
+} from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import { useTaskMutations } from '@/providers/TasksProvider'
@@ -24,7 +28,6 @@ import {
   TaskStatus,
 } from '~/shared/schema'
 import { formatDuration } from '~/shared/utils/datetime'
-import { isAutoHiddenByParent } from '~/shared/utils/task-utils'
 import { ChangeStatusDialog } from './ChangeStatusDialog'
 import { Badge } from './primitives/Badge'
 import { Icon } from './primitives/LucideIcon'
@@ -179,6 +182,9 @@ const getTotalAccumulatedTime = (
   }
   return total
 }
+
+const getSubtaskTimeMs = (subtasks: TaskWithSubtasks['subtasks']): number =>
+  subtasks.reduce((sum, s) => sum + getTotalAccumulatedTime(s), 0)
 
 const CompletedTimeDisplay = ({
   completedAt,
@@ -405,6 +411,7 @@ export const TaskCard = ({
         taskName={task.name}
         status={task.status}
         timeSpent={getTotalAccumulatedTime(task)}
+        subtaskTimeMs={getSubtaskTimeMs(task.subtasks)}
         isSubtask={!!task.parentId}
         isHidden={task.hidden}
         showToggleHidden={!isAutoHiddenByParent(task, parent)}

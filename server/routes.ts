@@ -2,7 +2,8 @@
  * @fileoverview API route handlers using ts-rest contract-based routing.
  *
  * Defines all task and settings CRUD endpoints with authentication middleware.
- * Handles task status transitions, import/export functionality, and user settings.
+ * Mutation handlers delegate to `TaskMutationService` for rule validation and
+ * side-effect resolution, then persist the computed mutations via `storage`.
  * Integrates with Replit Auth for user session management.
  */
 
@@ -12,11 +13,12 @@ import { hoursToSeconds } from 'date-fns'
 import { isNil, noop, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
-import { TestPaths } from '~/shared/constants'
+import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
-import { DEFAULT_FIELD_CONFIG, TaskStatus } from '~/shared/schema'
+import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
+import { ERRORS, IS_PROD } from './constants'
 import {
   deleteR2Object,
   getPresignedDownloadUrl,
@@ -30,45 +32,33 @@ import {
 } from './replit_integrations/auth'
 import type { UserSession } from './replit_integrations/auth/replitAuth'
 import { storage } from './storage'
-
-const ERRORS = {
-  TASK_NOT_FOUND: {
-    status: 404 as const,
-    body: { message: 'Task not found' },
-  },
-  PARENT_NOT_FOUND: {
-    status: 404 as const,
-    body: { message: 'Parent task not found' },
-  },
-  ATTACHMENT_NOT_FOUND: {
-    status: 404 as const,
-    body: { message: 'Attachment not found' },
-  },
-  TIME_SPENT_REQUIRED: {
-    status: 400 as const,
-    body: { message: 'Time spent must be recorded to complete this task' },
-  },
-} as const
+import { makeTaskService } from './task-service-adapter'
 
 const s = initServer()
 
-/** Returns a 400 response if timeSpent is required and effectiveTimeMs ≤ 0, otherwise null. */
-const checkTimeSpentRequired = async (
-  userId: string,
-  effectiveTimeMs: number,
-): Promise<{ status: 400; body: { message: string } } | null> => {
-  const userSettings = await storage.getSettings(userId)
-  if (!userSettings.fieldConfig.timeSpent.required) return null
-  if (effectiveTimeMs <= 0) {
-    return ERRORS.TIME_SPENT_REQUIRED
+const getUserId = (req: { user?: UserSession }): string => {
+  const userId = req.user?.claims?.sub
+  if (!userId) {
+    throw new Error('User ID not found in session')
   }
-  return null
+  return userId
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: is always present
-const getUserId = (req: Record<string, any>): string =>
-  // biome-ignore lint/style/noNonNullAssertion: is always present
-  (req.user as UserSession).claims!.sub
+/** Narrows a service `AppError` to the ts-rest response shape declared by a route. Throws on unexpected codes. */
+const makeErrorHandler =
+  <K extends keyof typeof ERRORS>(label: string, allowed: K[]) =>
+  (e: AppError): (typeof ERRORS)[K] => {
+    if (allowed.includes(e.name as K)) return ERRORS[e.name as K]
+    throw new Error(`Unexpected ${label} error: ${e.name}`)
+  }
+
+const createError = makeErrorHandler('create', ['TIME_SPENT_REQUIRED'])
+const updateError = makeErrorHandler('update', [
+  'TASK_NOT_FOUND',
+  'INCOMPLETE_SUBTASKS',
+  'TIME_SPENT_REQUIRED',
+])
+const deleteError = makeErrorHandler('delete', ['TASK_NOT_FOUND'])
 
 const router = s.router(contract, {
   tasks: {
@@ -95,7 +85,14 @@ const router = s.router(contract, {
       middleware: [isAuthenticated],
       handler: async ({ body, req }) => {
         const userId = getUserId(req)
+        const service = makeTaskService(userId)
+        const result = await service.resolveCreate(body)
+        if (!result.ok) return createError(result.error)
+
         const task = await storage.createTask({ ...body, userId })
+        for (const m of result.mutations) {
+          await storage.updateTask(m.id, userId, m.patch)
+        }
         return { status: 201, body: task }
       },
     },
@@ -103,30 +100,33 @@ const router = s.router(contract, {
       middleware: [isAuthenticated],
       handler: async ({ params, body, req }) => {
         const userId = getUserId(req)
-        const existing = await storage.getTask(params.id, userId)
-        if (!existing) {
-          return ERRORS.TASK_NOT_FOUND
+        const service = makeTaskService(userId)
+        const result = await service.resolveUpdate(params.id, body)
+        if (!result.ok) return updateError(result.error)
+
+        let primary: Task | undefined
+        for (const m of result.mutations) {
+          const updated = await storage.updateTask(m.id, userId, m.patch)
+          if (m.id === params.id) primary = updated
         }
-        if (body.status === TaskStatus.COMPLETED) {
-          const accumulatedTime =
-            (body.timeSpent ?? existing.timeSpent ?? 0) +
-            (existing.inProgressStartedAt
-              ? Date.now() - existing.inProgressStartedAt.getTime()
-              : 0)
-          const err = await checkTimeSpentRequired(userId, accumulatedTime)
-          if (err) return err
-        }
-        const task = await storage.updateTask(params.id, userId, body)
-        return { status: 200, body: task }
+        if (!primary)
+          throw new Error(`resolveUpdate missing mutation for id ${params.id}`)
+        return { status: 200, body: primary }
       },
     },
     delete: {
       middleware: [isAuthenticated],
       handler: async ({ params, req }) => {
         const userId = getUserId(req)
-        const existing = await storage.getTask(params.id, userId)
-        if (!existing) {
-          return ERRORS.TASK_NOT_FOUND
+        const service = makeTaskService(userId)
+        const result = await service.resolveDelete(params.id)
+        if (!result.ok) return deleteError(result.error)
+
+        for (const id of result.deletedIds) {
+          await storage.deleteTask(id, userId)
+        }
+        for (const m of result.mutations) {
+          await storage.updateTask(m.id, userId, m.patch)
         }
         const r2Keys = await storage.getAttachmentKeysForTaskTree(
           params.id,
@@ -338,7 +338,7 @@ export async function registerRoutes(
   await setupAuth(app)
   registerAuthRoutes(app)
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!IS_PROD) {
     registerTestRoutes(app)
   }
 

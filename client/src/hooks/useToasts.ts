@@ -1,5 +1,7 @@
 /**
- * @fileoverview Toast notification hook and state management.
+ * @fileoverview Toast notification state management.
+ * - `toast` — fire a toast from anywhere (including non-component code).
+ * - `useToasts` — subscribe to the active toast list (used by `Toaster`).
  */
 
 import { useEffect, useState } from 'react'
@@ -10,7 +12,7 @@ import type {
 } from '@/components/primitives/overlays/Toast'
 import { removeIds } from '~/shared/utils/id-list-utils'
 
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 1500
 
 interface ToasterToast extends Omit<ToastProps, 'title' | 'description'> {
@@ -40,7 +42,7 @@ type ToastAction =
   | { type: ToastActionType.DISMISS; toastId?: ToasterToast['id'] }
   | { type: ToastActionType.REMOVE; toastId?: ToasterToast['id'] }
 
-interface State {
+type State = {
   toasts: ToasterToast[]
 }
 
@@ -59,8 +61,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: State, action: ToastAction): State => {
-  // biome-ignore lint/style/useDefaultSwitchClause: is exhaustive for the type
+const reducer = (state: State, action: ToastAction): State => {
   switch (action.type) {
     case ToastActionType.ADD:
       return {
@@ -112,6 +113,9 @@ export const reducer = (state: State, action: ToastAction): State => {
         ...state,
         toasts: removeIds(state.toasts, [action.toastId]),
       }
+
+    default:
+      throw new Error(`Unknown action type: ${action satisfies never}`)
   }
 }
 
@@ -128,14 +132,13 @@ const dispatch = (action: ToastAction) => {
 
 type Toast = Omit<ToasterToast, 'id'>
 
-export const toast = ({ ...props }: Toast) => {
+const toast = ({ ...props }: Toast) => {
   const id = genId()
 
-  // biome-ignore lint/nursery/noShadow: is fine
-  const update = (props: ToasterToast) =>
+  const update = (updateProps: ToasterToast) =>
     dispatch({
       type: ToastActionType.UPDATE,
-      toast: { ...props, id },
+      toast: { ...updateProps, id },
     })
 
   const dismiss = () => dispatch({ type: ToastActionType.DISMISS, toastId: id })
@@ -158,7 +161,13 @@ export const toast = ({ ...props }: Toast) => {
   }
 }
 
-export const useToast = () => {
+export const toastError = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'danger' })
+
+export const toastInfo = (props: Omit<Toast, 'variant'>) =>
+  toast({ ...props, variant: 'default' })
+
+export const useToasts = () => {
   const [state, setState] = useState<State>(memoryState)
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: added by Replit
@@ -172,10 +181,5 @@ export const useToast = () => {
     }
   }, [state])
 
-  return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) =>
-      dispatch({ type: ToastActionType.DISMISS, toastId }),
-  }
+  return state
 }

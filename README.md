@@ -25,11 +25,53 @@ A multi-user task management app with priority, ease, enjoyment, and time rating
 
 ## Getting Started
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up your PostgreSQL database and add `DATABASE_URL` to environment
-4. Push the schema: `npm run db:push`
-5. Start the development server: `npm run dev`
+### On Replit
+
+```bash
+# 1. Fork the repl, then install dependencies
+npm install
+
+# 2. Start the development server — visit the preview URL
+npm run dev
+```
+
+Database and auth are provisioned automatically by Replit.
+
+### Locally (Docker)
+
+**Prerequisites:** Docker Desktop, Node.js 20+
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start Postgres
+npm run local:db:up
+
+# 3. Run DB migrations (first time only, or after schema changes)
+npm run db:migrate
+
+# 4. Start the dev server — visit http://localhost:5000
+npm run dev
+```
+
+To stop Postgres: `npm run local:db:down`
+
+#### Which script to use
+
+Three scripts serve distinct purposes and can't be collapsed further:
+
+| Script | Frontend | Test login | Use when |
+|---|---|---|---|
+| `npm run dev` | Vite dev server (HMR) | ✓ auto-bypass | Active development |
+| `npm run build && npm run local:preview` | Compiled `dist/` | ✓ auto-bypass | E2E tests against the compiled artifact |
+| `npm run build && npm run prod:preview` | Compiled `dist/` | ✗ | Production / prod simulation |
+
+**`dev`** runs TypeScript directly via `tsx` and uses the Vite dev server with hot module replacement. The Log In button auto-logs you in as the built-in test user (Replit Auth is bypassed). Use this for day-to-day development.
+
+**`local:preview`** serves the pre-built static files and also keeps test routes enabled — which is what Cypress relies on for session setup. Use this to run E2E tests against the real compiled artifact (`npm run cy:run:user` / `npm run cy:run:guest`).
+
+**`prod:preview`** runs the compiled bundle with test routes stripped. The Log In button triggers real Replit Auth (requires `REPL_ID` in env). Use this to simulate or run a production deployment.
 
 ## License
 

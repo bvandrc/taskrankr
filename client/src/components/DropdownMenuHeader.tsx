@@ -53,13 +53,12 @@ const Title = ({
     </h1>
   )
 
-interface DropdownMenuHeaderProps {
+type DropdownMenuHeaderProps = React.PropsWithChildren<{
   title?: React.ReactNode
   showTitle?: boolean
   searchVal: string
   onSearchChange: (value: string) => void
-  children?: React.ReactNode
-}
+}>
 
 export const DropdownMenuHeader = ({
   title,

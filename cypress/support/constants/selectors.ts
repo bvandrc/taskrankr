@@ -12,6 +12,10 @@ const testIdEndsWith = <S extends string>(testid: S) =>
   `[data-testid$="${testid}"]` as const
 
 export const Selectors = {
+  Pages: {
+    HOME: testId('home-page'),
+    COMPLETED: testId('completed-page'),
+  },
   CREATE_TASK_BTN: testId('button-create-task'),
   BACK_BTN: testId('button-back'),
   MENU_BTN: testId('button-menu'),
@@ -44,7 +48,10 @@ export const Selectors = {
     SUBTASK_ROW: testIdStartsWith('subtask-row-'),
     SUBTASK_NAME: testIdStartsWith('subtask-name-'),
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
-    AUTO_HIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
+    /** Autocomplete when all subtasks complete */
+    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'),
+    /** Auto-hide completed subtasks */
+    AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
     // attachments
     ATTACHMENTS_CARD: testId('attachments-card'),
@@ -69,6 +76,10 @@ export const Selectors = {
     DIALOG: testId('change-status-dialog'),
     COMPLETE_BTN: testId('button-complete-task'),
   },
+  ConfirmDialog: {
+    CONFIRM_BTN: testId('button-confirm'),
+    DENY_BTN: testId('button-cancel'),
+  },
   Settings: {
     FieldConfig: {
       visibleCheckbox: (field: keyof FieldConfig) =>
@@ -76,5 +87,12 @@ export const Selectors = {
       requiredCheckbox: (field: keyof FieldConfig) =>
         testId(`checkbox-${field}-required`),
     },
+  },
+  SaveOpenSubtasksConfirmDialog: {
+    DIALOG: testId('saving-will-reopen-dialog'),
+  },
+  Toasts: {
+    ERROR: testId('toast-danger'),
+    DEFAULT: testId('toast-default'),
   },
 } as const

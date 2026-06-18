@@ -58,7 +58,19 @@ export const fillTaskFormRankFields = (
  */
 export const fillTaskForm = (
   task: TaskFormData,
-  settings: FieldConfig = DEFAULT_FIELD_CONFIG,
+  {
+    settings = DEFAULT_FIELD_CONFIG,
+    hasIncompleteSubtasks = false,
+  }: {
+    /**
+     * @default DEFAULT_FIELD_CONFIG
+     */
+    settings?: FieldConfig
+    /**
+     * @default false
+     */
+    hasIncompleteSubtasks?: boolean
+  } = {},
 ) => {
   cy.log(`**filling task form... (task: ${task.name})**`)
   checkTasksDontExistBackend([task])
@@ -71,20 +83,35 @@ export const fillTaskForm = (
 
   fillTaskFormRankFields(task, settings)
 
+  cy.get(TaskForm.TIME_SPENT_INPUT).should(
+    settings.timeSpent.visible ? 'be.visible' : 'not.exist',
+  )
   if (settings.timeSpent.visible) {
-    cy.get(TaskForm.TIME_SPENT_INPUT).should(
-      settings.timeSpent.visible ? 'be.visible' : 'not.exist',
+    cy.get(TaskForm.TIME_SPENT_INPUT_HOURS).should(
+      hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
     )
-    // TODO: test required
+    cy.get(TaskForm.TIME_SPENT_INPUT_MINUTES).should(
+      hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+    )
   }
+  // TODO: test TIME INPUT required or not
+
+  cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).should(
+    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
+  )
+
   cy.log(`**...task form filled (task: ${task.name})**`)
 }
 
-type SubmitBtnArgs = { newTasks?: CreatedTask[]; updatedTasks?: CreatedTask[] }
+type SubmitBtnArgs = {
+  newTasks?: CreatedTask[]
+  updatedTasks?: CreatedTask[]
+  confirmDialog?: string
+}
 
 const clickSubmitBtn = (
   submitBtnText: string,
-  { newTasks, updatedTasks }: SubmitBtnArgs = {},
+  { newTasks, updatedTasks, confirmDialog }: SubmitBtnArgs = {},
 ) => {
   if (newTasks) {
     checkTasksDontExistBackend(newTasks)
@@ -94,6 +121,12 @@ const clickSubmitBtn = (
     .should('not.be.disabled')
     .click()
     .then(($btn) => {
+      if (confirmDialog) {
+        cy.escapeWithin().within(() => {
+          cy.get(confirmDialog).should('be.visible')
+          cy.get(Selectors.ConfirmDialog.CONFIRM_BTN).click()
+        })
+      }
       newTasks && waitForCreate(newTasks)
       updatedTasks && waitForUpdate(updatedTasks)
       // this form should disapper after submit
@@ -101,7 +134,7 @@ const clickSubmitBtn = (
     })
   // API calls should only be created when root task form is submitted
   if (newTasks || updatedTasks) {
-    cy.get(Selectors.TaskForm.FORM).should('not.exist')
+    cy.escapeWithin().find(Selectors.TaskForm.FORM).should('not.exist')
   }
 }
 

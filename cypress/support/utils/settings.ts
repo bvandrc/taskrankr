@@ -3,6 +3,7 @@ import type { Entries } from 'type-fest'
 import type { FieldConfig, UserSettings } from '~/shared/schema'
 import { ApiPaths, Selectors } from '../constants'
 import { getSettings } from './api'
+import { maybeWaitForIntercept } from './intercepts'
 import { isLoggedIn } from './test-runner'
 
 const { Menu, Settings } = Selectors
@@ -13,7 +14,7 @@ export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
   cy.get(Selectors.MENU_BTN).click()
   cy.get(Menu.SETTINGS).click()
 
-  cy.intercept('PUT', ApiPaths.UPDATE_SETTINGS).as('settingsPut')
+  cy.intercept('PATCH', ApiPaths.UPDATE_SETTINGS).as('updateSettings')
 
   setFieldConfig(settings.fieldConfig)
 
@@ -24,8 +25,6 @@ export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
 }
 
 const setFieldConfig = (targetConfig: FieldConfig) => {
-  const loggedIn = isLoggedIn()
-
   for (const [field, { visible, required }] of Object.entries(
     targetConfig,
   ) as Entries<FieldConfig>) {
@@ -35,7 +34,7 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
         if (isChecked !== visible) {
           cy.get(Settings.FieldConfig.visibleCheckbox(field)) //
             .toggleState(visible)
-          loggedIn && cy.wait('@settingsPut')
+          maybeWaitForIntercept('@updateSettings', 1, 200)
         }
       })
 
@@ -45,7 +44,7 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
         if (isChecked !== required) {
           cy.get(Settings.FieldConfig.requiredCheckbox(field)) //
             .toggleState(required)
-          loggedIn && cy.wait('@settingsPut')
+          maybeWaitForIntercept('@updateSettings', 1, 200)
         }
       })
   }

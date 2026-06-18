@@ -4,7 +4,6 @@ import { useLocation } from 'wouter'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/primitives/overlays/Dialog'
@@ -37,19 +36,20 @@ export const WhyDifferentDialog = ({
         data-testid="dialog-why-different"
       >
         <DialogHeader>
-          <DialogTitle data-testid="text-why-different-title">
+          <DialogTitle
+            data-testid="text-why-different-title"
+            className={TEXT_SECTION_STYLE}
+          >
             Why TaskRankr?
           </DialogTitle>
-          <DialogDescription className={TEXT_SECTION_STYLE}>
-            What makes this app different from the rest.
-          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 text-sm text-foreground/90 text-left">
           <p>
-            Hi, my name is Blake. I have tried over 30 task/to-do list apps, and
-            couldn't find a single one that helped me organize my tasks the way
-            I wanted. I think this app can help everyone in the same way!
+            Hi, Blake here. I have tried over 30 to-do list apps, and couldn't
+            find a single one that helped me organize my tasks and projects the
+            way I wanted, and so I made TaskRankr. It has helped me, and I
+            believe it can help you too!
           </p>
 
           <h3 className={cn(TEXT_SECTION_STYLE, 'font-semibold pt-1')}>
@@ -75,31 +75,32 @@ export const WhyDifferentDialog = ({
                 <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
                   Sort by ease, enjoyment, and time.
                 </span>{' '}
-                No other app has this. Here are some examples for why this is
-                useful:
+                At different times of life, or the week, or the day, there is
+                more to consider than just importance. TaskRankr gives you the
+                option to sort by <strong>Ease, Enjoyment, or Time</strong>:
                 <ul className="my-1.5 space-y-1.5 ml-1">
                   <li className="flex gap-2">
                     <span className="text-emerald-500 shrink-0">•</span>
                     <span>
                       <strong>Ease or Enjoyment</strong> — You've been working
                       on high-priority tasks all day. Now it's evening and you
-                      want to stay productive but enjoy yourself — sort by{' '}
-                      <strong>Enjoyment</strong> for something fun, or{' '}
-                      <strong>Ease</strong> to knock out something easy.
+                      want to stay productive but enjoy yourself (e.g. hobbies
+                      or side projects) — sort by <strong>Enjoyment</strong> for
+                      something fun, or <strong>Ease</strong> to knock out
+                      something easy.
                     </span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-emerald-500 shrink-0">•</span>
                     <span>
-                      <strong>Time</strong> — You have a free moment and want to
-                      knock things out on your list — sort by{' '}
-                      <strong>Time</strong> to find quick 10–30 minute tasks.
+                      <strong>Time</strong> — You have a few minutes; sort by{' '}
+                      <strong>Time</strong> to make the most of it.
                     </span>
                   </li>
                 </ul>
-                And, you can disable any of these in your{' '}
-                <InlineLink onClick={goToSettings}>settings</InlineLink> to your
-                needs.
+                You can hide any of these in your{' '}
+                <InlineLink onClick={goToSettings}>settings</InlineLink> to suit
+                your needs.
               </div>
             </li>
 
@@ -111,7 +112,7 @@ export const WhyDifferentDialog = ({
                 </span>{' '}
                 More-specific sorting means you can freely jot down random ideas
                 or projects — as "low importance" as they are — without the
-                worry of bogging down your list from what is more important.
+                worry of burying what actually matters.
               </div>
             </li>
 
@@ -119,27 +120,29 @@ export const WhyDifferentDialog = ({
               <ListTodo className="size-4 text-blue-500 mt-0.5 shrink-0" />
               <div>
                 <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
-                  Subtask sort order.
+                  The best subtask system out there.
                 </span>{' '}
-                Create subtasks, subtasks of subtasks, and so on. Within each
-                level, you can manually sort them as a step-by-step process (and
-                optionally display them as auto-numbered). Or, leave a subtask
-                level un-ordered, and subtasks will inherit the overall sort
-                order of your view (e.g. highest priority/highest ease/etc.).
-                Subtasks will be crossed out as you complete them.
+                Create subtasks, subtasks of subtasks, and so on. Subtasks get
+                crossed out as you complete them. Within each level, you can
+                manually sort them (i.e. a step-by-step process), or, leave
+                unordered, where subtasks will inherit the overall sort order of
+                your view (highest priority/greatest ease/etc.). Other features
+                such as "auto-complete when all subtasks complete" let
+                <em>you</em> decide and configure how you want a task's workflow
+                to be.
               </div>
             </li>
           </ul>
 
           <div className="border-t border-border pt-4 space-y-3">
             <p>
-              I encourage you to give it a shot. Check out{' '}
+              I encourage you to give it a shot. I built this to help me, and if
+              you're looking to better organize your tasks, I think it can help
+              you too. Check out{' '}
               <InlineLink onClick={goToSettings}>Settings</InlineLink> to see
-              what you can customize. I built this to help me, and if you're
-              someone who can use some organization of their tasks, I think it
-              can help you too.
+              what you can customize.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-center">
               If you find any bugs or have feature suggestions, please email me
               at{' '}
               <InlineLink href="mailto:taskrankr@gmail.com">

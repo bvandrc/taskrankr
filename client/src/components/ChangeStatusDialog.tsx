@@ -27,26 +27,6 @@ import {
 import { SubtaskBlockedTooltip } from './SubtaskBlockedTooltip'
 import { VisibilityToggleButton } from './VisibilityToggleButton'
 
-const TimeSpentInput = ({
-  onBlur,
-  timeSpentMs,
-  setTimeSpentMs,
-}: {
-  onBlur: () => void
-  timeSpentMs: number
-  setTimeSpentMs: (ms: number) => void
-}) => (
-  <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-    <span className="text-xs text-muted-foreground">Time Spent</span>
-    <TimeInput
-      durationMs={timeSpentMs}
-      onDurationChange={setTimeSpentMs}
-      onBlur={onBlur}
-      className="w-16 h-8 text-center text-sm bg-secondary/30"
-    />
-  </div>
-)
-
 const DeleteButton = ({
   taskName,
   onConfirm,
@@ -61,7 +41,7 @@ const DeleteButton = ({
       <Button
         variant="ghost"
         size="sm"
-        className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-2 h-8"
+        className="text-danger hover:text-danger hover:bg-danger/10 gap-2 h-8"
         onClick={() => {
           setTimeout(() => setShowDeleteConfirm(true), 100)
         }}
@@ -114,6 +94,7 @@ interface ChangeStatusDialogProps {
   taskName: string
   status: TaskStatus
   timeSpent: number
+  subtaskTimeMs?: number
   isSubtask?: boolean
   isHidden?: boolean
   showToggleHidden?: boolean
@@ -130,6 +111,7 @@ export const ChangeStatusDialog = ({
   taskName,
   status,
   timeSpent: initialTimeSpent,
+  subtaskTimeMs = 0,
   isSubtask,
   isHidden,
   showToggleHidden,
@@ -158,9 +140,15 @@ export const ChangeStatusDialog = ({
     }
   }, [open, initialTimeSpent])
 
+  const timeInputDisabled = !!hasIncompleteSubtasks
+
   const handleTimeBlur = () => {
-    if (timeSpent !== initialTimeSpent) {
-      onUpdateTime(timeSpent)
+    const clamped = Math.max(timeSpent, subtaskTimeMs)
+    if (clamped !== timeSpent) setTimeSpent(clamped)
+    const ownTime = clamped - subtaskTimeMs
+    const initialOwnTime = initialTimeSpent - subtaskTimeMs
+    if (ownTime !== initialOwnTime) {
+      onUpdateTime(ownTime)
     }
   }
 
@@ -228,6 +216,7 @@ export const ChangeStatusDialog = ({
               </>
             )}
 
+            {/** Complete/ Restore to Open button */}
             <SubtaskBlockedTooltip
               blocked={!isCompleted && !!hasIncompleteSubtasks}
             >
@@ -252,12 +241,23 @@ export const ChangeStatusDialog = ({
               </AlertDialogAction>
             </SubtaskBlockedTooltip>
 
+            {/** Time Spent input */}
             {showTimeSpentInput && (
-              <TimeSpentInput
-                onBlur={handleTimeBlur}
-                timeSpentMs={timeSpent}
-                setTimeSpentMs={setTimeSpent}
-              />
+              <SubtaskBlockedTooltip blocked={timeInputDisabled}>
+                <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
+                  <span className="text-xs text-muted-foreground">
+                    Time Spent
+                  </span>
+                  <TimeInput
+                    durationMs={timeSpent}
+                    onDurationChange={setTimeSpent}
+                    onBlur={handleTimeBlur}
+                    disabled={timeInputDisabled}
+                    className="w-16 h-8 text-center text-sm bg-secondary/30"
+                    data-testid="time-spent-input"
+                  />
+                </div>
+              </SubtaskBlockedTooltip>
             )}
 
             {needsTimeSpent && (

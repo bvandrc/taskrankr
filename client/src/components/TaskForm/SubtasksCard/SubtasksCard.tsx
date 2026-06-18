@@ -102,12 +102,12 @@ export const SubtasksCard = ({
     const collectDescendants = (
       parentId: number,
       depth: number,
-      effectiveSortMode: SubtaskSortMode,
-      parentShowNumbers: boolean,
+      childrenSortMode: SubtaskSortMode,
+      childrenShowNumbers: boolean,
     ): Subtask[] => {
       const unsortedChildren = getDirectSubtasks(allTasks, parentId)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
-        sortMode: effectiveSortMode,
+        sortMode: childrenSortMode,
         fieldSortOrder: SORT_ORDER_MAP[settings.sortBy],
         manualOrder:
           depth === 0
@@ -122,7 +122,7 @@ export const SubtasksCard = ({
           ...child,
           depth,
           subtaskIndex:
-            parentShowNumbers && effectiveSortMode === SubtaskSortMode.MANUAL
+            childrenShowNumbers && childrenSortMode === SubtaskSortMode.MANUAL
               ? i
               : undefined,
         })

@@ -29,8 +29,7 @@ import {
   isEffectivelyHiddenInTree,
   mapById,
   SORT_ORDER_MAP,
-  sortTasksByField,
-  sortTasksByIdOrder,
+  sortTasksByMode,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useDraftSession } from '@/providers/DraftSessionProvider'
@@ -106,17 +105,14 @@ export const SubtasksCard = ({
       parentSortMode: SubtaskSortMode,
       parentShowNumbers: boolean,
     ): Subtask[] => {
-      let children = getDirectSubtasks(allTasks, parentId_)
-
-      if (parentSortMode === SubtaskSortMode.MANUAL) {
-        const order =
+      const children = sortTasksByMode(getDirectSubtasks(allTasks, parentId_), {
+        sortMode: parentSortMode,
+        fieldOrder: SORT_ORDER_MAP[settings.sortBy],
+        manualOrder:
           depth === 0
             ? subtaskOrder
-            : (getById(allTasks, parentId_)?.subtaskOrder ?? [])
-        children = sortTasksByIdOrder(children, order)
-      } else {
-        children = sortTasksByField(children, SORT_ORDER_MAP[settings.sortBy])
-      }
+            : (getById(allTasks, parentId_)?.subtaskOrder ?? []),
+      })
 
       const result: Subtask[] = []
       for (let i = 0; i < children.length; i++) {

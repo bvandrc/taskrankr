@@ -195,8 +195,7 @@ const Home = () => {
     const sortedPinned = filterAndSortTree(
       pinnedTasks,
       search,
-      pinnedSort,
-      pinnedSort !== sortOrder ? sortOrder : undefined,
+      pinnedSort !== sortOrder ? sortOrder : [],
     )
 
     const sortedTree = filterAndSortTree(taskTree, search, sortOrder)

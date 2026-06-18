@@ -107,7 +107,7 @@
     "@types/ws": "^8",
     "@vitejs/plugin-react": "^6",
     "cross-env": "^10",
-    "cypress": "^15",
+    "cypress": "15.2.0",
     "cypress-terminal-report": "^7",
     "cypress-vite": "^1.10.0",
     "drizzle-kit": "^0.31",
@@ -120,9 +120,6 @@
   "overrides": {
     "drizzle-kit": {
       "@esbuild-kit/esm-loader": "npm:tsx@^4"
-    },
-    "cypress": {
-      "npm-run-path": "^5"
     },
     "glob": "^12"
   },

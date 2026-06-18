@@ -191,9 +191,16 @@ const Home = () => {
     const sortedPinned = filterAndSortTree(
       pinnedTasks,
       search,
-      settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
-        ? [SortOption.PRIORITY, ...sortOrder]
-        : sortOrder,
+      // maybe do priority-first sort order
+      (() => {
+        const sortWithPriorityFirst =
+          settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
+            ? [SortOption.PRIORITY, ...sortOrder]
+            : sortOrder
+        return sortWithPriorityFirst !== sortOrder
+          ? sortWithPriorityFirst
+          : sortOrder
+      })(),
     )
 
     const sortedTree = filterAndSortTree(taskTree, search, sortOrder)

@@ -120,6 +120,9 @@
   "overrides": {
     "drizzle-kit": {
       "@esbuild-kit/esm-loader": "npm:tsx@^4"
+    },
+    "cypress": {
+      "npm-run-path": "^5"
     }
   },
   "optionalDependencies": {

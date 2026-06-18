@@ -7,7 +7,7 @@ export const IS_PROD = process.env.NODE_ENV === 'production'
 // Default true; opt-out via SERVE_STATIC=false (dev only).
 // IS_PROD is folded in so the compiled bundle always serves static files
 // without needing the env var — esbuild bakes IS_PROD=true.
-export const SERVE_STATIC = process.env.SERVE_STATIC !== 'false' || IS_PROD
+export const SERVE_STATIC = IS_PROD || process.env.SERVE_STATIC !== 'false'
 
 type BaseErrors = typeof BASE_ERRORS
 

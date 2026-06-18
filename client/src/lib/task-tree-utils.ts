@@ -75,6 +75,22 @@ const compareByField = (a: Task, b: Task, field: SortBy): number => {
   return direction === SortDirection.DESC ? valB - valA : valA - valB
 }
 
+/** Sorts tasks by a passed sort order of fields; earlier fields take priority.
+ *  Completed tasks always sort to the bottom. */
+const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] => {
+  return [...tasks].sort((a, b) => {
+    const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
+    const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
+    if (aCompleted !== bCompleted) return aCompleted - bCompleted
+
+    for (const field of order) {
+      const cmp = compareByField(a, b, field)
+      if (cmp !== 0) return cmp
+    }
+    return a.createdAt.getTime() - b.createdAt.getTime()
+  })
+}
+
 type TaskSortArgs = Simplify<
   MergeExclusive<
     {
@@ -91,21 +107,6 @@ type TaskSortArgs = Simplify<
 >
 
 type TaskSortArgsComplete = Required<AllUnionFields<TaskSortArgs>>
-
-/** Sorts tasks by a passed sort order of fields; earlier fields take priority.
- *  Completed tasks always sort to the bottom. */
-const sortTasksByField = <T extends Task>(tasks: T[], order: SortBy[]): T[] =>
-  [...tasks].sort((a, b) => {
-    const aCompleted = a.status === TaskStatus.COMPLETED ? 1 : 0
-    const bCompleted = b.status === TaskStatus.COMPLETED ? 1 : 0
-    if (aCompleted !== bCompleted) return aCompleted - bCompleted
-
-    for (const field of order) {
-      const cmp = compareByField(a, b, field)
-      if (cmp !== 0) return cmp
-    }
-    return a.createdAt.getTime() - b.createdAt.getTime()
-  })
 
 /** Sorts tasks by their position in a user-defined sequence of IDs (the saved manual order). */
 const sortTasksByManualOrder = <T extends Task>(

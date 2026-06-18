@@ -109,9 +109,7 @@ export const SubtasksCard = ({
       const unsortedChildren = getDirectSubtasks(allTasks, parentId_)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
         sortMode: parentSortMode,
-        // DATE_CREATED sorts newest-first as a primary key, which inverts
-        // creation order. The oldest-first tiebreaker in sortTasksByField
-        // already handles it, so skip it as a primary field here.
+        // DATE_CREATED primary sort is newest-first; the tiebreaker in sortTasksByField already handles creation order (oldest-first).
         fieldSortOrder:
           settings.sortBy === SortOption.DATE_CREATED
             ? []

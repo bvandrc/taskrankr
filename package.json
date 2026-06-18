@@ -120,7 +120,8 @@
   "overrides": {
     "drizzle-kit": {
       "@esbuild-kit/esm-loader": "npm:tsx@^4"
-    }
+    },
+    "npm-run-path": "file:vendor/npm-run-path"
   },
   "optionalDependencies": {
     "bufferutil": "^4"

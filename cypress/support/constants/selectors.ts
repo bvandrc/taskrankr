@@ -60,8 +60,8 @@ export const Selectors = {
     CANCEL_BTN: testId('cancel-button'),
     // cancel dialog
     CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
-    CANCEL_CONFIRM_BTN: testId('button-cancel-confirm'),
-    CANCEL_DENY_BTN: testId('button-cancel-deny'),
+    CANCEL_CONFIRM_BTN: testId('button-confirm'),
+    CANCEL_DENY_BTN: testId('button-cancel'),
   },
   AssignSubtaskDialog: {
     DIALOG: testId('assign-subtask-dialog'),

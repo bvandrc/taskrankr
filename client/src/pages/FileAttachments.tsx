@@ -15,14 +15,13 @@ import { ProgressBar } from '@/components/primitives/ProgressBar'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { Spinner } from '@/components/primitives/Spinner'
 import { useAttachments } from '@/hooks/useAttachments'
+import { ALL_ATTACHMENTS_QUERY_KEY } from '@/lib/attachment-upload'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
 import type { AttachmentWithTask } from '~/shared/schema'
 import { TaskStatus } from '~/shared/schema'
 import { formatDaysSince } from '~/shared/utils/datetime'
-
-const QUERY_KEY = ['/api/attachments/all']
 
 const StorageMeter = ({ totalBytes }: { totalBytes: number }) => (
   <div
@@ -110,7 +109,7 @@ const AttachmentRow = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+        className="size-7 text-muted-foreground hover:text-destructive"
         onClick={() => onDelete(attachment.id)}
         disabled={isDeleting}
         data-testid={`button-delete-attachment-${attachment.id}`}
@@ -135,12 +134,14 @@ const EmptyState = () => (
 )
 
 const FileAttachments = () => {
-  const { handleDelete, handleDownload, deletingId } = useAttachments(QUERY_KEY)
+  const { handleDelete, handleDownload, deletingId } = useAttachments(
+    ALL_ATTACHMENTS_QUERY_KEY,
+  )
 
   const { data = [], isLoading } = useQuery<AttachmentWithTask[]>({
-    queryKey: QUERY_KEY,
+    queryKey: ALL_ATTACHMENTS_QUERY_KEY,
     queryFn: async () => {
-      const res = await tsr.attachments.listAll.query({})
+      const res = await tsr.attachments.listAll()
       return res.status === 200 ? res.body : []
     },
   })

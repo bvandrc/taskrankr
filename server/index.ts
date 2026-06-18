@@ -13,6 +13,7 @@ import express, {
   type Response,
 } from 'express'
 
+import { IS_PROD } from './constants'
 import { log } from './log'
 import { scheduleReconciliation } from './reconcile'
 import { registerRoutes } from './routes'
@@ -67,7 +68,7 @@ app.use((req, res, next) => {
 // biome-ignore lint/nursery/noFloatingPromises: added by Replit, don't break...
 ;(async () => {
   await registerRoutes(httpServer, app)
-  if (process.env.NODE_ENV === 'production') {
+  if (IS_PROD) {
     scheduleReconciliation()
   }
 

@@ -3,11 +3,10 @@ import type { QueryKey } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { toastError } from '@/hooks/useToasts'
+import { ALL_ATTACHMENTS_QUERY_KEY } from '@/lib/attachment-upload'
 import { tsr } from '@/lib/ts-rest'
 import { MAX_FILE_SIZE_BYTES } from '~/shared/fileAttachments'
 import { formatFileSize } from '~/shared/fileSize'
-
-const ALL_ATTACHMENTS_QUERY_KEY = ['/api/attachments/all']
 
 /** Returns an error message if `file` exceeds the per-file size limit, otherwise `null`. */
 export function validateFile(file: File): string | null {
@@ -29,7 +28,7 @@ export function useAttachments(queryKey: QueryKey) {
   const handleDelete = async (id: number) => {
     setDeletingId(id)
     try {
-      const res = await tsr.attachments.delete.mutate({ params: { id } })
+      const res = await tsr.attachments.delete({ params: { id } })
       if (res.status !== 204) throw new Error()
       await Promise.all([
         queryClient.invalidateQueries({ queryKey }),
@@ -44,7 +43,7 @@ export function useAttachments(queryKey: QueryKey) {
 
   const handleDownload = async (id: number, fileName: string) => {
     try {
-      const res = await tsr.attachments.getDownloadUrl.query({ params: { id } })
+      const res = await tsr.attachments.getDownloadUrl({ params: { id } })
       if (res.status === 200) {
         const a = document.createElement('a')
         a.href = res.body.downloadUrl

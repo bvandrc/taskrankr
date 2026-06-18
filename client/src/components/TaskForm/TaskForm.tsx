@@ -10,7 +10,7 @@ import { Calendar as CalendarIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
-import { useToast } from '@/hooks/useToast'
+import { toastError } from '@/hooks/useToasts'
 import { uploadFiles } from '@/lib/attachment-upload'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { getHasIncompleteSubtasks } from '@/lib/task-tree-utils'
@@ -120,7 +120,7 @@ const DateCreatedInput = ({ value, onChange }: DateCreatedInputProps) => (
 )
 
 export interface TaskFormProps {
-  onSubmit: (data: MutateTaskContent) => LocalTask | undefined
+  onSubmit: (data: MutateTaskContent) => Promise<LocalTask | undefined>
   initialData?: Task
   parentId?: number | null
   onCancel: () => void
@@ -205,7 +205,6 @@ export const TaskForm = ({
 
   const { subscribeToIdReplacement } = useTaskMutations()
   const queryClient = useQueryClient()
-  const { toast } = useToast()
   const attachmentsRef = useRef<AttachmentsCardHandle>(null)
   const isEditingExisting = !!initialData && !isDraft
 
@@ -225,21 +224,21 @@ export const TaskForm = ({
           if (isNewTask) {
             // Capture staged files before the dialog closes and unmounts this component.
             const files = attachmentsRef.current?.getStagedFiles() ?? []
-            const localTask = onSubmit(submitted)
+            const localTask = await onSubmit(submitted)
             if (files.length > 0 && localTask) {
               const unsub = subscribeToIdReplacement(async (tempId, realId) => {
                 if (tempId !== localTask.id) return
                 unsub()
                 const errors = await uploadFiles(files, realId, queryClient)
                 for (const msg of errors) {
-                  toast({ title: msg, variant: 'destructive' })
+                  toastError({ title: msg })
                 }
               })
             }
           } else {
             const committed = await attachmentsRef.current?.commit()
             if (committed === false) return
-            onSubmit(submitted)
+            await onSubmit(submitted)
           }
         })}
         className="flex flex-col h-full"

@@ -18,7 +18,7 @@ export async function uploadFiles(
 
   for (const file of files) {
     try {
-      const urlRes = await tsr.attachments.getUploadUrl.mutate({
+      const urlRes = await tsr.attachments.getUploadUrl({
         body: {
           taskId,
           fileName: file.name,
@@ -42,7 +42,7 @@ export async function uploadFiles(
         continue
       }
 
-      const createRes = await tsr.attachments.create.mutate({
+      const createRes = await tsr.attachments.create({
         body: {
           taskId,
           fileName: file.name,

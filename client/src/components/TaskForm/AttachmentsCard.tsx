@@ -194,7 +194,7 @@ export const AttachmentsCard = forwardRef<
   const { data: attachments = [], isLoading } = useQuery<Attachment[]>({
     queryKey,
     queryFn: async () => {
-      const res = await tsr.attachments.list.query({
+      const res = await tsr.attachments.list({
         query: { taskId: taskId ?? 0 },
       })
       return res.status === 200 ? res.body : []

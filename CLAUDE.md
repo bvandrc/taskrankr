@@ -28,8 +28,8 @@ In **development mode** (`npm run dev`), the Log In button auto-logs you in as t
 |---|---|
 | `npm run dev` | Dev server (test login enabled) |
 | `npm run build` | Build to `dist/` |
-| `npm run prod:start` | Production start (real auth) |
-| `npm run local:start` | Serve built bundle, test login enabled |
+| `npm run prod:preview` | Production preview (real auth) |
+| `npm run local:preview` | Preview built bundle locally, test login enabled |
 | `npm run local:db:up` / `local:db:down` | Start / stop Docker Postgres |
 | `npm run db:migrate` | Run DB migrations |
 | `npm run db:generate` | Generate migration from schema changes |

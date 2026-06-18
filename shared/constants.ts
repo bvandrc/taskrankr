@@ -4,6 +4,9 @@
 
 import type { ValueOf } from 'type-fest'
 
+import { MAX_TOTAL_STORAGE_BYTES } from './fileAttachments'
+import { formatFileSize } from './fileSize'
+
 export const AuthPaths = {
   LOGIN: '/api/login',
   LOGOUT: '/api/logout',
@@ -49,6 +52,16 @@ export const ERRORS = {
     name: 'ATTACHMENT_NOT_FOUND',
     status: 404,
     message: 'Attachment not found',
+  },
+  ATTACHMENT_METADATA_FAILED: {
+    name: 'ATTACHMENT_METADATA_FAILED',
+    status: 400,
+    message: 'Failed to save attachment metadata',
+  },
+  STORAGE_LIMIT_EXCEEDED: {
+    name: 'STORAGE_LIMIT_EXCEEDED',
+    status: 400,
+    message: `Storage limit of ${formatFileSize(MAX_TOTAL_STORAGE_BYTES)} reached. Delete some attachments to free up space.`,
   },
 } as const satisfies {
   [K in string]: {

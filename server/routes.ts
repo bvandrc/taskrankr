@@ -16,7 +16,6 @@ import type { Express } from 'express'
 import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
-import { formatFileSize } from '~/shared/fileSize'
 import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
 import { ERRORS, IS_PROD } from './constants'
 import {
@@ -265,12 +264,7 @@ const router = s.router(contract, {
         }
         const totalUsed = await storage.getTotalStorageUsed(userId)
         if (totalUsed + body.fileSize > MAX_TOTAL_STORAGE_BYTES) {
-          return {
-            status: 400,
-            body: {
-              message: `Storage limit of ${formatFileSize(MAX_TOTAL_STORAGE_BYTES)} reached. Delete some attachments to free up space.`,
-            },
-          }
+          return ERRORS.STORAGE_LIMIT_EXCEEDED
         }
         const key = `${userId}/${body.taskId}/${Date.now()}-${body.fileName}`
         const uploadUrl = await getPresignedUploadUrl(key, body.mimeType)
@@ -293,10 +287,7 @@ const router = s.router(contract, {
           return { status: 201, body: attachment }
         } catch {
           await deleteR2Object(body.r2Key).catch(noop)
-          return {
-            status: 400,
-            body: { message: 'Failed to save attachment metadata' },
-          }
+          return ERRORS.ATTACHMENT_METADATA_FAILED
         }
       },
     },

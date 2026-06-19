@@ -22,7 +22,7 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import {
   filterAndSortTree,
   getTaskStatuses,
-  isEffectivelyHiddenInTree,
+  isAutoHiddenByParent,
   mapById,
   SORT_ORDER_MAP,
 } from '@/lib/task-tree-utils'
@@ -128,7 +128,7 @@ const Home = () => {
     const taskById = mapById(allTasks)
     const activeTasks = allTasks.filter(
       (task) =>
-        !isEffectivelyHiddenInTree(task, taskById) &&
+        !isAutoHiddenByParent(task, taskById) &&
         (task.status !== TaskStatus.COMPLETED || task.parentId !== null),
     )
 

@@ -516,7 +516,6 @@ const TaskFormDialogProviderInner = ({
           if (subtaskToDelete) {
             updateTask(subtaskToDelete.id, {
               parentId: null,
-              hidden: false,
             })
             const top = currentEntry?.taskId
             if (top != null) {

@@ -60,7 +60,6 @@ const taskFormDefaultsSchema = taskSchema.omit({
   id: true,
   userId: true,
   inProgressStartedAt: true,
-  hidden: true,
 })
 
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>

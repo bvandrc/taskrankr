@@ -56,6 +56,7 @@ export const Selectors = {
     /** Auto-hide completed subtasks */
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
+    SHOW_HIDDEN_BTN: testId('button-show-hidden'),
   },
   AssignSubtaskDialog: {
     DIALOG: testId('assign-subtask-dialog'),

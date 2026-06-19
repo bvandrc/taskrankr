@@ -124,6 +124,8 @@ export interface TaskFormProps {
   onAssignSubtask: (task: Task, formData?: MutateTaskContent) => void
   defaultFormData?: MutateTaskContent
   isDraft?: boolean
+  showHidden?: boolean
+  onShowHiddenChange?: (show: boolean) => void
 }
 
 export const TaskForm = ({
@@ -137,6 +139,8 @@ export const TaskForm = ({
   onAssignSubtask,
   defaultFormData,
   isDraft = false,
+  showHidden,
+  onShowHiddenChange,
 }: TaskFormProps) => {
   const parentChain = useTaskFormParentChain(parentId ?? undefined)
   const { tasksWithDrafts: allTasks } = useDraftSession()
@@ -298,6 +302,8 @@ export const TaskForm = ({
               onDeleteSubtask={onDeleteSubtask}
               onAssignSubtask={(t) => onAssignSubtask(t, form.getValues())}
               disableAddSubtask={!nameValue}
+              showHidden={showHidden}
+              onShowHiddenChange={onShowHiddenChange}
             />
 
             <div className="flex flex-col gap-4 mt-2 pb-4">

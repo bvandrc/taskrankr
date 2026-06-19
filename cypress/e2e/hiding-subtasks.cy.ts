@@ -37,12 +37,16 @@ describe('Hiding Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
-  /**
-   * Creates rootTask with one open subtask and one completed subtask, with
-   * auto-hide completed enabled. The completed subtask will be hidden in the
-   * form and tree until "Show Hidden" is toggled.
-   */
-  const setup = () => {
+  beforeEach(() => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+
+    /**
+     * Create rootTask with one open subtask and one completed subtask, with
+     * auto-hide completed enabled. The completed subtask will be hidden in the
+     * form and tree until "Show Hidden" is toggled.
+     */
+
     cy.get(Selectors.CREATE_TASK_BTN).click()
 
     getTaskForm(0).within(() => {
@@ -75,12 +79,7 @@ describe('Hiding Subtasks', () => {
     })
 
     checkNumCalls({ create: 3, update: 0 })
-  }
 
-  beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-    setup()
     openTaskEditForm(rootTask)
   })
 
@@ -89,19 +88,15 @@ describe('Hiding Subtasks', () => {
       checkTaskFormSubtasks([openSubtask])
 
       cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-      cy.get(TaskForm.SHOW_HIDDEN_BTN).should('be.visible')
-
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
       checkTaskFormSubtasks([openSubtask, completedSubtask])
 
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
       checkTaskFormSubtasks([openSubtask])
-
-      cy.get(TaskForm.CANCEL_BTN).click()
     })
   })
 
-  it('preserves show-hidden state after saving a subtask form and returning to the parent', () => {
+  const showHiddenAndEditSubtask = () => {
     getTaskForm(0).within(() => {
       cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
@@ -109,6 +104,16 @@ describe('Hiding Subtasks', () => {
 
       cy.get(TaskForm.EDIT_SUBTASK_BTN).first().click()
     })
+  }
+
+  const checkAllVisible = () => {
+    getTaskForm(0).within(() => {
+      checkTaskFormSubtasks([openSubtask, completedSubtask])
+    })
+  }
+
+  it('preserves show-hidden state after saving a subtask form and returning to the parent', () => {
+    showHiddenAndEditSubtask()
 
     // Save the subtask form without changes — pops back to the parent form
     getTaskForm(1).within(() => {
@@ -116,29 +121,17 @@ describe('Hiding Subtasks', () => {
     })
 
     // The parent form should still have show-hidden on
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
-      cy.get(TaskForm.CANCEL_BTN).click()
-    })
+    checkAllVisible()
   })
 
   it('preserves show-hidden state after cancelling a subtask form and returning to the parent', () => {
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-      cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
-
-      cy.get(TaskForm.EDIT_SUBTASK_BTN).first().click()
-    })
+    showHiddenAndEditSubtask()
 
     getTaskForm(1).within(() => {
       cy.get(TaskForm.CANCEL_BTN).click()
     })
 
     // The parent form should still have show-hidden on
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
-      cy.get(TaskForm.CANCEL_BTN).click()
-    })
+    checkAllVisible()
   })
 })

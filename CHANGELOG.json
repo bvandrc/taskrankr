@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.3.0",
+    "date": "2026-06-18",
+    "title": "Remove manual hiding",
+    "changes": ["Remove manual hiding feature"]
+  },
+  {
     "version": "0.2.7",
     "date": "2026-06-18",
     "title": "Bugfixes",

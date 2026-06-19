@@ -25,7 +25,6 @@ import {
   AlertDialogTitle,
 } from './primitives/overlays/AlertDialog'
 import { SubtaskBlockedTooltip } from './SubtaskBlockedTooltip'
-import { VisibilityToggleButton } from './VisibilityToggleButton'
 
 const DeleteButton = ({
   taskName,
@@ -95,14 +94,10 @@ interface ChangeStatusDialogProps {
   status: TaskStatus
   timeSpent: number
   subtaskTimeMs?: number
-  isSubtask?: boolean
-  isHidden?: boolean
-  showToggleHidden?: boolean
   hasIncompleteSubtasks?: boolean
   onSetStatus: (status: TaskStatus) => void
   onUpdateTime: (timeMs: number) => void
   onDelete: () => void
-  onToggleHidden?: () => void
 }
 
 export const ChangeStatusDialog = ({
@@ -112,14 +107,10 @@ export const ChangeStatusDialog = ({
   status,
   timeSpent: initialTimeSpent,
   subtaskTimeMs = 0,
-  isSubtask,
-  isHidden,
-  showToggleHidden,
   hasIncompleteSubtasks,
   onSetStatus,
   onUpdateTime,
   onDelete,
-  onToggleHidden,
 }: ChangeStatusDialogProps) => {
   const { isCompleted, isInProgress, isPinned } = getTaskStatuses({ status })
 
@@ -267,22 +258,6 @@ export const ChangeStatusDialog = ({
             )}
 
             <div className="flex justify-center gap-2">
-              {showToggleHidden && isSubtask && onToggleHidden && (
-                <VisibilityToggleButton
-                  action={isHidden ? 'show' : 'hide'}
-                  label={
-                    <span className="text-xs font-medium">
-                      {isHidden ? 'Unhide' : 'Hide'}
-                    </span>
-                  }
-                  onClick={() => {
-                    onToggleHidden()
-                    onOpenChange(false)
-                  }}
-                  className="h-8"
-                  data-testid="button-toggle-hidden"
-                />
-              )}
               <DeleteButton
                 taskName={taskName}
                 onConfirm={() => {

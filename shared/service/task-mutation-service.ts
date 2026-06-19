@@ -216,7 +216,6 @@ export class TaskMutationService {
     }
 
     const primary: Partial<Task> = { ...updates }
-    if (primary.parentId === null) primary.hidden = false
 
     if (newStatus !== undefined && isStatusChange) {
       const isCompleting = newStatus === TaskStatus.COMPLETED

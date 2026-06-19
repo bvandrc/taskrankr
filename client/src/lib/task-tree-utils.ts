@@ -219,25 +219,15 @@ export const filterAndSortTree = (
 // *****************************************************************************
 
 /**
- * true iff `task` is hidden purely because its parent has `autoHideCompleted`
- * enabled and the task is COMPLETED. (i.e., ignore the user-set `hidden` flag)
+ * true iff `task` is hidden because its parent has `autoHideCompleted` enabled
+ * and the task is COMPLETED.
  */
-export const isAutoHiddenByParent = (
-  task: Pick<Task, 'status'>,
-  parent: Pick<Task, 'autoHideCompleted'> | undefined,
-): boolean =>
-  Boolean(parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED)
-
-/**
- * true iff `task` should be considered hidden in the UI, accounting for both
- * the user-set `hidden` flag and parent-driven auto-hide of COMPLETED subtasks.
- */
-export const isEffectivelyHiddenInTree = (
-  task: Pick<Task, 'hidden' | 'status' | 'parentId'>,
+export const shouldBeHidden = (
+  task: Pick<Task, 'status' | 'parentId'>,
   taskById: Map<number, Task>,
-): boolean =>
-  task.hidden ||
-  isAutoHiddenByParent(
-    task,
-    task.parentId != null ? taskById.get(task.parentId) : undefined,
+): boolean => {
+  const parent = task.parentId != null ? taskById.get(task.parentId) : undefined
+  return Boolean(
+    parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED,
   )
+}

@@ -514,9 +514,7 @@ const TaskFormDialogProviderInner = ({
         onDelete={() => setShowDeleteConfirm(true)}
         onRemoveAsSubtask={() => {
           if (subtaskToDelete) {
-            updateTask(subtaskToDelete.id, {
-              parentId: null,
-            })
+            updateTask(subtaskToDelete.id, { parentId: null })
             const top = currentEntry?.taskId
             if (top != null) {
               const parent = getById(tasksWithDrafts, top)

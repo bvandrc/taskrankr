@@ -5,7 +5,8 @@
     "title": "Bugfixes",
     "changes": [
       "Bugfix: Subtask ordering in task form",
-      "Bugfix: Parent task autocompletion"
+      "Bugfix: Parent task autocompletion",
+      "Bugfix: Show Hidden button maintains state while dialog is open"
     ]
   },
   {

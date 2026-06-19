@@ -17,8 +17,8 @@ import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import {
   filterAndSortTree,
   getDirectSubtasks,
-  isAutoHiddenByParent,
   mapById,
+  shouldBeHidden,
 } from '@/lib/task-tree-utils'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
@@ -64,7 +64,7 @@ const Completed = () => {
 
     const buildSubtaskTree = (parentId: number): TaskWithSubtasks[] => {
       const children = getDirectSubtasks(allTasks, parentId).filter(
-        (t) => !isAutoHiddenByParent(t, taskById),
+        (t) => !shouldBeHidden(t, taskById),
       )
       return children.map((child) => ({
         ...child,
@@ -77,7 +77,7 @@ const Completed = () => {
         (task) =>
           task.status === TaskStatus.COMPLETED &&
           !task.parentId &&
-          !isAutoHiddenByParent(task, taskById),
+          !shouldBeHidden(task, taskById),
       )
       .map((task) => ({
         ...task,

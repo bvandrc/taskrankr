@@ -26,9 +26,9 @@ import { useFormFieldsWithDefaults } from '@/hooks/useFormFieldsWithDefaults'
 import {
   getById,
   getDirectSubtasks,
-  isAutoHiddenByParent,
   mapById,
   SORT_ORDER_MAP,
+  shouldBeHidden,
   sortTasksByMode,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
@@ -165,7 +165,7 @@ export const SubtasksCard = ({
     () =>
       allSubtasks.reduce((set, subtask) => {
         if (
-          isAutoHiddenByParent(subtask, taskById) ||
+          shouldBeHidden(subtask, taskById) ||
           (subtask.parentId != null && set.has(subtask.parentId))
         )
           set.add(subtask.id)

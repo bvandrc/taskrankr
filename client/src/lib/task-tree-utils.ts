@@ -222,7 +222,7 @@ export const filterAndSortTree = (
  * true iff `task` is hidden because its parent has `autoHideCompleted` enabled
  * and the task is COMPLETED.
  */
-export const isAutoHiddenByParent = (
+export const shouldBeHidden = (
   task: Pick<Task, 'status' | 'parentId'>,
   taskById: Map<number, Task>,
 ): boolean => {

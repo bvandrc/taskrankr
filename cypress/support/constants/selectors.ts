@@ -48,10 +48,9 @@ export const Selectors = {
     SUBTASK_ROW: testIdStartsWith('subtask-row-'),
     SUBTASK_NAME: testIdStartsWith('subtask-name-'),
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
-    /** Autocomplete when all subtasks complete */
-    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'),
-    /** Auto-hide completed subtasks */
+    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'), //autocomplete when all subtasks completed
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
+    SHOW_HIDDEN_BTN: testId('button-show-hidden'), //show hidden subtasks
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
     // attachments
     ATTACHMENTS_CARD: testId('attachments-card'),

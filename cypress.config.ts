@@ -37,6 +37,7 @@ export default defineConfig({
       'cypress/e2e/cancel-task-form.cy.ts',
       'cypress/e2e/completed-tasks.cy.ts',
       'cypress/e2e/completed-subtasks.cy.ts',
+      'cypress/e2e/hiding-subtasks.cy.ts',
     ],
     setupNodeEvents(on, config) {
       const userMode = checkUserMode(config.env.userMode)

@@ -11,11 +11,7 @@ import { useExpandedTasks } from '@/hooks/useExpandedTasks'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { STANDARD_DATE_FORMAT } from '@/lib/constants'
 import { getRankFieldStyle } from '@/lib/rank-field-styles'
-import {
-  getHasIncomplete,
-  getTaskStatuses,
-  isAutoHiddenByParent,
-} from '@/lib/task-tree-utils'
+import { getHasIncomplete, getTaskStatuses } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import { useSettings } from '@/providers/SettingsProvider'
 import { useTaskMutations } from '@/providers/TasksProvider'
@@ -213,7 +209,6 @@ const TimeSpentDisplay = (
 
 interface TaskCardProps {
   task: TaskWithSubtasks
-  parent?: Task
   level?: number
   showRestore?: boolean
   showCompletedDate?: boolean
@@ -222,7 +217,6 @@ interface TaskCardProps {
 
 export const TaskCard = ({
   task,
-  parent,
   level = 0,
   showRestore = false,
   showCompletedDate = false,
@@ -388,7 +382,6 @@ export const TaskCard = ({
                 <TaskCard
                   key={subtask.clientKey}
                   task={subtask}
-                  parent={task}
                   level={level + 1}
                   showRestore={showRestore}
                   showCompletedDate={showCompletedDate}
@@ -412,14 +405,10 @@ export const TaskCard = ({
         status={task.status}
         timeSpent={getTotalAccumulatedTime(task)}
         subtaskTimeMs={getSubtaskTimeMs(task.subtasks)}
-        isSubtask={!!task.parentId}
-        isHidden={task.hidden}
-        showToggleHidden={!isAutoHiddenByParent(task, parent)}
         hasIncompleteSubtasks={getHasIncomplete(task.subtasks)}
         onSetStatus={handleSetStatus}
         onUpdateTime={(timeMs) => updateTask(task.id, { timeSpent: timeMs })}
         onDelete={() => deleteTask(task.id)}
-        onToggleHidden={() => updateTask(task.id, { hidden: !task.hidden })}
       />
     </div>
   )

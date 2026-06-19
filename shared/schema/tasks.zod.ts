@@ -108,7 +108,6 @@ export const tasks = pgTable('tasks', {
   subtasksShowNumbers: boolean('subtasks_show_numbers')
     .default(false)
     .notNull(),
-  hidden: boolean('hidden').default(false).notNull(),
   autoHideCompleted: boolean('auto_hide_completed').default(false).notNull(),
   inheritCompletionState: boolean('inherit_completion_state')
     .default(false)
@@ -133,7 +132,6 @@ const taskSchemaRefine = {
   subtaskSortMode: (s) => s.default(SubtaskSortMode.INHERIT),
   subtaskOrder: (s) => s.default([]),
   subtasksShowNumbers: (s) => s.default(false),
-  hidden: (s) => s.default(false),
   autoHideCompleted: (s) => s.default(false),
   inheritCompletionState: (s) => s.default(false),
   timeSpent: (s) => s.default(0),

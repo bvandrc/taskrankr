@@ -82,6 +82,8 @@ interface TaskFormDialogProps
     | 'onDeleteSubtask'
     | 'onAssignSubtask'
     | 'isDraft'
+    | 'showHidden'
+    | 'onShowHiddenChange'
   > {
   isOpen: boolean
   setIsOpen: (open: boolean) => void
@@ -181,6 +183,9 @@ const TaskFormDialogProviderInner = ({
   const [freshCreateParentId, setFreshCreateParentId] = useState<number | null>(
     null,
   )
+  const [showHiddenByTaskId, setShowHiddenByTaskId] = useState<
+    Map<number, boolean>
+  >(new Map())
   const [subtaskToDelete, setSubtaskToDelete] = useState<DeleteTaskArgs | null>(
     null,
   )
@@ -288,6 +293,7 @@ const TaskFormDialogProviderInner = ({
   const resetAndClose = () => {
     discardDraftSession()
     setShowCancelConfirm(false)
+    setShowHiddenByTaskId(new Map())
     setIsOpen(false)
   }
 
@@ -463,6 +469,8 @@ const TaskFormDialogProviderInner = ({
     }
   }, [isOpen])
 
+  const activeTaskId = activeTask?.id ?? null
+
   const taskFormDialogProps: Omit<TaskFormDialogProps, 'setIsOpen' | 'mode'> = {
     isOpen,
     activeTask,
@@ -475,6 +483,15 @@ const TaskFormDialogProviderInner = ({
     onDeleteSubtask: setSubtaskToDelete,
     onAssignSubtask: handleAssignSubtask,
     isDraft: activeTask != null && draftTaskIds.has(activeTask.id),
+    showHidden:
+      activeTaskId != null
+        ? (showHiddenByTaskId.get(activeTaskId) ?? false)
+        : false,
+    onShowHiddenChange: (show: boolean) => {
+      if (activeTaskId != null) {
+        setShowHiddenByTaskId((prev) => new Map(prev).set(activeTaskId, show))
+      }
+    },
   }
 
   return (
@@ -500,10 +517,7 @@ const TaskFormDialogProviderInner = ({
         onDelete={() => setShowDeleteConfirm(true)}
         onRemoveAsSubtask={() => {
           if (subtaskToDelete) {
-            updateTask(subtaskToDelete.id, {
-              parentId: null,
-              hidden: false,
-            })
+            updateTask(subtaskToDelete.id, { parentId: null })
             const top = currentEntry?.taskId
             if (top != null) {
               const parent = getById(tasksWithDrafts, top)

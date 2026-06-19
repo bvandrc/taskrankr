@@ -55,6 +55,8 @@ interface SubtasksCardProps {
   onDeleteSubtask?: (task: DeleteTaskArgs) => void
   onAssignSubtask?: (task: Task) => void
   disableAddSubtask?: boolean
+  showHidden?: boolean
+  onShowHiddenChange?: (show: boolean) => void
 }
 
 export const SubtasksCard = ({
@@ -64,6 +66,8 @@ export const SubtasksCard = ({
   onDeleteSubtask,
   onAssignSubtask,
   disableAddSubtask = false,
+  showHidden: showHiddenProp,
+  onShowHiddenChange,
 }: SubtasksCardProps) => {
   const { tasksWithDrafts: allTasks } = useDraftSession()
   const { settings } = useSettings()
@@ -79,7 +83,9 @@ export const SubtasksCard = ({
     inheritCompletionState,
   } = useFormFieldsWithDefaults(form, taskSchemaDefaults)
 
-  const [showHidden, setShowHidden] = useState(false)
+  const [showHiddenLocal, setShowHiddenLocal] = useState(false)
+  const showHidden = showHiddenProp ?? showHiddenLocal
+  const setShowHidden = onShowHiddenChange ?? setShowHiddenLocal
 
   const sensors = useSensors(
     useSensor(MouseSensor, {

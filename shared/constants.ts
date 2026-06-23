@@ -27,7 +27,6 @@ export type AppError<StatusCode extends number = number> = {
   message: string
 }
 
-// TODO: type check to ensure name matches key
 export const ERRORS = {
   TASK_NOT_FOUND: {
     status: 404,

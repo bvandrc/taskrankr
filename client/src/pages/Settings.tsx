@@ -208,19 +208,6 @@ const AttributeSettingsCard = ({
             className="border-b border-white/5"
           />
         ))}
-        <tr>
-          <td
-            colSpan={3}
-            className="pt-2 pb-0 border-t-2 border-dashed border-white/10"
-          />
-        </tr>
-        <AttributeCheckboxRow
-          key="timeSpent"
-          name="timeSpent"
-          label="Time Spent"
-          {...fieldConfig.timeSpent}
-          updateFieldFlags={updateFieldFlags}
-        />
       </tbody>
     </table>
   </Card>

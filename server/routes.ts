@@ -150,8 +150,6 @@ const router = s.router(contract, {
             userId,
             parentId: null,
             status: rest.status ?? TaskStatus.OPEN,
-            timeSpent: rest.timeSpent ?? 0,
-            inProgressStartedAt: null,
             createdAt: rest.createdAt ? new Date(rest.createdAt) : new Date(),
             completedAt: rest.completedAt ? new Date(rest.completedAt) : null,
           })

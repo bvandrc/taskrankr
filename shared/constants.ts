@@ -40,8 +40,4 @@ export const ERRORS = {
     status: 400,
     message: 'All subtasks must be completed first',
   },
-  TIME_SPENT_REQUIRED: {
-    status: 400,
-    message: 'Time spent must be recorded to complete this task',
-  },
 } as const satisfies Record<string, AppError>

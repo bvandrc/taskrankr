@@ -37,7 +37,6 @@ import {
   FormMessage,
 } from '../primitives/forms/Form'
 import { Textarea } from '../primitives/forms/Textarea'
-import { TimeInput } from '../primitives/forms/TimeInput'
 import {
   Popover,
   PopoverContent,
@@ -59,7 +58,6 @@ const STUB_TASK: Task = taskSchema.parse({
 const taskFormDefaultsSchema = taskSchema.omit({
   id: true,
   userId: true,
-  inProgressStartedAt: true,
 })
 
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>
@@ -156,12 +154,6 @@ export const TaskForm = ({
     [settings.fieldConfig],
   )
 
-  const {
-    fieldConfig: {
-      timeSpent: { visible: timeSpentVisible, required: timeSpentRequired },
-    },
-  } = settings
-
   const formSchema = useMemo(
     () => insertTaskSchemaRefined(settings),
     [settings],
@@ -198,7 +190,7 @@ export const TaskForm = ({
   // biome-ignore lint/correctness/useExhaustiveDependencies: is necessary
   useEffect(() => {
     void form.trigger()
-  }, [settings.fieldConfig, form, timeSpentRequired])
+  }, [settings.fieldConfig, form])
 
   const isEditingExisting = !!initialData && !isDraft
 
@@ -329,39 +321,6 @@ export const TaskForm = ({
                   </div>
                 )}
 
-              {timeSpentVisible && (
-                <FormField
-                  control={form.control}
-                  name="timeSpent"
-                  render={() => (
-                    <FormItem className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between gap-4">
-                        <FormLabel
-                          className="text-[10px] uppercase tracking-wider text-muted-foreground"
-                          isRequired={timeSpentRequired}
-                        >
-                          Time Spent
-                        </FormLabel>
-                        <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
-                          <TimeInput
-                            durationMs={form.watch('timeSpent') || 0}
-                            onDurationChange={(ms) =>
-                              form.setValue('timeSpent', ms, {
-                                shouldValidate: true,
-                              })
-                            }
-                            disabled={hasIncompleteSubtasks}
-                            className="w-16 h-8 text-xs bg-secondary/20 border-white/5 text-center"
-                            data-testid="time-spent-input"
-                          />
-                        </SubtaskBlockedTooltip>
-                      </div>
-                      <FormMessage className="text-[11px] text-right" />
-                    </FormItem>
-                  )}
-                />
-              )}
-
               <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
                 {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is an input. */}
                 <label
@@ -389,7 +348,6 @@ export const TaskForm = ({
                       form.setValue('status', newStatus, {
                         shouldValidate: true,
                       })
-                      void form.trigger('timeSpent')
                     }}
                     className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     data-testid="mark-completed-checkbox"

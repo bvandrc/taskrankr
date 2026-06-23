@@ -90,13 +90,6 @@ export const changeStatusViaStatusChangeDialog = (
 ) => {
   openStatusChangeDialog(task)
 
-  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_HOURS).should(
-    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
-  )
-  cy.get(Selectors.TaskForm.TIME_SPENT_INPUT_MINUTES).should(
-    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
-  )
-
   if (hasIncompleteSubtasks) {
     cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).should('be.disabled')
   } else {

@@ -37,17 +37,11 @@ const getUserId = (req: { user?: UserSession }): string => {
   return userId
 }
 
-/** Narrows a service `AppError` to the ts-rest response shape. */
-const makeErrorTransformer =
-  <S extends number>() =>
-  ({ status, message }: AppError) => ({
-    status: status as S,
-    body: { message: message as string },
-  })
-
-const toCreateErrorResponse = makeErrorTransformer<400>()
-const toUpdateErrorResponse = makeErrorTransformer<400 | 404>()
-const toDeleteErrorResponse = makeErrorTransformer<404>()
+/** Transforms a service `AppError` to the ts-rest response shape. */
+const toErrorResponse = <Status extends number>({
+  status,
+  message,
+}: AppError<Status>) => ({ status, body: { message } })
 
 const router = s.router(contract, {
   tasks: {
@@ -76,7 +70,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveCreate(body)
-        if (!result.ok) return toCreateErrorResponse(result.error)
+        if (!result.ok) return toErrorResponse(result.error)
 
         const task = await storage.createTask({ ...body, userId })
         for (const m of result.mutations) {
@@ -91,7 +85,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveUpdate(params.id, body)
-        if (!result.ok) return toUpdateErrorResponse(result.error)
+        if (!result.ok) return toErrorResponse(result.error)
 
         let primary: Task | undefined
         for (const m of result.mutations) {
@@ -109,7 +103,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveDelete(params.id)
-        if (!result.ok) return toDeleteErrorResponse(result.error)
+        if (!result.ok) return toErrorResponse(result.error)
 
         for (const id of result.deletedIds) {
           await storage.deleteTask(id, userId)

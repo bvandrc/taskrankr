@@ -47,7 +47,6 @@ import { useSettings } from '@/providers/SettingsProvider'
 import { useSync } from '@/providers/SyncProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import { AuthPaths } from '~/shared/constants'
-import { contract } from '~/shared/contract'
 import { type FieldConfig, type FieldFlags, TaskStatus } from '~/shared/schema'
 
 const Card = ({
@@ -208,19 +207,6 @@ const AttributeSettingsCard = ({
             className="border-b border-white/5"
           />
         ))}
-        <tr>
-          <td
-            colSpan={3}
-            className="pt-2 pb-0 border-t-2 border-dashed border-white/10"
-          />
-        </tr>
-        <AttributeCheckboxRow
-          key="timeSpent"
-          name="timeSpent"
-          label="Time Spent"
-          {...fieldConfig.timeSpent}
-          updateFieldFlags={updateFieldFlags}
-        />
       </tbody>
     </table>
   </Card>
@@ -229,19 +215,35 @@ const AttributeSettingsCard = ({
 const ExportButton = () => {
   const { tasks } = useTasks()
   const hasNoTasks = tasks.length === 0
+  const [isExporting, setIsExporting] = useState(false)
 
   return (
     <Button
       variant="outline"
       className="gap-2"
-      onClick={() => {
-        window.location.href = contract.tasks.export.path
+      onClick={async () => {
+        setIsExporting(true)
+        try {
+          const result = await tsr.tasks.export()
+          if (result.status !== 200) return
+          const blob = new Blob([JSON.stringify(result.body, null, 2)], {
+            type: 'application/json',
+          })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `taskrankr-export-${new Date().toISOString().slice(0, 10)}.json`
+          a.click()
+          URL.revokeObjectURL(url)
+        } finally {
+          setIsExporting(false)
+        }
       }}
-      disabled={hasNoTasks}
+      disabled={hasNoTasks || isExporting}
       data-testid="button-export"
     >
       <Download className="size-4" />
-      Export Tasks
+      {isExporting ? 'Exporting…' : 'Export Tasks'}
     </Button>
   )
 }

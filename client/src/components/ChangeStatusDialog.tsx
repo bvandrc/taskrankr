@@ -1,10 +1,9 @@
 /**
- * @fileoverview Dialog component for changing task status (i.e. open,
- * in_progress, pinned, completed) as well as updating time spent on tasks,
- * deleting tasks. Adapts available actions based on current task status.
+ * @fileoverview Dialog for changing task status and deleting tasks.
+ * Adapts available actions based on current task status.
  */
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Clock, type LucideIcon, Pin, PinOff, StopCircle } from 'lucide-react'
 
 import { getTaskStatuses } from '@/lib/task-tree-utils'
@@ -13,7 +12,6 @@ import { useSettings } from '@/providers/SettingsProvider'
 import { TaskStatus } from '~/shared/schema'
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog'
 import { Button } from './primitives/Button'
-import { TimeInput } from './primitives/forms/TimeInput'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,11 +90,8 @@ interface ChangeStatusDialogProps {
   onOpenChange: (open: boolean) => void
   taskName: string
   status: TaskStatus
-  timeSpent: number
-  subtaskTimeMs?: number
   hasIncompleteSubtasks?: boolean
   onSetStatus: (status: TaskStatus) => void
-  onUpdateTime: (timeMs: number) => void
   onDelete: () => void
 }
 
@@ -105,47 +100,17 @@ export const ChangeStatusDialog = ({
   onOpenChange,
   taskName,
   status,
-  timeSpent: initialTimeSpent,
-  subtaskTimeMs = 0,
   hasIncompleteSubtasks,
   onSetStatus,
-  onUpdateTime,
   onDelete,
 }: ChangeStatusDialogProps) => {
   const { isCompleted, isInProgress, isPinned } = getTaskStatuses({ status })
 
   const {
-    settings: {
-      enableInProgressStatus: showInProgressOption,
-      fieldConfig: {
-        timeSpent: { visible: showTimeSpentInput, required: timeSpentRequired },
-      },
-    },
+    settings: { enableInProgressStatus: showInProgressOption },
   } = useSettings()
 
-  const [timeSpent, setTimeSpent] = useState(initialTimeSpent)
-
-  useEffect(() => {
-    if (open) {
-      setTimeSpent(initialTimeSpent)
-    }
-  }, [open, initialTimeSpent])
-
-  const timeInputDisabled = !!hasIncompleteSubtasks
-
-  const handleTimeBlur = () => {
-    const clamped = Math.max(timeSpent, subtaskTimeMs)
-    if (clamped !== timeSpent) setTimeSpent(clamped)
-    const ownTime = clamped - subtaskTimeMs
-    const initialOwnTime = initialTimeSpent - subtaskTimeMs
-    if (ownTime !== initialOwnTime) {
-      onUpdateTime(ownTime)
-    }
-  }
-
-  const needsTimeSpent = !isCompleted && timeSpentRequired && timeSpent <= 0
-  const isCompleteActionDisabled =
-    needsTimeSpent || (!isCompleted && hasIncompleteSubtasks)
+  const isCompleteActionDisabled = !isCompleted && !!hasIncompleteSubtasks
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -232,31 +197,7 @@ export const ChangeStatusDialog = ({
               </AlertDialogAction>
             </SubtaskBlockedTooltip>
 
-            {/** Time Spent input */}
-            {showTimeSpentInput && (
-              <SubtaskBlockedTooltip blocked={timeInputDisabled}>
-                <div className="flex items-center justify-center gap-3 pt-2 border-t border-white/10">
-                  <span className="text-xs text-muted-foreground">
-                    Time Spent
-                  </span>
-                  <TimeInput
-                    durationMs={timeSpent}
-                    onDurationChange={setTimeSpent}
-                    onBlur={handleTimeBlur}
-                    disabled={timeInputDisabled}
-                    className="w-16 h-8 text-center text-sm bg-secondary/30"
-                    data-testid="time-spent-input"
-                  />
-                </div>
-              </SubtaskBlockedTooltip>
-            )}
-
-            {needsTimeSpent && (
-              <p className="text-xs text-amber-400/70 text-center -mt-1">
-                Time spent is required to complete this task
-              </p>
-            )}
-
+            {/** Delete button */}
             <div className="flex justify-center gap-2">
               <DeleteButton
                 taskName={taskName}

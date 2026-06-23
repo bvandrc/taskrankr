@@ -37,9 +37,6 @@ export const Selectors = {
     FORM: testId('task-form'),
     NAME_INPUT: testId('task-name-input'),
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
-    TIME_SPENT_INPUT: testId('time-spent-input'),
-    TIME_SPENT_INPUT_HOURS: testId('time-spent-input-hours'),
-    TIME_SPENT_INPUT_MINUTES: testId('time-spent-input-minutes'),
     MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),

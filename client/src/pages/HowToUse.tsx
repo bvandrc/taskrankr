@@ -112,9 +112,7 @@ const HowToUse = () => {
             title="In Progress (if setting enabled)"
             description={
               <>
-                <Em>In Progress</Em> pins to the top of your list, while also
-                accumulating time spent in this status (which can also be
-                manually set/adjusted).
+                <Em>In Progress</Em> pins to the top of your list.
               </>
             }
             data-testid="card-in-progress"
@@ -204,7 +202,7 @@ const HowToUse = () => {
                 <>
                   Configure which rank fields are visible or required, toggle
                   features like <Em>Auto-Pin New Tasks</Em>,{' '}
-                  <Em>In Progress</Em> status, time tracking, and more in the{' '}
+                  <Em>In Progress</Em> status, and more in the{' '}
                   <InlineLink href={Routes.SETTINGS}>Settings</InlineLink>.
                 </>
               }

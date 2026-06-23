@@ -1,7 +1,7 @@
 /**
  * @fileoverview Tasks table + status/rank enums, with a Zod-refined insert
  * schema (`insertTaskSchemaRefined`) that enforces user-configured required
- * fields and the "time spent required to complete" rule.
+ * fields.
  */
 
 import { relations, sql } from 'drizzle-orm'
@@ -93,8 +93,6 @@ export const tasks = pgTable('tasks', {
   ease: easePgEnum('ease'),
   enjoyment: enjoymentPgEnum('enjoyment'),
   time: timePgEnum('time'),
-  timeSpent: integer('time_spent').default(0).notNull(), // Cumulative time in milliseconds
-  inProgressStartedAt: timestamp('in_progress_started_at'), // When current in-progress session started
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   parentId: integer('parent_id'),
@@ -134,12 +132,10 @@ const taskSchemaRefine = {
   subtasksShowNumbers: (s) => s.default(false),
   autoHideCompleted: (s) => s.default(false),
   inheritCompletionState: (s) => s.default(false),
-  timeSpent: (s) => s.default(0),
   // not sure the created schema from drizzle-zod performs the coercion,
   // so add here just in case / for safety.
   createdAt: z.coerce.date().default(() => new Date()),
   completedAt: z.coerce.date().nullable().default(null),
-  inProgressStartedAt: z.coerce.date().nullable().default(null),
   // apply default of null so can pass `undefined` from client and have it converted to `null` for the database.
   parentId: z.number().int().nullable().default(null),
   description: z.string().nullable().default(null),
@@ -175,8 +171,6 @@ export const insertTaskSchemaRefined = (
     (name) => settings.fieldConfig[name].required,
   )
 
-  const timeSpentRequired = settings.fieldConfig.timeSpent.required
-
   return insertTaskSchema.omit({ userId: true }).superRefine((data, ctx) => {
     for (const field of requiredRankFields) {
       if (data[field] == null) {
@@ -186,17 +180,6 @@ export const insertTaskSchemaRefined = (
           message: 'This field is required',
         })
       }
-    }
-    if (
-      data.status === TaskStatus.COMPLETED &&
-      timeSpentRequired &&
-      (data.timeSpent ?? 0) <= 0
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['timeSpent'],
-        message: 'Time spent is required when completing a task',
-      })
     }
   })
 }

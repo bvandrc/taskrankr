@@ -18,7 +18,6 @@ import { toastError } from '@/hooks/useToasts'
 import { debugLog } from '@/lib/debug-logger'
 import { getById } from '@/lib/task-tree-utils'
 import { tsr } from '@/lib/ts-rest'
-import { TaskStatus } from '~/shared/schema'
 import { useSettings } from './SettingsProvider'
 import { SyncOperationType, useTaskSyncQueue } from './TaskSyncQueueProvider'
 import { useTaskMutations, useTasks } from './TasksProvider'
@@ -190,19 +189,9 @@ export const SyncProvider = ({
               break
             }
             const localTask = getById(tasksRef.current, realId)
-            // RECONCILE: op to COMPLETED may not have timeSpent, but backend
-            // may require it and be missing it
-            const body = { ...op.data }
-            if (
-              body.status === TaskStatus.COMPLETED &&
-              body.timeSpent === undefined
-            ) {
-              const localTimeSpent = localTask?.timeSpent
-              if (localTimeSpent) body.timeSpent = localTimeSpent
-            }
             const result = await tsr.tasks.update({
               params: { id: realId },
-              body,
+              body: op.data,
             })
             if (result.status === 200) {
               success = true
@@ -239,27 +228,6 @@ export const SyncProvider = ({
               err = {
                 ...result.body,
                 taskName: getById(tasksRef.current, realId)?.name,
-              }
-            }
-            break
-          }
-          case SyncOperationType.REORDER_SUBTASKS: {
-            const realParentId = resolveId(op.parentId)
-            if (realParentId < 0) {
-              success = true
-              break
-            }
-            const realOrderedIds = op.orderedIds.map((id) => resolveId(id))
-            const result = await tsr.tasks.reorderSubtasks({
-              params: { id: realParentId },
-              body: { orderedIds: realOrderedIds },
-            })
-            if (result.status === 200) {
-              success = true
-            } else {
-              err = {
-                ...result.body,
-                taskName: getById(tasksRef.current, realParentId)?.name,
               }
             }
             break

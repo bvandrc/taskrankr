@@ -18,16 +18,12 @@ export const fieldFlagsSchema = z.object({
 
 export type FieldFlags = z.infer<typeof fieldFlagsSchema>
 
-const rankFieldConfigSchema = z.object({
+export const fieldConfigSchema = z.object({
   priority: fieldFlagsSchema,
   ease: fieldFlagsSchema,
   enjoyment: fieldFlagsSchema,
   time: fieldFlagsSchema,
 } satisfies Record<RankField, typeof fieldFlagsSchema>)
-
-export const fieldConfigSchema = rankFieldConfigSchema.extend({
-  timeSpent: fieldFlagsSchema,
-})
 
 export type FieldConfig = z.infer<typeof fieldConfigSchema>
 
@@ -36,7 +32,6 @@ export const DEFAULT_FIELD_CONFIG = {
   ease: { visible: true, required: true },
   enjoyment: { visible: true, required: true },
   time: { visible: true, required: true },
-  timeSpent: { visible: true, required: false },
 } as const satisfies FieldConfig
 
 /** Ensures `required` is always false whenever `visible` is false. */

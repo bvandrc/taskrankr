@@ -21,9 +21,8 @@ import {
   type RankField,
   SubtaskSortMode,
   type Task,
-  TaskStatus,
+  type TaskStatus,
 } from '~/shared/schema'
-import { formatDuration } from '~/shared/utils/datetime'
 import { ChangeStatusDialog } from './ChangeStatusDialog'
 import { Badge } from './primitives/Badge'
 import { Icon } from './primitives/LucideIcon'
@@ -161,52 +160,6 @@ const CollapseCaret = ({
   </button>
 )
 
-const getTotalAccumulatedTime = (
-  task: Pick<
-    TaskWithSubtasks,
-    'timeSpent' | 'inProgressStartedAt' | 'status' | 'subtasks'
-  >,
-): number => {
-  let total = task.timeSpent
-  if (task.status === TaskStatus.IN_PROGRESS && task.inProgressStartedAt) {
-    const elapsed = Date.now() - new Date(task.inProgressStartedAt).getTime()
-    total += elapsed
-  }
-
-  for (const subtask of task.subtasks) {
-    total += getTotalAccumulatedTime(subtask)
-  }
-  return total
-}
-
-const getSubtaskTimeMs = (subtasks: TaskWithSubtasks['subtasks']): number =>
-  subtasks.reduce((sum, s) => sum + getTotalAccumulatedTime(s), 0)
-
-const CompletedTimeDisplay = ({
-  completedAt,
-}: Pick<TaskWithSubtasks, 'completedAt'>) =>
-  completedAt && (
-    <span className="text-[10px] text-muted-foreground">
-      Completed:{' '}
-      {new Date(completedAt).toLocaleDateString('en-US', STANDARD_DATE_FORMAT)}
-    </span>
-  )
-
-const TimeSpentDisplay = (
-  task: Parameters<typeof getTotalAccumulatedTime>[0],
-) => {
-  const { settings } = useSettings()
-  const totalTime = getTotalAccumulatedTime(task)
-
-  if (!settings.fieldConfig.timeSpent.visible || totalTime <= 0) return null
-
-  return (
-    <span className="text-[10px] text-muted-foreground">
-      Time spent: {formatDuration(totalTime)}
-    </span>
-  )
-}
-
 interface TaskCardProps {
   task: TaskWithSubtasks
   level?: number
@@ -228,7 +181,7 @@ export const TaskCard = ({
   const holdStartY = useRef<number | null>(null)
   const SCROLL_THRESHOLD = 10
 
-  const { setTaskStatus, deleteTask, updateTask } = useTaskMutations()
+  const { setTaskStatus, deleteTask } = useTaskMutations()
   const { settings } = useSettings()
   const { openEditDialog } = useTaskDialog()
   const { isExpanded: checkExpanded, toggleExpanded } = useExpandedTasks()
@@ -341,11 +294,14 @@ export const TaskCard = ({
               fieldConfig={settings.fieldConfig}
               isCompleted={isNestedCompleted}
             />
-            {showCompletedDate && (
-              <div className="flex flex-col items-end mt-0.5">
-                <CompletedTimeDisplay {...task} />
-                <TimeSpentDisplay {...task} />
-              </div>
+            {showCompletedDate && task.completedAt && (
+              <span className="text-[10px] text-muted-foreground mt-0.5">
+                Completed:{' '}
+                {new Date(task.completedAt).toLocaleDateString(
+                  'en-US',
+                  STANDARD_DATE_FORMAT,
+                )}
+              </span>
             )}
           </div>
         </div>
@@ -403,11 +359,8 @@ export const TaskCard = ({
         onOpenChange={setShowConfirm}
         taskName={task.name}
         status={task.status}
-        timeSpent={getTotalAccumulatedTime(task)}
-        subtaskTimeMs={getSubtaskTimeMs(task.subtasks)}
         hasIncompleteSubtasks={getHasIncomplete(task.subtasks)}
         onSetStatus={handleSetStatus}
-        onUpdateTime={(timeMs) => updateTask(task.id, { timeSpent: timeMs })}
         onDelete={() => deleteTask(task.id)}
       />
     </div>

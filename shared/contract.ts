@@ -108,7 +108,6 @@ const tasksContract = c.router({
           id: z.number().nullish(),
           status: insertTaskSchema.shape.status.nullish(),
           parentId: z.number().nullish(),
-          timeSpent: z.number().nullish(),
           createdAt: z.string().nullish(),
           completedAt: z.string().nullish(),
         }),

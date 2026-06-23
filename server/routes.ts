@@ -37,21 +37,17 @@ const getUserId = (req: { user?: UserSession }): string => {
   return userId
 }
 
-/** Narrows a service `AppError` to the ts-rest response shape declared by a route. Throws on unexpected codes. */
-const makeErrorHandler =
-  <K extends keyof typeof ERRORS>(label: string, allowed: K[]) =>
-  (e: AppError): (typeof ERRORS)[K] => {
-    if (allowed.includes(e.name as K)) return ERRORS[e.name as K]
-    throw new Error(`Unexpected ${label} error: ${e.name}`)
-  }
+/** Narrows a service `AppError` to the ts-rest response shape. */
+const makeErrorTransformer =
+  <S extends number>() =>
+  ({ status, message }: AppError) => ({
+    status: status as S,
+    body: { message: message as string },
+  })
 
-const createError = makeErrorHandler('create', ['TIME_SPENT_REQUIRED'])
-const updateError = makeErrorHandler('update', [
-  'TASK_NOT_FOUND',
-  'INCOMPLETE_SUBTASKS',
-  'TIME_SPENT_REQUIRED',
-])
-const deleteError = makeErrorHandler('delete', ['TASK_NOT_FOUND'])
+const toCreateErrorResponse = makeErrorTransformer<400>()
+const toUpdateErrorResponse = makeErrorTransformer<400 | 404>()
+const toDeleteErrorResponse = makeErrorTransformer<404>()
 
 const router = s.router(contract, {
   tasks: {
@@ -80,7 +76,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveCreate(body)
-        if (!result.ok) return createError(result.error)
+        if (!result.ok) return toCreateErrorResponse(result.error)
 
         const task = await storage.createTask({ ...body, userId })
         for (const m of result.mutations) {
@@ -95,7 +91,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveUpdate(params.id, body)
-        if (!result.ok) return updateError(result.error)
+        if (!result.ok) return toUpdateErrorResponse(result.error)
 
         let primary: Task | undefined
         for (const m of result.mutations) {
@@ -113,7 +109,7 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const service = makeTaskService(userId)
         const result = await service.resolveDelete(params.id)
-        if (!result.ok) return deleteError(result.error)
+        if (!result.ok) return toDeleteErrorResponse(result.error)
 
         for (const id of result.deletedIds) {
           await storage.deleteTask(id, userId)
@@ -160,8 +156,6 @@ const router = s.router(contract, {
             userId,
             parentId: null,
             status: rest.status ?? TaskStatus.OPEN,
-            timeSpent: rest.timeSpent ?? 0,
-            inProgressStartedAt: null,
             createdAt: rest.createdAt ? new Date(rest.createdAt) : new Date(),
             completedAt: rest.completedAt ? new Date(rest.completedAt) : null,
           })

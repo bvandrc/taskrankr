@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.4.0",
+    "date": "2026-06-22",
+    "title": "Remove time tracking",
+    "changes": ["Remove time tracking feature"]
+  },
+  {
     "version": "0.3.0",
     "date": "2026-06-18",
     "title": "Remove manual hiding",

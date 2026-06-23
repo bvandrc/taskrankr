@@ -34,53 +34,26 @@ const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
  * @param children - Direct subtasks of the parent, overlaid with any in-flight buffer patches.
  * @param options.treatAsCompleted - Count this child id as completed regardless of its current
  *   status — useful when computing from a snapshot taken before the child's write commits.
- * @param options.parent - Current parent task state. Children's accumulated timeSpent is rolled
- *   up into the patch when it exceeds the parent's own value, satisfying timeSpent validation.
  */
 const autoCompleteParentPatch = (
   children: Task[],
-  {
-    treatAsCompleted,
-    parent,
-  }: { treatAsCompleted?: number; parent: Pick<Task, 'timeSpent'> },
+  { treatAsCompleted }: { treatAsCompleted?: number },
 ): Partial<Task> | null => {
   const allComplete = children.every(
     (c) => c.id === treatAsCompleted || c.status === TaskStatus.COMPLETED,
   )
   if (!allComplete) return null
 
-  const patch: Partial<Task> = {
+  return {
     status: TaskStatus.COMPLETED,
     completedAt: getChildrenLatestCompletedAt(children) ?? new Date(),
-    inProgressStartedAt: null,
   }
-
-  const childrenTimeSpent = children.reduce((sum, c) => sum + c.timeSpent, 0)
-  if (childrenTimeSpent > parent.timeSpent) {
-    patch.timeSpent = childrenTimeSpent
-  }
-
-  return patch
 }
-
-const isTimeSpentSatisfied = (
-  timeSpentMs: number,
-  settings: Pick<UserSettings, 'fieldConfig'>,
-): boolean => !settings.fieldConfig.timeSpent.required || timeSpentMs > 0
-
-/** Stored timeSpent plus any active IN_PROGRESS session up to `now` (ms epoch). */
-const accumulatedTimeSpent = (
-  task: Pick<Task, 'timeSpent' | 'inProgressStartedAt'>,
-  now: number,
-): number =>
-  task.timeSpent +
-  (task.inProgressStartedAt ? now - task.inProgressStartedAt.getTime() : 0)
 
 /** Reverts a task to OPEN and clears all status-related timestamps. */
 const REVERT_COMPLETION_PATCH = {
   status: TaskStatus.OPEN,
   completedAt: null,
-  inProgressStartedAt: null,
 } as const satisfies Partial<Task>
 
 export type MaybePromise<T> = T | Promise<T>
@@ -152,7 +125,7 @@ export class TaskMutationService {
         const children = updated.filter((t) => t.parentId === parent.id)
         if (children.length === 0) continue
 
-        const completePatch = autoCompleteParentPatch(children, { parent })
+        const completePatch = autoCompleteParentPatch(children, {})
         if (completePatch && parent.status !== TaskStatus.COMPLETED) {
           updated = updated.map((t) =>
             t.id === parent.id ? { ...t, ...completePatch } : t,
@@ -173,9 +146,9 @@ export class TaskMutationService {
   }
 
   /**
-   * Validates update rules (incomplete subtasks, timeSpent) and computes all
-   * side-effects: status timestamps, IN_PROGRESS demotion, completion cascades
-   * to children and ancestors, and parent revert on re-parent.
+   * Validates update rules (incomplete subtasks) and computes all side-effects:
+   * status timestamps, IN_PROGRESS demotion, completion cascades to children
+   * and ancestors, and parent revert on re-parent.
    */
   async resolveUpdate(
     id: number,
@@ -196,7 +169,6 @@ export class TaskMutationService {
     const current = await this.io.getTask(id)
     if (!current) return { ok: false, error: ERRORS.TASK_NOT_FOUND }
 
-    const now = Date.now()
     const newStatus = updates.status
     const isStatusChange =
       newStatus !== undefined && newStatus !== current.status
@@ -206,48 +178,22 @@ export class TaskMutationService {
       if (getHasIncomplete(subtasks.map((s) => buffer.overlay(s)))) {
         return { ok: false, error: ERRORS.INCOMPLETE_SUBTASKS }
       }
-      const settings = await this.io.getSettings()
-      const effective = { ...current, ...updates }
-      if (
-        !isTimeSpentSatisfied(accumulatedTimeSpent(effective, now), settings)
-      ) {
-        return { ok: false, error: ERRORS.TIME_SPENT_REQUIRED }
-      }
     }
 
     const primary: Partial<Task> = { ...updates }
 
     if (newStatus !== undefined && isStatusChange) {
-      const isCompleting = newStatus === TaskStatus.COMPLETED
-      const isStarting = newStatus === TaskStatus.IN_PROGRESS
-      const statusPatch: Partial<Task> = {
+      Object.assign(primary, {
         status: newStatus,
-        inProgressStartedAt: isStarting ? new Date() : null,
-        completedAt: isCompleting ? new Date() : null,
-      }
-      if (
-        current.status === TaskStatus.IN_PROGRESS &&
-        newStatus !== TaskStatus.IN_PROGRESS &&
-        current.inProgressStartedAt
-      ) {
-        Object.assign(primary, {
-          ...statusPatch,
-          timeSpent: accumulatedTimeSpent(current, now),
-        })
-      } else {
-        Object.assign(primary, statusPatch)
-      }
+        completedAt: newStatus === TaskStatus.COMPLETED ? new Date() : null,
+      })
     }
     buffer.add(id, primary)
 
     if (newStatus === TaskStatus.IN_PROGRESS) {
       const otherInProgress = await this.io.getCurrentInProgressTask(id)
       if (otherInProgress) {
-        buffer.add(otherInProgress.id, {
-          status: TaskStatus.PINNED,
-          timeSpent: accumulatedTimeSpent(otherInProgress, now),
-          inProgressStartedAt: null,
-        })
+        buffer.add(otherInProgress.id, { status: TaskStatus.PINNED })
       }
     }
 
@@ -320,30 +266,18 @@ export class TaskMutationService {
   }
 
   /**
-   * Validates creation rules (timeSpent) and computes side-effects: IN_PROGRESS
-   * demotion, parent revert, or parent auto-complete walk. Does not include the
-   * primary insert — only patches to existing tasks.
+   * Computes side-effects for task creation: IN_PROGRESS demotion, parent
+   * revert, or parent auto-complete walk. Does not include the primary insert —
+   * only patches to existing tasks.
    */
   async resolveCreate(data: CreatePayload): Promise<ServicePlan> {
-    if (data.status === TaskStatus.COMPLETED) {
-      const settings = await this.io.getSettings()
-      if (!isTimeSpentSatisfied(data.timeSpent ?? 0, settings)) {
-        return { ok: false, error: ERRORS.TIME_SPENT_REQUIRED }
-      }
-    }
-
     const buffer = new MutationBuffer()
 
     if (data.status === TaskStatus.IN_PROGRESS) {
       // Pass 0 as excludeId — no DB task has id 0, and the new task has no id yet.
-      const now = Date.now()
       const otherInProgress = await this.io.getCurrentInProgressTask(0)
       if (otherInProgress) {
-        buffer.add(otherInProgress.id, {
-          status: TaskStatus.PINNED,
-          timeSpent: accumulatedTimeSpent(otherInProgress, now),
-          inProgressStartedAt: null,
-        })
+        buffer.add(otherInProgress.id, { status: TaskStatus.PINNED })
       }
     }
 
@@ -368,7 +302,7 @@ export class TaskMutationService {
 
   /**
    * Computes delete side-effects: the full descendant id set (leaves-first) and
-   * the patch on the parent (time accumulation + subtaskOrder removal).
+   * the patch on the parent (subtaskOrder removal).
    */
   async resolveDelete(
     id: number,
@@ -377,24 +311,16 @@ export class TaskMutationService {
     if (!target) return { ok: false, error: ERRORS.TASK_NOT_FOUND }
 
     const deletedIds = await this.collectDescendants(id)
-    let totalTime = 0
-    for (const did of deletedIds) {
-      const t = did === id ? target : await this.io.getTask(did)
-      if (t) totalTime += t.timeSpent
-    }
-
     const buffer = new MutationBuffer()
 
     if (target.parentId != null) {
       const parent = await this.io.getTask(target.parentId)
       if (parent) {
-        const patch: Partial<Task> = {
+        buffer.add(target.parentId, {
           subtaskOrder: parent.subtaskOrder.filter(
             (sid) => !deletedIds.includes(sid),
           ),
-        }
-        if (totalTime > 0) patch.timeSpent = parent.timeSpent + totalTime
-        buffer.add(target.parentId, patch)
+        })
       }
     }
 
@@ -420,7 +346,6 @@ export class TaskMutationService {
       )
       const completePatch = autoCompleteParentPatch(siblings, {
         treatAsCompleted: lastCompletedChildId,
-        parent,
       })
       if (!completePatch) break
 

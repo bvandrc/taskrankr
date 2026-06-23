@@ -119,20 +119,6 @@ const tasksContract = c.router({
     },
     summary: 'Import tasks from JSON',
   },
-  reorderSubtasks: {
-    method: 'PATCH',
-    path: `${ApiPaths.TASKS}/:id/reorder`,
-    pathParams: z.object({ id: zId }),
-    body: z.object({
-      orderedIds: z.array(z.number()),
-    }),
-    responses: {
-      200: z.object({ message: z.string() }),
-      400: errorSchemas.validation,
-      404: errorSchemas.notFound,
-    },
-    summary: 'Reorder subtasks of a task',
-  },
 })
 
 const settingsContract = c.router({

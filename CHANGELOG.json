@@ -3,7 +3,7 @@
     "version": "0.4.1",
     "date": "2026-06-23",
     "title": "Fix: Export",
-    "changes": ["Remove time tracking feature"]
+    "changes": ["fix: Task list export"]
   },
   {
     "version": "0.4.0",

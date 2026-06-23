@@ -88,8 +88,11 @@ const router = s.router(contract, {
           const oldId = taskData.id
           const { id, ...rest } = taskData
 
-          const createdAt = rest.createdAt ? new Date(rest.createdAt) : new Date()
-          if (existingFingerprints.has(getFingerprint(rest.name, createdAt))) continue
+          const createdAt = rest.createdAt
+            ? new Date(rest.createdAt)
+            : new Date()
+          if (existingFingerprints.has(getFingerprint(rest.name, createdAt)))
+            continue
 
           const newTask = await storage.createTask({
             name: rest.name,

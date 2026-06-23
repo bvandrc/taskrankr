@@ -96,7 +96,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5",
-    "@replit/vite-plugin-cartographer": "^0.5",
+    "@replit/vite-plugin-cartographer": "^0.6",
     "@replit/vite-plugin-dev-banner": "^0.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0",
     "@types/express": "4",
@@ -109,7 +109,7 @@
     "cross-env": "^10.1",
     "cypress": "^15",
     "cypress-terminal-report": "^7",
-    "cypress-vite": "^1.10.0",
+    "cypress-vite": "^1",
     "drizzle-kit": "^0.31",
     "esbuild": "^0.28",
     "tsx": "^4",

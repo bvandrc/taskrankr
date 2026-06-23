@@ -29,6 +29,13 @@
       "when": 1750291200000,
       "tag": "0003_drop_hidden",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1782174248584,
+      "tag": "0004_convert_columns_to_enums",
+      "breakpoints": true
     }
   ]
 }

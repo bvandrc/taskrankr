@@ -90,8 +90,8 @@ export interface MutationPatch {
   patch: Partial<Task>
 }
 
-export type ServicePlan<T = void> =
-  | { ok: false; error: AppError }
+export type ServicePlan<StatusCodes extends number, T = void> =
+  | { ok: false; error: AppError<StatusCodes> }
   | (T extends void
       ? { ok: true; mutations: MutationPatch[] }
       : { ok: true; mutations: MutationPatch[] } & T)
@@ -180,7 +180,7 @@ export class TaskMutationService {
   async resolveUpdate(
     id: number,
     updates: Partial<Task>,
-  ): Promise<ServicePlan> {
+  ): Promise<ServicePlan<400 | 404>> {
     const buffer = new MutationBuffer()
     const result = await this.resolveUpdateInto(id, updates, buffer)
     if (!result.ok) return result
@@ -192,7 +192,7 @@ export class TaskMutationService {
     id: number,
     updates: Partial<Task>,
     buffer: MutationBuffer,
-  ): Promise<{ ok: true } | { ok: false; error: AppError }> {
+  ): Promise<{ ok: true } | { ok: false; error: AppError<400 | 404> }> {
     const current = await this.io.getTask(id)
     if (!current) return { ok: false, error: ERRORS.TASK_NOT_FOUND }
 
@@ -324,7 +324,7 @@ export class TaskMutationService {
    * demotion, parent revert, or parent auto-complete walk. Does not include the
    * primary insert — only patches to existing tasks.
    */
-  async resolveCreate(data: CreatePayload): Promise<ServicePlan> {
+  async resolveCreate(data: CreatePayload): Promise<ServicePlan<400>> {
     if (data.status === TaskStatus.COMPLETED) {
       const settings = await this.io.getSettings()
       if (!isTimeSpentSatisfied(data.timeSpent ?? 0, settings)) {
@@ -372,7 +372,7 @@ export class TaskMutationService {
    */
   async resolveDelete(
     id: number,
-  ): Promise<ServicePlan<{ deletedIds: number[] }>> {
+  ): Promise<ServicePlan<404, { deletedIds: number[] }>> {
     const target = await this.io.getTask(id)
     if (!target) return { ok: false, error: ERRORS.TASK_NOT_FOUND }
 

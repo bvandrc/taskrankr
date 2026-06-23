@@ -2,8 +2,8 @@
   {
     "version": "0.4.1",
     "date": "2026-06-23",
-    "title": "Fix: Export",
-    "changes": ["fix: Task list export"]
+    "title": "Fix: Export & Import",
+    "changes": ["fix: Task list export", "fix: Dedeupe on import"]
   },
   {
     "version": "0.4.0",

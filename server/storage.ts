@@ -36,11 +36,6 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>
   updateTask(id: number, userId: string, updates: UpdateTaskArg): Promise<Task>
   deleteTask(id: number, userId: string): Promise<void>
-  reorderSubtasks(
-    parentId: number,
-    userId: string,
-    orderedIds: number[],
-  ): Promise<void>
   getSettings(userId: string): Promise<UserSettings>
   updateSettings(
     userId: string,
@@ -150,17 +145,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTask(id: number, userId: string): Promise<void> {
     await db.delete(tasks).where(taskByIdAndUser(id, userId))
-  }
-
-  async reorderSubtasks(
-    parentId: number,
-    userId: string,
-    orderedIds: number[],
-  ): Promise<void> {
-    await db
-      .update(tasks)
-      .set({ subtaskOrder: orderedIds })
-      .where(taskByIdAndUser(parentId, userId))
   }
 
   async getSettings(userId: string): Promise<UserSettings> {

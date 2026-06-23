@@ -43,6 +43,7 @@ const toErrorResponse = <Status extends number>({
   message,
 }: AppError<Status>) => ({ status, body: { message } })
 
+// NOTE: order *matters* here. Must provide static endpoints before dynamic ones
 const router = s.router(contract, {
   tasks: {
     list: {
@@ -51,6 +52,83 @@ const router = s.router(contract, {
         const userId = getUserId(req)
         const tasks = await storage.getTasks(userId)
         return { status: 200, body: tasks }
+      },
+    },
+    export: {
+      middleware: [isAuthenticated],
+      handler: async ({ req }) => {
+        const userId = getUserId(req)
+        const tasks = await storage.getTasks(userId)
+        return {
+          status: 200,
+          body: {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            tasks: tasks.map((t) => omit(t, ['userId'])),
+          },
+        }
+      },
+    },
+    import: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, req }) => {
+        const userId = getUserId(req)
+        const { tasks } = body
+        const idMap = new Map<number, number>()
+
+        const getFingerprint = (name: string, createdAt: Date) =>
+          `${name}::${createdAt.toISOString()}`
+
+        const existingTasks = await storage.getTasks(userId)
+        const existingFingerprints = new Set(
+          existingTasks.map((t) => getFingerprint(t.name, t.createdAt)),
+        )
+
+        for (const taskData of tasks) {
+          const oldId = taskData.id
+          const { id, ...rest } = taskData
+
+          const createdAt = rest.createdAt
+            ? new Date(rest.createdAt)
+            : new Date()
+          if (existingFingerprints.has(getFingerprint(rest.name, createdAt)))
+            continue
+
+          const newTask = await storage.createTask({
+            name: rest.name,
+            description: rest.description ?? null,
+            priority: rest.priority ?? null,
+            ease: rest.ease ?? null,
+            enjoyment: rest.enjoyment ?? null,
+            time: rest.time ?? null,
+            userId,
+            parentId: null,
+            status: rest.status ?? TaskStatus.OPEN,
+            createdAt,
+            completedAt: rest.completedAt ? new Date(rest.completedAt) : null,
+          })
+
+          if (oldId && newTask) {
+            idMap.set(oldId, newTask.id)
+          }
+        }
+
+        for (const taskData of tasks) {
+          if (isNil(taskData.parentId) || isNil(taskData.id)) continue
+          const newId = idMap.get(taskData.id)
+          const newParentId = idMap.get(taskData.parentId)
+          if (newId !== undefined && newParentId !== undefined) {
+            await storage.updateTask(newId, userId, { parentId: newParentId })
+          }
+        }
+
+        return {
+          status: 200,
+          body: {
+            message: `Successfully imported ${idMap.size} tasks`,
+            imported: idMap.size,
+          },
+        }
       },
     },
     get: {
@@ -112,82 +190,6 @@ const router = s.router(contract, {
           await storage.updateTask(m.id, userId, m.patch)
         }
         return { status: 204, body: undefined }
-      },
-    },
-    export: {
-      middleware: [isAuthenticated],
-      handler: async ({ req }) => {
-        const userId = getUserId(req)
-        const tasks = await storage.getTasks(userId)
-        return {
-          status: 200,
-          body: {
-            version: 1,
-            exportedAt: new Date().toISOString(),
-            tasks: tasks.map((t) => omit(t, ['userId'])),
-          },
-        }
-      },
-    },
-    import: {
-      middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
-        const { tasks } = body
-        const idMap = new Map<number, number>()
-
-        for (const taskData of tasks) {
-          const oldId = taskData.id
-          const { id, ...rest } = taskData
-
-          const newTask = await storage.createTask({
-            name: rest.name,
-            description: rest.description ?? null,
-            priority: rest.priority ?? null,
-            ease: rest.ease ?? null,
-            enjoyment: rest.enjoyment ?? null,
-            time: rest.time ?? null,
-            userId,
-            parentId: null,
-            status: rest.status ?? TaskStatus.OPEN,
-            createdAt: rest.createdAt ? new Date(rest.createdAt) : new Date(),
-            completedAt: rest.completedAt ? new Date(rest.completedAt) : null,
-          })
-
-          if (oldId && newTask) {
-            idMap.set(oldId, newTask.id)
-          }
-        }
-
-        for (const taskData of tasks) {
-          if (isNil(taskData.parentId) || isNil(taskData.id)) continue
-          const newId = idMap.get(taskData.id)
-          const newParentId = idMap.get(taskData.parentId)
-          if (newId !== undefined && newParentId !== undefined) {
-            await storage.updateTask(newId, userId, { parentId: newParentId })
-          }
-        }
-
-        return {
-          status: 200,
-          body: {
-            message: `Successfully imported ${idMap.size} tasks`,
-            imported: idMap.size,
-          },
-        }
-      },
-    },
-    reorderSubtasks: {
-      middleware: [isAuthenticated],
-      handler: async ({ params, body, req }) => {
-        const userId = getUserId(req)
-        const parentTask = await storage.getTask(params.id, userId)
-        if (!parentTask) {
-          return ERRORS.PARENT_NOT_FOUND
-        }
-
-        await storage.reorderSubtasks(params.id, userId, body.orderedIds)
-        return { status: 200, body: { message: 'Subtasks reordered' } }
       },
     },
   },

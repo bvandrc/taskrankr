@@ -44,38 +44,6 @@ const tasksContract = c.router({
     },
     summary: 'List all tasks for the authenticated user',
   },
-  export: {
-    method: 'GET',
-    path: `${ApiPaths.TASKS}/export`,
-    responses: {
-      200: z.object({
-        version: z.number(),
-        exportedAt: z.string(),
-        tasks: z.array(taskSchema.omit({ userId: true })),
-      }),
-    },
-    summary: 'Export all tasks as JSON',
-  },
-  import: {
-    method: 'POST',
-    path: `${ApiPaths.TASKS}/import`,
-    body: z.object({
-      tasks: z.array(
-        insertTaskSchema.omit({ userId: true }).extend({
-          id: z.number().nullish(),
-          status: insertTaskSchema.shape.status.nullish(),
-          parentId: z.number().nullish(),
-          createdAt: z.string().nullish(),
-          completedAt: z.string().nullish(),
-        }),
-      ),
-    }),
-    responses: {
-      200: z.object({ message: z.string(), imported: z.number() }),
-      400: errorSchemas.validation,
-    },
-    summary: 'Import tasks from JSON',
-  },
   get: {
     method: 'GET',
     path: `${ApiPaths.TASKS}/:id`,
@@ -132,6 +100,38 @@ const tasksContract = c.router({
       404: errorSchemas.notFound,
     },
     summary: 'Reorder subtasks of a task',
+  },
+  export: {
+    method: 'GET',
+    path: `${ApiPaths.TASKS}/export`,
+    responses: {
+      200: z.object({
+        version: z.number(),
+        exportedAt: z.string(),
+        tasks: z.array(taskSchema.omit({ userId: true })),
+      }),
+    },
+    summary: 'Export all tasks as JSON',
+  },
+  import: {
+    method: 'POST',
+    path: `${ApiPaths.TASKS}/import`,
+    body: z.object({
+      tasks: z.array(
+        insertTaskSchema.omit({ userId: true }).extend({
+          id: z.number().nullish(),
+          status: insertTaskSchema.shape.status.nullish(),
+          parentId: z.number().nullish(),
+          createdAt: z.string().nullish(),
+          completedAt: z.string().nullish(),
+        }),
+      ),
+    }),
+    responses: {
+      200: z.object({ message: z.string(), imported: z.number() }),
+      400: errorSchemas.validation,
+    },
+    summary: 'Import tasks from JSON',
   },
 })
 

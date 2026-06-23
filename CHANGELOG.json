@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.4.1",
+    "date": "2026-06-23",
+    "title": "Fix: Export",
+    "changes": ["Remove time tracking feature"]
+  },
+  {
     "version": "0.4.0",
     "date": "2026-06-22",
     "title": "Remove time tracking",
@@ -14,18 +20,18 @@
   {
     "version": "0.2.7",
     "date": "2026-06-18",
-    "title": "Bugfixes",
+    "title": "Various Bugfixes",
     "changes": [
-      "Bugfix: Subtask ordering in task form",
-      "Bugfix: Parent task autocompletion",
-      "Bugfix: Show Hidden button maintains state while dialog is open"
+      "Fix: Subtask ordering in task form",
+      "Fix: Parent task autocompletion",
+      "Fix: Show Hidden button maintains state while dialog is open"
     ]
   },
   {
     "version": "0.2.6",
     "date": "2026-05-14",
-    "title": "Bugfixes",
-    "changes": ["Various subtask bugfixes"]
+    "title": "Various Bugfixes",
+    "changes": ["Various subtask fixes"]
   },
   {
     "version": "0.2.5",
@@ -42,11 +48,11 @@
   {
     "version": "0.2.3",
     "date": "2026-04-25",
-    "title": "Performance Improvements & Subtask Bugfixes",
+    "title": "Performance Improvements, Subtask Bugfixes",
     "changes": [
       "Rendering fixes",
       "Performance improvements",
-      "Bugfix: auto-hide completed subtasks"
+      "Fix: auto-hide completed subtasks"
     ]
   },
   {
@@ -55,8 +61,8 @@
     "title": "Less Logouts; Task Creation Cancel Fix",
     "changes": [
       "Log outs should be less frequent now (increase from 1 week of no activity to 30 days)",
-      "Bugfix: No subtasks of a new task should get created when the root-level task creation is cancelled.",
-      "Bugfix: Sync reload issue when page reloaded."
+      "Fix: No subtasks of a new task should get created when the root-level task creation is cancelled.",
+      "Fix: Sync reload issue when page reloaded."
     ]
   },
   {
@@ -65,7 +71,7 @@
     "title": "Time Spent Settings; Subtask Fixes",
     "changes": [
       "Modified the configurable settings for tracking time spent on tasks (can now show/hide time spent independently of enabling In Progress status)",
-      "Bugfix: Fixed a bug where subtasks were orphaned when creating a parent task"
+      "Fix: Fixed a bug where subtasks were orphaned when creating a parent task"
     ]
   },
   {

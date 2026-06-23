@@ -53,67 +53,6 @@ const router = s.router(contract, {
         return { status: 200, body: tasks }
       },
     },
-    get: {
-      middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
-        const task = await storage.getTask(params.id, userId)
-        if (!task) {
-          return ERRORS.TASK_NOT_FOUND
-        }
-        return { status: 200, body: task }
-      },
-    },
-    create: {
-      middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
-        const service = makeTaskService(userId)
-        const result = await service.resolveCreate(body)
-        if (!result.ok) return toErrorResponse(result.error)
-
-        const task = await storage.createTask({ ...body, userId })
-        for (const m of result.mutations) {
-          await storage.updateTask(m.id, userId, m.patch)
-        }
-        return { status: 201, body: task }
-      },
-    },
-    update: {
-      middleware: [isAuthenticated],
-      handler: async ({ params, body, req }) => {
-        const userId = getUserId(req)
-        const service = makeTaskService(userId)
-        const result = await service.resolveUpdate(params.id, body)
-        if (!result.ok) return toErrorResponse(result.error)
-
-        let primary: Task | undefined
-        for (const m of result.mutations) {
-          const updated = await storage.updateTask(m.id, userId, m.patch)
-          if (m.id === params.id) primary = updated
-        }
-        if (!primary)
-          throw new Error(`resolveUpdate missing mutation for id ${params.id}`)
-        return { status: 200, body: primary }
-      },
-    },
-    delete: {
-      middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
-        const service = makeTaskService(userId)
-        const result = await service.resolveDelete(params.id)
-        if (!result.ok) return toErrorResponse(result.error)
-
-        for (const id of result.deletedIds) {
-          await storage.deleteTask(id, userId)
-        }
-        for (const m of result.mutations) {
-          await storage.updateTask(m.id, userId, m.patch)
-        }
-        return { status: 204, body: undefined }
-      },
-    },
     export: {
       middleware: [isAuthenticated],
       handler: async ({ req }) => {
@@ -175,6 +114,67 @@ const router = s.router(contract, {
             imported: idMap.size,
           },
         }
+      },
+    },
+    get: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, req }) => {
+        const userId = getUserId(req)
+        const task = await storage.getTask(params.id, userId)
+        if (!task) {
+          return ERRORS.TASK_NOT_FOUND
+        }
+        return { status: 200, body: task }
+      },
+    },
+    create: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, req }) => {
+        const userId = getUserId(req)
+        const service = makeTaskService(userId)
+        const result = await service.resolveCreate(body)
+        if (!result.ok) return toErrorResponse(result.error)
+
+        const task = await storage.createTask({ ...body, userId })
+        for (const m of result.mutations) {
+          await storage.updateTask(m.id, userId, m.patch)
+        }
+        return { status: 201, body: task }
+      },
+    },
+    update: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, body, req }) => {
+        const userId = getUserId(req)
+        const service = makeTaskService(userId)
+        const result = await service.resolveUpdate(params.id, body)
+        if (!result.ok) return toErrorResponse(result.error)
+
+        let primary: Task | undefined
+        for (const m of result.mutations) {
+          const updated = await storage.updateTask(m.id, userId, m.patch)
+          if (m.id === params.id) primary = updated
+        }
+        if (!primary)
+          throw new Error(`resolveUpdate missing mutation for id ${params.id}`)
+        return { status: 200, body: primary }
+      },
+    },
+    delete: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, req }) => {
+        const userId = getUserId(req)
+        const service = makeTaskService(userId)
+        const result = await service.resolveDelete(params.id)
+        if (!result.ok) return toErrorResponse(result.error)
+
+        for (const id of result.deletedIds) {
+          await storage.deleteTask(id, userId)
+        }
+        for (const m of result.mutations) {
+          await storage.updateTask(m.id, userId, m.patch)
+        }
+        return { status: 204, body: undefined }
       },
     },
     reorderSubtasks: {

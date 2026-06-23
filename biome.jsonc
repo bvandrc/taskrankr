@@ -10,7 +10,7 @@
               [":NODE:", "react"],
               [":PACKAGE:", "!~/shared/**"],
               ":BLANK_LINE:",
-              ["~/shared/**", ":ALIAS:", ":RELATIVE:"]
+              ["~/shared/**", ":ALIAS:"]
             ]
           }
         }
@@ -41,22 +41,15 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "noUndeclaredDependencies": "off", // wish we could use this but it doesn't work with tsconfig path aliases
-        "noUnusedFunctionParameters": "error",
-        "noUnusedImports": {
-          "level": "error",
-          "fix": "safe"
-        },
+        "noUnusedImports": { "level": "error", "fix": "safe" },
         "useJsonImportAttributes": "error",
         "useParseIntRadix": "off"
       },
       "nursery": {
-        "noDeprecatedImports": "off",
-        "noFloatingPromises": "error",
-        "noImportCycles": "error",
-        "noShadow": "error"
+        "noFloatingPromises": "error"
       },
       "performance": {
         "noAccumulatingSpread": "error",
@@ -70,10 +63,7 @@
         "noInferrableTypes": "error",
         "noParameterAssign": "error",
         "noSubstr": "error",
-        "noUnusedTemplateLiteral": {
-          "level": "error",
-          "fix": "safe"
-        },
+        "noUnusedTemplateLiteral": { "level": "error", "fix": "safe" },
         "noYodaExpression": "error",
         "useArrayLiterals": "error",
         "useAsConstAssertion": "error",
@@ -96,10 +86,7 @@
         },
         "useNumericSeparators": "error",
         "useObjectSpread": "error",
-        "useReadonlyClassProperties": {
-          "level": "error",
-          "fix": "unsafe"
-        }
+        "useReadonlyClassProperties": { "level": "error", "fix": "unsafe" }
       },
       "suspicious": {
         "noEmptyBlockStatements": "error",
@@ -109,7 +96,9 @@
         "noTsIgnore": "error",
         "noUnassignedVariables": "error",
         "noUselessEscapeInString": "error",
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noImportCycles": "error",
+        "noShadow": "error"
       }
     }
   },
@@ -120,6 +109,8 @@
       "!!**/dist",
       "!!**/dev-dist",
       "!**/node_modules",
+      "!!**/cypress/results",
+      "!!**/client/public/*.svg",
       "!.cache",
       "!.config",
       "!.local"

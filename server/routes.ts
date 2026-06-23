@@ -76,9 +76,17 @@ const router = s.router(contract, {
         const { tasks } = body
         const idMap = new Map<number, number>()
 
+        const existingTasks = await storage.getTasks(userId)
+        const existingFingerprints = new Set(
+          existingTasks.map((t) => `${t.name}::${t.createdAt.toISOString()}`),
+        )
+
         for (const taskData of tasks) {
           const oldId = taskData.id
           const { id, ...rest } = taskData
+
+          const createdAt = rest.createdAt ? new Date(rest.createdAt) : new Date()
+          if (existingFingerprints.has(`${rest.name}::${createdAt.toISOString()}`)) continue
 
           const newTask = await storage.createTask({
             name: rest.name,
@@ -90,7 +98,7 @@ const router = s.router(contract, {
             userId,
             parentId: null,
             status: rest.status ?? TaskStatus.OPEN,
-            createdAt: rest.createdAt ? new Date(rest.createdAt) : new Date(),
+            createdAt,
             completedAt: rest.completedAt ? new Date(rest.completedAt) : null,
           })
 

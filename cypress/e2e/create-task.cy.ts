@@ -52,7 +52,7 @@ describe('Task Creation', () => {
 
     cy.log('Step 1: Update rank field settings')
     setSettings({ fieldConfig })
-    checkNumCalls({ updateSettings: 4 })
+    checkNumCalls({ updateSettings: 3})
     cy.get(Selectors.BACK_BTN).click()
 
     cy.log('Step 2: Create task using new field config, verify in tree')

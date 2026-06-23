@@ -26,7 +26,6 @@ export enum SyncOperationType {
   CREATE_TASK = 'create_task',
   UPDATE_TASK = 'update_task',
   DELETE_TASK = 'delete_task',
-  REORDER_SUBTASKS = 'reorder_subtasks',
 }
 
 export type SyncOperation =
@@ -37,11 +36,6 @@ export type SyncOperation =
     }
   | { type: SyncOperationType.UPDATE_TASK; id: number; data: UpdateTaskContent }
   | { type: SyncOperationType.DELETE_TASK; id: number }
-  | {
-      type: SyncOperationType.REORDER_SUBTASKS
-      parentId: number
-      orderedIds: number[]
-    }
 
 interface TaskSyncQueueContextValue {
   syncQueue: SyncOperation[]
@@ -112,17 +106,22 @@ export const TaskSyncQueueProvider = ({
             return { ...op, data: { ...op.data, parentId: realId } }
           return op
         }
-        if (op.type === SyncOperationType.REORDER_SUBTASKS) {
-          return {
-            ...op,
-            parentId: op.parentId === tempId ? realId : op.parentId,
-            orderedIds: op.orderedIds.map((oid) =>
-              oid === tempId ? realId : oid,
-            ),
-          }
-        }
         if ('id' in op && op.id === tempId) {
           return { ...op, id: realId }
+        }
+        if (
+          op.type === SyncOperationType.UPDATE_TASK &&
+          op.data.subtaskOrder?.includes(tempId)
+        ) {
+          return {
+            ...op,
+            data: {
+              ...op.data,
+              subtaskOrder: op.data.subtaskOrder.map((oid) =>
+                oid === tempId ? realId : oid,
+              ),
+            },
+          }
         }
         return op
       }),

@@ -177,19 +177,6 @@ const router = s.router(contract, {
         }
       },
     },
-    reorderSubtasks: {
-      middleware: [isAuthenticated],
-      handler: async ({ params, body, req }) => {
-        const userId = getUserId(req)
-        const parentTask = await storage.getTask(params.id, userId)
-        if (!parentTask) {
-          return ERRORS.PARENT_NOT_FOUND
-        }
-
-        await storage.reorderSubtasks(params.id, userId, body.orderedIds)
-        return { status: 200, body: { message: 'Subtasks reordered' } }
-      },
-    },
   },
   settings: {
     get: {

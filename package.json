@@ -108,6 +108,8 @@
     "@vitejs/plugin-react": "^6",
     "cross-env": "^10.1",
     "cypress": "^15",
+    "cypress-terminal-report": "^7",
+    "cypress-vite": "^1",
     "drizzle-kit": "^0.31",
     "esbuild": "^0.28",
     "tsx": "^4",

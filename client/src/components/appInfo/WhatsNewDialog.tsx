@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Sparkles as ChangelogIcon } from 'lucide-react'
+
 export { ChangelogIcon }
 
 import { Button } from '@/components/primitives/Button'
@@ -41,9 +42,9 @@ const ChangelogEntryList = ({ entries }: { entries: ChangelogEntry[] }) => (
           {entry.title}
         </h3>
         <ul className="space-y-1">
-          {entry.changes.map((change, i) => (
+          {entry.changes.map((change) => (
             <li
-              key={`changelog-${entry.version}-${i}`}
+              key={`changelog-${entry.version}`}
               className="text-sm text-muted-foreground flex gap-2"
             >
               <span className="text-primary mt-0.5 shrink-0">•</span>

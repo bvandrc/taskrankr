@@ -95,7 +95,7 @@
     "zod-validation-error": "^5"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.13",
+    "@biomejs/biome": "2.5",
     "@replit/vite-plugin-cartographer": "^0.5",
     "@replit/vite-plugin-dev-banner": "^0.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0",

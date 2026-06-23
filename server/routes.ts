@@ -43,6 +43,7 @@ const toErrorResponse = <Status extends number>({
   message,
 }: AppError<Status>) => ({ status, body: { message } })
 
+// NOTE: order *matters* here. Must provide static endpoints before dynamic ones
 const router = s.router(contract, {
   tasks: {
     list: {

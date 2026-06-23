@@ -15,6 +15,3 @@ ALTER TABLE "tasks" ALTER COLUMN "enjoyment" SET DATA TYPE "public"."enjoyment" 
 ALTER TABLE "tasks" ALTER COLUMN "time" SET DATA TYPE "public"."time" USING "time"::"public"."time";--> statement-breakpoint
 ALTER TABLE "tasks" ALTER COLUMN "subtask_sort_mode" SET DEFAULT 'inherit'::"public"."subtask_sort_mode";--> statement-breakpoint
 ALTER TABLE "tasks" ALTER COLUMN "subtask_sort_mode" SET DATA TYPE "public"."subtask_sort_mode" USING "subtask_sort_mode"::"public"."subtask_sort_mode";--> statement-breakpoint
-ALTER TABLE "tasks" DROP COLUMN "in_progress_started_at";--> statement-breakpoint
-ALTER TABLE "tasks" DROP COLUMN "time_spent";--> statement-breakpoint
-UPDATE "user_settings" SET "field_config" = "field_config" - 'timeSpent' WHERE "field_config" ? 'timeSpent';

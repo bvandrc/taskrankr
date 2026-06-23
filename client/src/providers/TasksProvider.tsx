@@ -570,9 +570,9 @@ export const TasksProvider = ({
     (parentId: number, orderedIds: number[]) => {
       updateTaskById(parentId, () => ({ subtaskOrder: orderedIds }))
       enqueue({
-        type: SyncOperationType.REORDER_SUBTASKS,
-        parentId,
-        orderedIds,
+        type: SyncOperationType.UPDATE_TASK,
+        id: parentId,
+        data: { subtaskOrder: orderedIds },
       })
       debugLog.log('task', 'reorderSubtasks', { parentId, orderedIds })
     },

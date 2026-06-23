@@ -232,27 +232,6 @@ export const SyncProvider = ({
             }
             break
           }
-          case SyncOperationType.REORDER_SUBTASKS: {
-            const realParentId = resolveId(op.parentId)
-            if (realParentId < 0) {
-              success = true
-              break
-            }
-            const realOrderedIds = op.orderedIds.map((id) => resolveId(id))
-            const result = await tsr.tasks.reorderSubtasks({
-              params: { id: realParentId },
-              body: { orderedIds: realOrderedIds },
-            })
-            if (result.status === 200) {
-              success = true
-            } else {
-              err = {
-                ...result.body,
-                taskName: getById(tasksRef.current, realParentId)?.name,
-              }
-            }
-            break
-          }
           default:
             success = true
         }

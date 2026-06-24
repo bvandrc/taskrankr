@@ -1,7 +1,7 @@
 /**
  * @fileoverview Sign-in / sign-up dialog with Google and email/password flows.
- * Also exports `useSignInDialog` hook for managing open state at call sites.
  */
+// TODO: can we use a package for this whole dialog?
 
 import { useState } from 'react'
 import type { AuthProvider } from 'firebase/auth'
@@ -67,20 +67,18 @@ const SocialButton = ({
   </Button>
 )
 
-enum Mode {
+enum View {
   Choose = 'choose',
   EmailSignIn = 'email-signin',
   EmailSignUp = 'email-signup',
 }
 
-// --- ChooseView ---
-
 const ChooseView = ({
   onSuccess,
-  onEmailClick,
+  onSetView,
 }: {
   onSuccess: () => void
-  onEmailClick: () => void
+  onSetView: (view: View) => void
 }) => {
   const [error, setError] = useState<string | null>(null)
 
@@ -98,7 +96,10 @@ const ChooseView = ({
       <SocialButton
         icon={<GoogleIcon />}
         label="Continue with Google"
-        onClick={() => signInWith(new GoogleAuthProvider())}
+        onClick={() =>
+          // onSetView(View.Choose) // no onSetView because separate provider dialog opens
+          signInWith(new GoogleAuthProvider())
+        }
       />
       {/* TODO: facebook, apple */}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -110,14 +111,12 @@ const ChooseView = ({
       <SocialButton
         icon={<Mail className="size-5 shrink-0" />}
         label="Continue with Email"
-        onClick={onEmailClick}
+        onClick={() => onSetView(View.EmailSignIn)}
         variant="outline"
       />
     </div>
   )
 }
-
-// --- EmailView ---
 
 const EmailView = ({
   mode,
@@ -125,8 +124,8 @@ const EmailView = ({
   onBack,
   onSuccess,
 }: {
-  mode: Mode.EmailSignIn | Mode.EmailSignUp
-  onModeChange: (mode: Mode.EmailSignIn | Mode.EmailSignUp) => void
+  mode: View.EmailSignIn | View.EmailSignUp
+  onModeChange: (mode: View.EmailSignIn | View.EmailSignUp) => void
   onBack: () => void
   onSuccess: () => void
 }) => {
@@ -135,7 +134,7 @@ const EmailView = ({
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const isSignUp = mode === Mode.EmailSignUp
+  const isSignUp = mode === View.EmailSignUp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -157,7 +156,7 @@ const EmailView = ({
 
   const switchMode = () => {
     setError(null)
-    onModeChange(isSignUp ? Mode.EmailSignIn : Mode.EmailSignUp)
+    onModeChange(isSignUp ? View.EmailSignIn : View.EmailSignUp)
   }
 
   return (
@@ -214,43 +213,40 @@ const EmailView = ({
   )
 }
 
-// --- SignInDialog ---
-
-interface SignInDialogProps {
+export const SignInDialog = ({
+  open,
+  onOpenChange,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-export const SignInDialog = ({ open, onOpenChange }: SignInDialogProps) => {
-  const [mode, setMode] = useState<Mode>(Mode.Choose)
+}) => {
+  const [mode, setMode] = useState<View>(View.Choose)
 
   const close = () => {
     onOpenChange(false)
-    setMode(Mode.Choose)
+    setMode(View.Choose)
   }
+
+  const isChooseView = !(mode === View.EmailSignIn || mode === View.EmailSignUp)
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && close()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
-            {mode === Mode.EmailSignUp
+            {mode === View.EmailSignUp
               ? 'Create account'
               : 'Sign in to TaskRankr'}
           </DialogTitle>
         </DialogHeader>
 
-        {mode === Mode.Choose && (
-          <ChooseView
-            onSuccess={close}
-            onEmailClick={() => setMode(Mode.EmailSignIn)}
-          />
-        )}
-        {(mode === Mode.EmailSignIn || mode === Mode.EmailSignUp) && (
+        {isChooseView ? (
+          <ChooseView onSuccess={close} onSetView={setMode} />
+        ) : (
           <EmailView
             mode={mode}
             onModeChange={setMode}
-            onBack={() => setMode(Mode.Choose)}
+            onBack={() => setMode(View.Choose)}
             onSuccess={close}
           />
         )}

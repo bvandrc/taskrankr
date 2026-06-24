@@ -62,7 +62,7 @@ const LandingButton = ({
     size="lg"
     variant={variant}
     href={href}
-    className={cn('text-lg px-8 w-[220px] max-w-[220px]', className)}
+    className={cn('text-lg px-8 w-55 max-w-55', className)}
     data-testid={testId}
     onClick={onClick}
   >
@@ -74,7 +74,7 @@ const LandingButtonWithCaption = ({
   caption,
   ...props
 }: LandingButtonProps & { caption: string }) => (
-  <div className="flex flex-col items-center w-[220px]">
+  <div className="flex flex-col items-center w-55">
     <LandingButton {...props} />
     <p className="text-xs text-muted-foreground mt-1.5 text-center">
       {caption}

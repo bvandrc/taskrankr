@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Firebase client app and auth instance, shared across the frontend.
+ */
+
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 

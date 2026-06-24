@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Auth context — exposes the current Firebase user, loading state, and logout.
+ */
+
 import {
   createContext,
   useCallback,
@@ -23,12 +27,14 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    return firebaseAuth.onAuthStateChanged((u) => {
-      setUser(u)
-      setIsLoading(false)
-    })
-  }, [])
+  useEffect(
+    () =>
+      firebaseAuth.onAuthStateChanged((u) => {
+        setUser(u)
+        setIsLoading(false)
+      }),
+    [],
+  )
 
   const logout = useCallback(() => void signOut(firebaseAuth), [])
 

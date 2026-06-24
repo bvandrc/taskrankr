@@ -1,3 +1,7 @@
+/**
+ * @fileoverview Firebase Admin SDK setup and Express middleware for verifying Bearer tokens.
+ */
+
 import type { RequestHandler, Response } from 'express'
 import { cert, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'

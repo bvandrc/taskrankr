@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Sign-in / sign-up dialog with Google and email/password flows.
+ * Also exports `useSignInDialog` hook for managing open state at call sites.
+ */
+
 import { useState } from 'react'
 import type { AuthProvider } from 'firebase/auth'
 import {

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Zod helpers for validating environment variables at startup.
+ * Used by the client, server, and Cypress config.
+ */
+
 import { z } from 'zod'
 
 const zodEnvVal = z.string().min(1)

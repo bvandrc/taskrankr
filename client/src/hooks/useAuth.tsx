@@ -1,11 +1,3 @@
-/**
- * @fileoverview Auth context — fetches and caches the current session.
- *
- * Caches the last user in localStorage so offline / network-error reloads can
- * still surface an authenticated UI instead of bouncing through the login
- * screen. A real 401 always wins (clears the cache and returns null).
- */
-
 import {
   createContext,
   useCallback,
@@ -13,103 +5,40 @@ import {
   useEffect,
   useState,
 } from 'react'
+import type { User } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 
-import { storage } from '@/lib/storage'
-import { AuthPaths } from '~/shared/constants'
-import type { User } from '~/shared/models/auth'
-
-const CACHED_USER_KEY = 'taskrankr-cached-user'
-
-function setCachedUser(user: User | null): void {
-  try {
-    if (user) {
-      storage.set(CACHED_USER_KEY, user)
-    } else {
-      storage.remove(CACHED_USER_KEY)
-    }
-  } catch {
-    // localStorage may be unavailable
-  }
-}
-
-async function fetchUser(): Promise<User | null> {
-  try {
-    const response = await fetch(AuthPaths.USER, {
-      credentials: 'include',
-    })
-
-    if (response.status === 401) {
-      setCachedUser(null)
-      return null
-    }
-
-    if (!response.ok) {
-      throw new Error(`${response.status}: ${response.statusText}`)
-    }
-
-    const user = await response.json()
-    setCachedUser(user)
-    return user
-  } catch (error) {
-    if (error instanceof TypeError || !navigator.onLine) {
-      const cached = storage.get<User | null>(CACHED_USER_KEY, null)
-      if (cached) {
-        return cached
-      }
-    }
-    throw error
-  }
-}
-
-// biome-ignore lint/suspicious/useAwait: involves window.href, allow it.
-async function performLogout(): Promise<void> {
-  setCachedUser(null)
-  window.location.href = AuthPaths.LOGOUT
-}
+import { firebaseAuth } from '@/lib/auth-client'
 
 interface AuthContextValue {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  isLoggingOut: boolean
   logout: () => void
-  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export const AuthProvider = ({ children }: React.PropsWithChildren) => {
-  // undefined = not yet fetched (loading), null = fetched but not authenticated
-  const [user, setUser] = useState<User | null | undefined>(undefined)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  const refreshUser = useCallback(async () => {
-    try {
-      const result = await fetchUser()
-      setUser(result)
-    } catch {
-      setUser(null)
-    }
-  }, [])
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    void refreshUser()
-  }, [refreshUser])
-
-  const logout = useCallback(() => {
-    setIsLoggingOut(true)
-    void performLogout()
+    return firebaseAuth.onAuthStateChanged((u) => {
+      setUser(u)
+      setIsLoading(false)
+    })
   }, [])
+
+  const logout = useCallback(() => void signOut(firebaseAuth), [])
 
   return (
     <AuthContext.Provider
       value={{
-        user: user ?? null,
-        isLoading: user === undefined,
+        user,
+        isLoading,
         isAuthenticated: !!user,
-        isLoggingOut,
         logout,
-        refreshUser,
       }}
     >
       {children}

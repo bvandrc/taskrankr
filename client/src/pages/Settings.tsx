@@ -46,7 +46,6 @@ import { useGuestMode } from '@/providers/GuestModeProvider'
 import { useSettings } from '@/providers/SettingsProvider'
 import { useSync } from '@/providers/SyncProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
-import { AuthPaths } from '~/shared/constants'
 import { type FieldConfig, type FieldFlags, TaskStatus } from '~/shared/schema'
 
 const Card = ({
@@ -61,17 +60,11 @@ const Card = ({
 )
 
 const UserInfoCard = () => {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   return (
     <Card className="flex items-center justify-between">
       <div>
-        <p
-          className="font-semibold text-foreground"
-          data-testid="text-user-name"
-        >
-          {user?.firstName} {user?.lastName}
-        </p>
         <p
           className="text-sm text-muted-foreground"
           data-testid="text-user-email"
@@ -80,7 +73,7 @@ const UserInfoCard = () => {
         </p>
       </div>
       <Button
-        href={AuthPaths.LOGOUT}
+        onClick={logout}
         variant="outline"
         className="gap-2 border-muted-foreground/30 text-muted-foreground"
         data-testid="button-logout"

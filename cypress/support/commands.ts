@@ -1,11 +1,39 @@
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import { attachCustomCommands } from 'cypress-firebase'
+
 import { TestPaths } from '~/shared/constants'
-import { getElementArrayText } from './utils'
+import type { Task as AppTask } from '~/shared/schema'
+import { createEnvSchema } from '~/shared/schema'
+import { ApiPaths } from './constants'
+import { getElementArrayText, isLoggedIn } from './utils'
+
+const envVars = createEnvSchema([
+  'FIREBASE_API_KEY',
+  'FIREBASE_AUTH_DOMAIN',
+  'FIREBASE_PROJECT_ID',
+  'CYPRESS_TEST_USER_ID',
+]).parse(Cypress.env())
+
+firebase.initializeApp({
+  apiKey: envVars.FIREBASE_API_KEY,
+  authDomain: envVars.FIREBASE_AUTH_DOMAIN,
+  projectId: envVars.FIREBASE_PROJECT_ID,
+})
+
+attachCustomCommands({ Cypress, cy, firebase })
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      /** Log in as the hardcoded test user, bypassing Replit OAuth. */
+      /** Signs in as the test user via Firebase custom token. */
       loginAsTestUser(): Chainable<void>
+      /** Returns the current Firebase user's ID token for authenticated cy.request calls. */
+      getAuthToken(): Chainable<string>
+      /** Makes an authenticated cy.request with the current Firebase user's Bearer token. */
+      authRequest<T>(method: string, url: string): Chainable<Response<T>>
+      /** Fetches tasks from the API (authenticated) or test backdoor (guest). */
+      getApiTasks(): Chainable<AppTask[]>
       /** Deletes all tasks for the test user. */
       clearTestUserTasks(): Chainable<void>
       /** Resets the test user's settings to their defaults on the server. */
@@ -23,10 +51,32 @@ declare global {
   }
 }
 
-Cypress.Commands.add('loginAsTestUser', () => {
-  cy.request('POST', TestPaths.TEST_LOGIN) //
-    .should('have.property', 'status', 200)
+Cypress.Commands.add('loginAsTestUser', () =>
+  cy.login(envVars.CYPRESS_TEST_USER_ID),
+)
+
+Cypress.Commands.add('getAuthToken', () => {
+  const user = firebase.auth().currentUser
+  if (!user)
+    throw new Error('No Firebase user — call cy.loginAsTestUser() first')
+  return cy.wrap(user.getIdToken())
 })
+
+Cypress.Commands.add('authRequest', (method, url) =>
+  cy.getAuthToken().then((token) =>
+    cy.request({
+      method,
+      url,
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  ),
+)
+
+Cypress.Commands.add('getApiTasks', () =>
+  isLoggedIn()
+    ? cy.authRequest<AppTask[]>('GET', ApiPaths.GET_TASKS).its('body')
+    : cy.request<AppTask[]>('GET', TestPaths.TEST_TASKS).its('body'),
+)
 
 Cypress.Commands.add('clearTestUserTasks', () => {
   cy.request('DELETE', TestPaths.TEST_TASKS) //

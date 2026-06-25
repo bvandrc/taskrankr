@@ -3,7 +3,7 @@
  */
 
 import type { RequestHandler, Response } from 'express'
-import { cert, initializeApp } from 'firebase-admin/app'
+import { cert, getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 
 import { createEnvSchema } from '~/shared/schema'
@@ -12,9 +12,11 @@ const envParsed = createEnvSchema(['FIREBASE_SERVICE_ACCOUNT_JSON']).parse(
   process.env,
 )
 
-initializeApp({
-  credential: cert(JSON.parse(envParsed.FIREBASE_SERVICE_ACCOUNT_JSON)),
-})
+if (getApps().length === 0) {
+  initializeApp({
+    credential: cert(JSON.parse(envParsed.FIREBASE_SERVICE_ACCOUNT_JSON)),
+  })
+}
 
 /** Reads the Firebase UID set by `isAuthenticated` middleware. */
 export function getSessionUserId(res: Response): string {

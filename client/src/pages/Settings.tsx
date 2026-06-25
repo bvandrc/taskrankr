@@ -65,6 +65,14 @@ const UserInfoCard = () => {
   return (
     <Card className="flex items-center justify-between">
       <div>
+        {user?.displayName && (
+          <p
+            className="font-semibold text-foreground"
+            data-testid="text-user-name"
+          >
+            {user.displayName}
+          </p>
+        )}
         <p
           className="text-sm text-muted-foreground"
           data-testid="text-user-email"

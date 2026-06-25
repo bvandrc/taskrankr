@@ -51,16 +51,19 @@ const SocialButton = ({
   label,
   onClick,
   variant = 'secondary',
+  'data-testid': testId,
 }: {
   icon: React.ReactNode
   label: string
   onClick: () => void
   variant?: 'secondary' | 'outline'
+  'data-testid': string
 }) => (
   <Button
     variant={variant}
     className="w-full justify-start gap-3 h-10"
     onClick={onClick}
+    data-testid={testId}
   >
     {icon}
     <span className="flex-1 text-left">{label}</span>
@@ -96,10 +99,8 @@ const ChooseView = ({
       <SocialButton
         icon={<GoogleIcon />}
         label="Continue with Google"
-        onClick={() =>
-          // onSetView(View.Choose) // no onSetView because separate provider dialog opens
-          signInWith(new GoogleAuthProvider())
-        }
+        data-testid="button-signin-google"
+        onClick={() => signInWith(new GoogleAuthProvider())}
       />
       {/* TODO: facebook, apple */}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -111,6 +112,7 @@ const ChooseView = ({
       <SocialButton
         icon={<Mail className="size-5 shrink-0" />}
         label="Continue with Email"
+        data-testid="button-signin-email"
         onClick={() => onSetView(View.EmailSignIn)}
         variant="outline"
       />
@@ -170,6 +172,7 @@ const EmailView = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
+          data-testid="input-email"
           required
         />
       </div>
@@ -182,11 +185,17 @@ const EmailView = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete={isSignUp ? 'new-password' : 'current-password'}
+          data-testid="input-password"
           required
         />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" disabled={loading} className="mt-1">
+      <Button
+        type="submit"
+        disabled={loading}
+        className="mt-1"
+        data-testid="button-submit"
+      >
         {loading ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
@@ -195,6 +204,7 @@ const EmailView = ({
           type="button"
           className="underline hover:text-foreground"
           onClick={switchMode}
+          data-testid="button-switch-mode"
         >
           {isSignUp ? 'Sign in' : 'Sign up'}
         </button>
@@ -203,6 +213,7 @@ const EmailView = ({
         type="button"
         className="text-xs text-muted-foreground hover:text-foreground mx-auto"
         onClick={onBack}
+        data-testid="button-back"
       >
         ← Other sign-in options
       </button>

@@ -1,0 +1,1 @@
+ALTER TABLE "tasks" DROP COLUMN IF EXISTS "subtasks_show_numbers";

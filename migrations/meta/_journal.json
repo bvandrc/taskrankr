@@ -57,6 +57,13 @@
       "when": 1751000000000,
       "tag": "0007_rename_time_enum",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782506293190,
+      "tag": "0008_drop_subtasks_show_numbers",
+      "breakpoints": true
     }
   ]
 }

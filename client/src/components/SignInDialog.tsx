@@ -8,6 +8,8 @@ import {
   createUserWithEmailAndPassword,
   GithubAuthProvider,
   GoogleAuthProvider,
+  linkWithCredential,
+  type OAuthCredential,
   OAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -65,16 +67,24 @@ const ChooseView = ({
   onSetView: (view: View) => void
 }) => {
   const [error, setError] = useState<string | null>(null)
+  const [pendingLink, setPendingLink] = useState<OAuthCredential | null>(null)
 
   const signInWith = async (provider: AuthProvider) => {
     try {
-      await signInWithPopup(firebaseAuth, provider)
+      const result = await signInWithPopup(firebaseAuth, provider)
+      if (pendingLink) await linkWithCredential(result.user, pendingLink)
       onSuccess()
     } catch (e: unknown) {
-      const err = e as { code?: string }
+      const err = e as {
+        code?: string
+        credential?: OAuthCredential
+        customData?: { email?: string }
+      }
       if (err?.code === 'auth/account-exists-with-different-credential') {
+        setPendingLink(err.credential ?? null)
+        const email = err.customData?.email
         setError(
-          'An account already exists with this email. Sign in with the method you originally used.',
+          `An account already exists with${email ? ` email ${email}` : ' this email'}. Sign in with your original method to link accounts.`,
         )
       } else {
         setError(e instanceof Error ? e.message : 'Sign in failed')
@@ -118,7 +128,7 @@ const ChooseView = ({
         data-testid="button-signin-github"
         onClick={() => signInWith(new GithubAuthProvider())}
       />
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger brightness-200">{error}</p>}
       <div className="flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-border" />
         <span className="text-xs text-muted-foreground">or</span>
@@ -204,7 +214,7 @@ const EmailView = ({
           required
         />
       </div>
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger brightness-200">{error}</p>}
       <Button
         type="submit"
         disabled={loading}

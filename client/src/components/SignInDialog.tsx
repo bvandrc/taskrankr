@@ -6,6 +6,7 @@ import { useState } from 'react'
 import type { AuthProvider } from 'firebase/auth'
 import {
   createUserWithEmailAndPassword,
+  GithubAuthProvider,
   GoogleAuthProvider,
   OAuthProvider,
   signInWithEmailAndPassword,
@@ -97,6 +98,18 @@ const ChooseView = ({
         label="Continue with Microsoft"
         data-testid="button-signin-microsoft"
         onClick={() => signInWith(new OAuthProvider('microsoft.com'))}
+      />
+      <SocialButton
+        icon={
+          <img
+            src="https://cdn.brandfetch.io/idZAyF9rlg/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1779162684348"
+            alt=""
+            className="invert" // change from black to white
+          />
+        }
+        label="Continue with GitHub"
+        data-testid="button-signin-github"
+        onClick={() => signInWith(new GithubAuthProvider())}
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 my-1">

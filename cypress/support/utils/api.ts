@@ -1,24 +1,8 @@
-import { TestPaths } from '~/shared/constants'
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
 import { isLoggedIn } from './test-runner'
 
-/**
- * Fetches tasks, routing to the correct endpoint based on session state.
- *
- * Logged in (session cookie present) → GET /api/tasks (real auth middleware).
- * Guest (no cookie) → GET /api/test/tasks (unauthenticated backdoor), used to
- * assert that guest-created tasks are not persisted to the server.
- */
-const getApiTasks = () =>
-  cy
-    .request<Task[]>(
-      'GET',
-      isLoggedIn() ? ApiPaths.GET_TASKS : TestPaths.TEST_TASKS,
-    )
-    .its('body')
-
-const getLocalStateTasks = () =>
+const getLocalStateTasks = (): Cypress.Chainable<Task[]> =>
   cy.window().then<Task[]>((win) => {
     const storageMode = isLoggedIn() ? 'auth' : 'guest'
     const localStateTasksKey = `taskrankr-${storageMode}-tasks`
@@ -37,7 +21,7 @@ function checkTasksBackend(
     checkTasks(givenTasks, 'local state'),
   )
   if (checkBackend) {
-    getApiTasks().then((givenTasks) => checkTasks(givenTasks, 'backend'))
+    cy.getApiTasks().then((givenTasks) => checkTasks(givenTasks, 'backend'))
   }
 }
 
@@ -76,4 +60,4 @@ export const checkTasksDontExistBackend = (tasks: Pick<Task, 'name'>[]) =>
   }, true)
 
 export const getSettings = () =>
-  cy.request<UserSettings>('GET', ApiPaths.GET_SETTINGS).its('body')
+  cy.authRequest<UserSettings>('GET', ApiPaths.GET_SETTINGS).its('body')

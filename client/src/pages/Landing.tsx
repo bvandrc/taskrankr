@@ -20,12 +20,10 @@ import {
 import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
 import { InlineLink } from '@/components/primitives/InlineText'
-import { useAuth } from '@/hooks/useAuth'
-import { devLogin, devLoginEnabled } from '@/hooks/useAuthConfig'
+import { SignInDialog } from '@/components/SignInDialog'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
-import { AuthPaths } from '~/shared/constants'
 
 const CaptionedIcon = ({
   icon: Icon,
@@ -62,7 +60,7 @@ const LandingButton = ({
     size="lg"
     variant={variant}
     href={href}
-    className={cn('text-lg px-8 w-[220px] max-w-[220px]', className)}
+    className={cn('text-lg px-8 w-55 max-w-55', className)}
     data-testid={testId}
     onClick={onClick}
   >
@@ -74,7 +72,7 @@ const LandingButtonWithCaption = ({
   caption,
   ...props
 }: LandingButtonProps & { caption: string }) => (
-  <div className="flex flex-col items-center w-[220px]">
+  <div className="flex flex-col items-center w-55">
     <LandingButton {...props} />
     <p className="text-xs text-muted-foreground mt-1.5 text-center">
       {caption}
@@ -84,9 +82,9 @@ const LandingButtonWithCaption = ({
 
 const Landing = () => {
   const { enterGuestMode } = useGuestMode()
-  const { refreshUser } = useAuth()
   const isStandalone = isStandalonePWA()
   const [showWhyDialog, setShowWhyDialog] = useState(false)
+  const [showSignIn, setShowSignIn] = useState(false)
 
   return (
     <div className="max-h-screen bg-background text-foreground flex flex-col">
@@ -147,13 +145,8 @@ const Landing = () => {
 
         <div className="flex flex-col items-center sm:flex-row sm:items-start sm:gap-4 gap-2 justify-center">
           <LandingButtonWithCaption
-            href={devLoginEnabled ? undefined : AuthPaths.LOGIN}
-            onClick={devLoginEnabled ? () => devLogin(refreshUser) : undefined}
-            caption={
-              devLoginEnabled
-                ? 'Bypasses Replit Auth for local dev'
-                : 'To back up your data and sync across devices'
-            }
+            onClick={() => setShowSignIn(true)}
+            caption="To back up your data and sync across devices"
             data-testid="button-get-started"
           >
             Log In / Sign Up
@@ -186,6 +179,7 @@ const Landing = () => {
         open={showWhyDialog}
         onOpenChange={setShowWhyDialog}
       />
+      <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} />
     </div>
   )
 }

@@ -17,10 +17,10 @@ import {
 } from 'lucide-react'
 import { useLocation } from 'wouter'
 
+import { SignInDialog } from '@/components/SignInDialog'
 import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useGuestMode } from '@/providers/GuestModeProvider'
-import { AuthPaths } from '~/shared/constants'
 import { Button } from './primitives/Button'
 import {
   DropdownMenu,
@@ -67,6 +67,7 @@ export const DropdownMenuHeader = ({
   children,
 }: DropdownMenuHeaderProps) => {
   const { isGuestMode, exitGuestMode } = useGuestMode()
+  const [showSignIn, setShowSignIn] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [location] = useLocation()
   const isHome = location === Routes.HOME
@@ -141,7 +142,7 @@ export const DropdownMenuHeader = ({
                   icon={LogIn}
                   label="Sign Up"
                   data-testid="menu-item-signup"
-                  href={AuthPaths.LOGIN}
+                  onClick={() => setShowSignIn(true)}
                 />
                 <DropdownMenuItem
                   icon={LogOut}
@@ -174,6 +175,7 @@ export const DropdownMenuHeader = ({
           className="mb-3 mx-1"
         />
       )}
+      <SignInDialog open={showSignIn} onOpenChange={setShowSignIn} />
     </>
   )
 }

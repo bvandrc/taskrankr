@@ -53,6 +53,10 @@ const SocialButton = ({
   </Button>
 )
 
+const ErrorText = ({ error }: { error: string }) => (
+  <p className="text-sm text-danger brightness-200">{error}</p>
+)
+
 enum View {
   Choose = 'choose',
   EmailSignIn = 'email-signin',
@@ -128,7 +132,7 @@ const ChooseView = ({
         data-testid="button-signin-github"
         onClick={() => signInWith(new GithubAuthProvider())}
       />
-      {error && <p className="text-sm text-danger brightness-200">{error}</p>}
+      {error && <ErrorText error={error} />}
       <div className="flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-border" />
         <span className="text-xs text-muted-foreground">or</span>
@@ -214,7 +218,7 @@ const EmailView = ({
           required
         />
       </div>
-      {error && <p className="text-sm text-danger brightness-200">{error}</p>}
+      {error && <ErrorText error={error} />}
       <Button
         type="submit"
         disabled={loading}

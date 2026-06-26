@@ -77,7 +77,6 @@ export const SubtasksCard = ({
 
   const {
     subtaskSortMode: sortMode,
-    subtasksShowNumbers: showNumbers,
     subtaskOrder,
     autoHideCompleted,
     inheritCompletionState,
@@ -109,7 +108,6 @@ export const SubtasksCard = ({
       parentId: number,
       depth: number,
       childrenSortMode: SubtaskSortMode,
-      childrenShowNumbers: boolean,
     ): Subtask[] => {
       const unsortedChildren = getDirectSubtasks(allTasks, parentId)
       const sortedChildren = sortTasksByMode(unsortedChildren, {
@@ -128,24 +126,17 @@ export const SubtasksCard = ({
           ...child,
           depth,
           subtaskIndex:
-            childrenShowNumbers && childrenSortMode === SubtaskSortMode.MANUAL
-              ? i
-              : undefined,
+            childrenSortMode === SubtaskSortMode.MANUAL ? i : undefined,
         })
         result.push(
-          ...collectDescendants(
-            child.id,
-            depth + 1,
-            child.subtaskSortMode,
-            child.subtasksShowNumbers,
-          ),
+          ...collectDescendants(child.id, depth + 1, child.subtaskSortMode),
         )
       }
       return result
     }
 
-    return collectDescendants(task.id, 0, sortMode, showNumbers)
-  }, [task, allTasks, sortMode, subtaskOrder, showNumbers, settings.sortBy])
+    return collectDescendants(task.id, 0, sortMode)
+  }, [task, allTasks, sortMode, subtaskOrder, settings.sortBy])
 
   // Override the edited task's `autoHideCompleted` in the lookup map so the
   // live preview reflects the unsaved form value rather than the persisted one.
@@ -228,9 +219,6 @@ export const SubtasksCard = ({
     }
   }
 
-  const handleShowNumbersChange = (checked: boolean) =>
-    form.setValue('subtasksShowNumbers', checked, { shouldDirty: true })
-
   const handleAutoHideCompletedChange = (checked: boolean) =>
     form.setValue('autoHideCompleted', checked, { shouldDirty: true })
 
@@ -256,13 +244,11 @@ export const SubtasksCard = ({
         >
           <SubtasksSettings
             sortMode={sortMode}
-            showNumbers={showNumbers}
             autoHideCompleted={autoHideCompleted}
             inheritCompletionState={inheritCompletionState}
             showHidden={showHidden}
             hiddenCount={hiddenCount}
             onSortModeChange={handleSortModeChange}
-            onShowNumbersChange={handleShowNumbersChange}
             onAutoHideCompletedChange={handleAutoHideCompletedChange}
             onInheritCompletionStateChange={handleInheritCompletionStateChange}
             onShowHiddenChange={setShowHidden}

@@ -110,13 +110,11 @@ const SwitchRow = ({
 
 export interface SubtaskSettingsProps {
   sortMode: SubtaskSortMode
-  showNumbers: boolean
   autoHideCompleted: boolean
   inheritCompletionState: boolean
   showHidden: boolean
   hiddenCount: number
   onSortModeChange: (mode: SubtaskSortMode) => void
-  onShowNumbersChange: (show: boolean) => void
   onAutoHideCompletedChange: (value: boolean) => void
   onInheritCompletionStateChange: (value: boolean) => void
   onShowHiddenChange: (show: boolean) => void
@@ -124,43 +122,21 @@ export interface SubtaskSettingsProps {
 
 const SubtasksSettingsMenu = ({
   sortMode,
-  showNumbers,
   autoHideCompleted,
   inheritCompletionState,
   showHidden,
   hiddenCount,
   onSortModeChange,
-  onShowNumbersChange,
   onAutoHideCompletedChange,
   onInheritCompletionStateChange,
   onShowHiddenChange,
 }: SubtaskSettingsProps) => {
-  const isManualSortMode = sortMode === SubtaskSortMode.MANUAL
-
   return (
     <div className="px-3 py-2.5 space-y-3 bg-secondary/5 border-t border-white/5">
       <SortingMethodSwitch
         sortMode={sortMode}
         onSortModeChange={onSortModeChange}
       />
-      <AnimatePresence>
-        {isManualSortMode && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <SwitchRow
-              label="Show numbers"
-              checked={showNumbers}
-              onCheckedChange={onShowNumbersChange}
-              data-testid="switch-show-numbers"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <SwitchRow
         label="Auto-complete main task when all subtasks are complete"

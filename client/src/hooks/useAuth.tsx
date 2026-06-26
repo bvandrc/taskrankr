@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react'
 import type { User } from 'firebase/auth'
-import { getRedirectResult, signOut } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 
 import { firebaseAuth } from '@/lib/auth-client'
 
@@ -28,8 +28,6 @@ export const AuthProvider = ({ children }: React.PropsWithChildren) => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Consume any pending redirect result (e.g. Microsoft sign-in via signInWithRedirect)
-    void getRedirectResult(firebaseAuth)
     return firebaseAuth.onAuthStateChanged((u) => {
       setUser(u)
       setIsLoading(false)

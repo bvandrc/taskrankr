@@ -6,7 +6,10 @@ import { useState } from 'react'
 import type { AuthProvider } from 'firebase/auth'
 import {
   createUserWithEmailAndPassword,
+  GithubAuthProvider,
   GoogleAuthProvider,
+  linkWithCredential,
+  type OAuthCredential,
   OAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -50,6 +53,10 @@ const SocialButton = ({
   </Button>
 )
 
+const ErrorText = ({ error }: { error: string }) => (
+  <p className="text-sm text-danger brightness-200">{error}</p>
+)
+
 enum View {
   Choose = 'choose',
   EmailSignIn = 'email-signin',
@@ -64,13 +71,28 @@ const ChooseView = ({
   onSetView: (view: View) => void
 }) => {
   const [error, setError] = useState<string | null>(null)
+  const [pendingLink, setPendingLink] = useState<OAuthCredential | null>(null)
 
   const signInWith = async (provider: AuthProvider) => {
     try {
-      await signInWithPopup(firebaseAuth, provider)
+      const result = await signInWithPopup(firebaseAuth, provider)
+      if (pendingLink) await linkWithCredential(result.user, pendingLink)
       onSuccess()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Sign in failed')
+    } catch (e: unknown) {
+      const err = e as {
+        code?: string
+        credential?: OAuthCredential
+        customData?: { email?: string }
+      }
+      if (err?.code === 'auth/account-exists-with-different-credential') {
+        setPendingLink(err.credential ?? null)
+        const email = err.customData?.email
+        setError(
+          `An account already exists with${email ? ` email ${email}` : ' this email'}. Sign in with your original method to link accounts.`,
+        )
+      } else {
+        setError(e instanceof Error ? e.message : 'Sign in failed')
+      }
     }
   }
 
@@ -98,7 +120,19 @@ const ChooseView = ({
         data-testid="button-signin-microsoft"
         onClick={() => signInWith(new OAuthProvider('microsoft.com'))}
       />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      <SocialButton
+        icon={
+          <img
+            src="https://cdn.brandfetch.io/idZAyF9rlg/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1779162684348"
+            alt=""
+            className="invert" // change from black to white
+          />
+        }
+        label="Continue with GitHub"
+        data-testid="button-signin-github"
+        onClick={() => signInWith(new GithubAuthProvider())}
+      />
+      {error && <ErrorText error={error} />}
       <div className="flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-border" />
         <span className="text-xs text-muted-foreground">or</span>
@@ -184,7 +218,7 @@ const EmailView = ({
           required
         />
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <ErrorText error={error} />}
       <Button
         type="submit"
         disabled={loading}

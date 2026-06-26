@@ -23,6 +23,6 @@ export const TaskFormCancelConfirmDialog = ({
     confirmLabel="Cancel and Discard Subtasks"
     confirmBtnVariant="danger"
     onConfirm={onConfirm}
-    data-testid="cancel-confirm-dialog"
+    data-testid="cancel-task-form-confirm-dialog"
   />
 )

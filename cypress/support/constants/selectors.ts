@@ -55,7 +55,7 @@ export const Selectors = {
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),
     // cancel dialog
-    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
+    CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
     CANCEL_CONFIRM_BTN: testId('button-confirm'),
     CANCEL_DENY_BTN: testId('button-cancel'),
   },

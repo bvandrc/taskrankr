@@ -36,11 +36,8 @@ export const Selectors = {
   TaskForm: {
     FORM: testId('task-form'),
     NAME_INPUT: testId('task-name-input'),
-    MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
-    SUBMIT_BTN: testId('submit-button'),
-    CANCEL_BTN: testId('cancel-button'),
-    CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
+    MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
@@ -48,12 +45,17 @@ export const Selectors = {
     SUBTASK_ROW: testIdStartsWith('subtask-row-'),
     SUBTASK_NAME: testIdStartsWith('subtask-name-'),
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
-    /** Autocomplete when all subtasks complete */
-    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'),
-    /** Auto-hide completed subtasks */
+    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'), //autocomplete when all subtasks completed
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
+    SHOW_HIDDEN_BTN: testId('button-show-hidden'), //show hidden subtasks
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
-    SHOW_HIDDEN_BTN: testId('button-show-hidden'),
+    // form bns
+    SUBMIT_BTN: testId('submit-button'),
+    CANCEL_BTN: testId('cancel-button'),
+    // cancel dialog
+    CANCEL_CONFIRM_DIALOG: testId('cancel-confirm-dialog'),
+    CANCEL_CONFIRM_BTN: testId('button-confirm'),
+    CANCEL_DENY_BTN: testId('button-cancel'),
   },
   AssignSubtaskDialog: {
     DIALOG: testId('assign-subtask-dialog'),

@@ -85,8 +85,7 @@ const HowToUse = () => {
               <>
                 <div className="mb-4">
                   Use the <Em>sort buttons</Em> at the top of the task list to
-                  order tasks by date created, priority, ease, enjoyment, or
-                  time.
+                  order tasks by priority, ease, enjoyment, or time.
                 </div>
                 <SortInfo defaultExpanded={false} />
               </>
@@ -153,19 +152,16 @@ const HowToUse = () => {
                 By default, subtasks follow the same sort order as the main
                 list. Toggle <Em>Manual Mode</Em> in a task's subtasks panel to
                 drag and reorder subtasks in a custom sequence, perfect for
-                step-by-step workflows. This mode also allows for{' '}
-                <i>automatic numbering</i> of subtasks as steps.
+                step-by-step workflows.
               </>
             }
             data-testid="card-manual-ordering"
           />
           <IconCard
             icon={<EyeOff className="size-5" />}
-            title="Hide Subtasks, & Auto-Hide on Complete (Optional)"
+            title="Auto-Hide on Complete (Optional)"
             description={
               <>
-                <Em>Hide</Em> and <Em>Unhide</Em> subtasks as desired. Hidden
-                subtasks can be revealed using the <Em>Show Hidden</Em> button.
                 Enable <Em>Auto-Hide Completed</Em> in a task's subtask settings
                 to automatically hide subtasks when they are marked as
                 completed, keeping your list focused on what still needs to be

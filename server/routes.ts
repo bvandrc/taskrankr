@@ -210,8 +210,8 @@ const router = s.router(contract, {
   attachments: {
     list: {
       middleware: [isAuthenticated],
-      handler: async ({ query, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ query, res }) => {
+        const userId = getUserId(res)
         const task = await storage.getTask(query.taskId, userId)
         if (!task) {
           return { status: 200, body: [] }
@@ -222,16 +222,16 @@ const router = s.router(contract, {
     },
     listAll: {
       middleware: [isAuthenticated],
-      handler: async ({ req }) => {
-        const userId = getUserId(req)
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
         const result = await storage.getAllAttachments(userId)
         return { status: 200, body: result }
       },
     },
     getUploadUrl: {
       middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
         const task = await storage.getTask(body.taskId, userId)
         if (!task) {
           return ERRORS.TASK_NOT_FOUND
@@ -247,8 +247,8 @@ const router = s.router(contract, {
     },
     create: {
       middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
         const task = await storage.getTask(body.taskId, userId)
         if (!task) {
           return ERRORS.TASK_NOT_FOUND
@@ -267,8 +267,8 @@ const router = s.router(contract, {
     },
     getDownloadUrl: {
       middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
         const attachment = await storage.getAttachment(params.id, userId)
         if (!attachment) {
           return ERRORS.ATTACHMENT_NOT_FOUND
@@ -282,8 +282,8 @@ const router = s.router(contract, {
     },
     delete: {
       middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
         const attachment = await storage.getAttachment(params.id, userId)
         if (!attachment) {
           return ERRORS.ATTACHMENT_NOT_FOUND

@@ -4,12 +4,10 @@
  * Defines all task and settings CRUD endpoints with authentication middleware.
  * Mutation handlers delegate to `TaskMutationService` for rule validation and
  * side-effect resolution, then persist the computed mutations via `storage`.
- * Integrates with Replit Auth for user session management.
  */
 
 import type { Server } from 'node:http'
 import { createExpressEndpoints, initServer } from '@ts-rest/express'
-import { hoursToSeconds } from 'date-fns'
 import { isNil, noop, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
@@ -17,31 +15,17 @@ import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
 import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
+import { getSessionUserId as getUserId, isAuthenticated } from './auth'
 import { ERRORS, IS_PROD } from './constants'
 import {
   deleteR2Object,
   getPresignedDownloadUrl,
   getPresignedUploadUrl,
 } from './r2'
-import {
-  authStorage,
-  isAuthenticated,
-  registerAuthRoutes,
-  setupAuth,
-} from './replit_integrations/auth'
-import type { UserSession } from './replit_integrations/auth/replitAuth'
 import { storage } from './storage'
 import { makeTaskService } from './task-service-adapter'
 
 const s = initServer()
-
-const getUserId = (req: { user?: UserSession }): string => {
-  const userId = req.user?.claims?.sub
-  if (!userId) {
-    throw new Error('User ID not found in session')
-  }
-  return userId
-}
 
 /** Transforms a service `AppError` to the ts-rest response shape. */
 const toErrorResponse = <Status extends number>({
@@ -54,16 +38,16 @@ const router = s.router(contract, {
   tasks: {
     list: {
       middleware: [isAuthenticated],
-      handler: async ({ req }) => {
-        const userId = getUserId(req)
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
         const tasks = await storage.getTasks(userId)
         return { status: 200, body: tasks }
       },
     },
     export: {
       middleware: [isAuthenticated],
-      handler: async ({ req }) => {
-        const userId = getUserId(req)
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
         const tasks = await storage.getTasks(userId)
         return {
           status: 200,
@@ -77,8 +61,8 @@ const router = s.router(contract, {
     },
     import: {
       middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
         const { tasks } = body
         const idMap = new Map<number, number>()
 
@@ -139,8 +123,8 @@ const router = s.router(contract, {
     },
     get: {
       middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
         const task = await storage.getTask(params.id, userId)
         if (!task) {
           return ERRORS.TASK_NOT_FOUND
@@ -150,8 +134,8 @@ const router = s.router(contract, {
     },
     create: {
       middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
         const service = makeTaskService(userId)
         const result = await service.resolveCreate(body)
         if (!result.ok) return toErrorResponse(result.error)
@@ -165,8 +149,8 @@ const router = s.router(contract, {
     },
     update: {
       middleware: [isAuthenticated],
-      handler: async ({ params, body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ params, body, res }) => {
+        const userId = getUserId(res)
         const service = makeTaskService(userId)
         const result = await service.resolveUpdate(params.id, body)
         if (!result.ok) return toErrorResponse(result.error)
@@ -183,8 +167,8 @@ const router = s.router(contract, {
     },
     delete: {
       middleware: [isAuthenticated],
-      handler: async ({ params, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
         const service = makeTaskService(userId)
         const result = await service.resolveDelete(params.id)
         if (!result.ok) return toErrorResponse(result.error)
@@ -208,16 +192,16 @@ const router = s.router(contract, {
   settings: {
     get: {
       middleware: [isAuthenticated],
-      handler: async ({ req }) => {
-        const userId = getUserId(req)
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
         const settings = await storage.getSettings(userId)
         return { status: 200, body: settings }
       },
     },
     update: {
       middleware: [isAuthenticated],
-      handler: async ({ body, req }) => {
-        const userId = getUserId(req)
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
         const settings = await storage.updateSettings(userId, body)
         return { status: 200, body: settings }
       },
@@ -312,13 +296,7 @@ const router = s.router(contract, {
   },
 })
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express,
-): Promise<Server> {
-  await setupAuth(app)
-  registerAuthRoutes(app)
-
+export function registerRoutes(httpServer: Server, app: Express): Server {
   if (!IS_PROD) {
     registerTestRoutes(app)
   }
@@ -328,58 +306,16 @@ export async function registerRoutes(
   return httpServer
 }
 
-/** Hardcoded user identity used by every Cypress test run. */
-const TEST_USER_ID = 'cypress-test-user'
+const TEST_USER_ID = process.env.CYPRESS_TEST_USER_ID ?? 'cypress-test-user'
 
 /**
  * E2E-only routes, never registered in production.
  *
- * Replit OAuth requires a live OIDC provider and browser redirects — neither
- * is available in CI. These endpoints give Cypress a controlled alternative:
- *
- *  POST /api/test/login   – Upserts the test user and calls req.login(),
- *    writing a real session cookie via the same Passport middleware as prod.
- *  GET  /api/test/tasks   – Returns the test user's tasks without a session,
- *    so guest-mode tests can assert nothing was persisted to the server.
- *  DELETE /api/test/tasks – Clears all test-user tasks between runs.
+ *  GET    /api/test/tasks    – Returns the test user's tasks without auth.
+ *  DELETE /api/test/tasks    – Clears all test-user tasks between runs.
+ *  DELETE /api/test/settings – Resets test user settings to defaults.
  */
 function registerTestRoutes(app: Express): void {
-  app.post(TestPaths.TEST_LOGIN, async (req, res) => {
-    try {
-      await authStorage.upsertUser({
-        id: TEST_USER_ID,
-        email: 'cypress@test.local',
-        firstName: 'Cypress',
-        lastName: 'Test',
-        profileImageUrl: null,
-      })
-
-      const expiresAt = Math.floor(Date.now() / 1000) + hoursToSeconds(24 * 7)
-      const user: UserSession = {
-        claims: {
-          sub: TEST_USER_ID,
-          iss: 'test',
-          aud: 'test',
-          exp: expiresAt,
-          iat: Math.floor(Date.now() / 1000),
-        } as UserSession['claims'],
-        expires_at: expiresAt,
-        access_token: 'test-token',
-      }
-
-      req.login(user, (err) => {
-        if (err) {
-          return res
-            .status(500)
-            .json({ message: 'Login failed', error: String(err) })
-        }
-        res.json({ ok: true, userId: TEST_USER_ID })
-      })
-    } catch (err) {
-      res.status(500).json({ message: 'Setup failed', error: String(err) })
-    }
-  })
-
   app.get(TestPaths.TEST_TASKS, async (_req, res) => {
     try {
       const tasks = await storage.getTasks(TEST_USER_ID)

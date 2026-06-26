@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.5.0",
+    "date": "2026-06-26",
+    "title": "Change to Firebase Auth",
+    "changes": ["move from Replit auth to Firebase auth"]
+  },
+  {
     "version": "0.4.1",
     "date": "2026-06-23",
     "title": "Fix: Export & Import",

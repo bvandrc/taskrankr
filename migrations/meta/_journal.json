@@ -43,6 +43,20 @@
       "when": 1782174248585,
       "tag": "0005_drop_in_progress_time",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1750643200000,
+      "tag": "0006_drop_sessions_and_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1751000000000,
+      "tag": "0007_rename_time_enum",
+      "breakpoints": true
     }
   ]
 }

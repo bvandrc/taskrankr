@@ -1,16 +1,30 @@
 import { existsSync, mkdirSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'cypress'
+import { plugin as cypressFirebasePlugin } from 'cypress-firebase'
 import installTerminalReporter from 'cypress-terminal-report/src/installLogsPrinter'
 import { getVitePrebuilder } from 'cypress-vite'
+import * as admin from 'firebase-admin'
+import { cert, getApps, initializeApp } from 'firebase-admin/app'
 
 import { checkUserMode } from './cypress/support/utils/test-runner'
+import {
+  createEnvSchema,
+  firebaseClientEnvSchema,
+} from './shared/schema/env.zod'
 
 try {
   process.loadEnvFile('.env.local')
 } catch {
   // file is optional; missing is fine
 }
+
+const env = firebaseClientEnvSchema
+  .extend(
+    createEnvSchema(['FIREBASE_SERVICE_ACCOUNT_JSON', 'CYPRESS_TEST_USER_ID'])
+      .shape,
+  )
+  .parse(process.env)
 
 const { vitePrebuild, vitePreprocessor } = getVitePrebuilder({})
 
@@ -40,6 +54,20 @@ export default defineConfig({
       'cypress/e2e/hiding-subtasks.cy.ts',
     ],
     setupNodeEvents(on, config) {
+      if (getApps().length === 0) {
+        initializeApp({
+          credential: cert(JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON)),
+        })
+      }
+      cypressFirebasePlugin(on, config, admin)
+
+      // Forward Firebase client config so attachCustomCommands can initialize firebase
+      // TODO: simplify: check which is true, we can adjust.. or, make more DRY
+      config.env.FIREBASE_API_KEY ??= env.VITE_FIREBASE_API_KEY
+      config.env.FIREBASE_AUTH_DOMAIN ??= env.VITE_FIREBASE_AUTH_DOMAIN
+      config.env.FIREBASE_PROJECT_ID ??= env.VITE_FIREBASE_PROJECT_ID
+      config.env.CYPRESS_TEST_USER_ID ??= env.CYPRESS_TEST_USER_ID
+
       const userMode = checkUserMode(config.env.userMode)
 
       const resultsDirRaw = `cypress/results/${userMode}_mode`

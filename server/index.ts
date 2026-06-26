@@ -63,9 +63,9 @@ app.use((req, res, next) => {
   next()
 })
 
-// biome-ignore lint/nursery/noFloatingPromises: added by Replit, don't break...
+// biome-ignore lint/nursery/noFloatingPromises: top-level async entry point
 ;(async () => {
-  await registerRoutes(httpServer, app)
+  registerRoutes(httpServer, app)
 
   // biome-ignore lint/suspicious/noExplicitAny: error type comes from somethere else
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

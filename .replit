@@ -4,7 +4,30 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["glib", "gtk3", "nss", "nspr", "at-spi2-atk", "at-spi2-core", "cups", "libdrm", "libxkbcommon", "xorg.libX11", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXext", "xorg.libXfixes", "xorg.libXrandr", "xorg.libxcb", "mesa", "expat", "alsa-lib", "pango", "cairo", "dbus"]
+packages = [
+  "glib",
+  "gtk3",
+  "nss",
+  "nspr",
+  "at-spi2-atk",
+  "at-spi2-core",
+  "cups",
+  "libdrm",
+  "libxkbcommon",
+  "xorg.libX11",
+  "xorg.libXcomposite",
+  "xorg.libXdamage",
+  "xorg.libXext",
+  "xorg.libXfixes",
+  "xorg.libXrandr",
+  "xorg.libxcb",
+  "mesa",
+  "expat",
+  "alsa-lib",
+  "pango",
+  "cairo",
+  "dbus",
+]
 
 [[ports]]
 localPort = 5000
@@ -38,9 +61,6 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
-
-[agent]
-integrations = ["javascript_log_in_with_replit:2.0.0"]
 
 [postMerge]
 path = "scripts/post-merge.sh"

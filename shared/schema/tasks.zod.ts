@@ -81,7 +81,7 @@ export const subtaskSortModePgEnum = createPgEnum(
 export const priorityPgEnum = createPgEnum('priority', Priority)
 export const easePgEnum = createPgEnum('ease', Ease)
 export const enjoymentPgEnum = createPgEnum('enjoyment', Enjoyment)
-export const timePgEnum = createPgEnum('time', Time)
+export const timePgEnum = createPgEnum('time_rank', Time)
 
 export const tasks = pgTable('tasks', {
   id: serial('id').primaryKey(),

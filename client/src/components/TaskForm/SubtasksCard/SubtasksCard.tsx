@@ -168,8 +168,20 @@ export const SubtasksCard = ({
   const hiddenCount = hiddenSubtaskIds.size
 
   const visibleSubtasks = useMemo(() => {
-    if (showHidden) return allSubtasks
-    return allSubtasks.filter((s) => !hiddenSubtaskIds.has(s.id))
+    const filtered = showHidden
+      ? allSubtasks
+      : allSubtasks.filter((s) => !hiddenSubtaskIds.has(s.id))
+
+    // Renumber based on visible siblings per parent so hidden items don't
+    // leave gaps (e.g. 1, 3, 4 becomes 1, 2, 3).
+    const visibleCountByParent = new Map<number | null, number>()
+    return filtered.map((subtask) => {
+      if (subtask.subtaskIndex === undefined) return subtask
+      const key = subtask.parentId ?? null
+      const idx = visibleCountByParent.get(key) ?? 0
+      visibleCountByParent.set(key, idx + 1)
+      return { ...subtask, subtaskIndex: idx }
+    })
   }, [allSubtasks, showHidden, hiddenSubtaskIds])
 
   const totalCount = allSubtasks.length

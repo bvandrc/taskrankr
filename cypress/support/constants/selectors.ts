@@ -49,6 +49,8 @@ export const Selectors = {
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     SHOW_HIDDEN_BTN: testId('button-show-hidden'), //show hidden subtasks
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
+    // attachments
+    ATTACHMENTS_CARD: testId('attachments-card'),
     // form bns
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),

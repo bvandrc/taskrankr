@@ -65,6 +65,8 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Guest Mode**: Local storage-based guest mode with demo data for unauthenticated users.
 - **Replit Auth Integration**: Secure user authentication via Replit's authentication service.
 - **PWA Support**: Installable as a Progressive Web App for an app-like experience.
+- **File Attachments**: Authenticated users can attach files (up to 50 MB each) to any saved task. Files are stored in Cloudflare R2 via presigned URLs; downloads use time-limited presigned GET URLs. A per-user storage cap is enforced at upload time.
+- **File Attachments Page**: Accessible from the nav menu (auth only, `/file-attachments`). Lists all attachments across every task with a storage meter, task status ("Open" or "X days ago"), file size, download, and delete per attachment.
 
 ## User preferences
 
@@ -84,6 +86,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `cypress/support/constants/selectors.ts` before using them in Cypress tests.
 - **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
+- **Attachments DB migration**: The `attachments` table was created directly via `executeSql` (not via a drizzle migration file) because `db:push` and `db:generate` both fail non-interactively. If resetting the DB, re-run: `CREATE TABLE IF NOT EXISTS attachments (id serial PRIMARY KEY, task_id integer NOT NULL REFERENCES tasks(id) ON DELETE CASCADE, user_id varchar NOT NULL, file_name text NOT NULL, file_size integer NOT NULL, mime_type text NOT NULL, r2_key text NOT NULL, created_at timestamp DEFAULT now() NOT NULL);`
 - **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
 - **Vite duplicate-React / Invalid hook call**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Any change to `vite.config.ts` (even adding a `define` entry) invalidates Vite's dep-optimisation hash; the first load after the change triggers a re-bundle that races with module loading and can land two React instances simultaneously. `workbox-window` has the same problem mid-session (only discovered when the SW first runs). Do not remove these options, and avoid touching `vite.config.ts` when a client-side change suffices. If a new package triggers the symptom, add it to `optimizeDeps.include`.
 - **Service worker in dev**: Disabled in dev (`devOptions.enabled: false`) and stale SWs are unregistered on non-PROD load (`main.tsx`). Do not re-enable — a stale SW intercepts Vite's module requests and serves cached `index.html`, breaking HMR and causing duplicate-React errors.

@@ -8,14 +8,20 @@
 
 import type { Server } from 'node:http'
 import { createExpressEndpoints, initServer } from '@ts-rest/express'
-import { isNil, omit } from 'es-toolkit'
+import { isNil, noop, omit } from 'es-toolkit'
 import type { Express } from 'express'
 
 import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
+import { MAX_TOTAL_STORAGE_BYTES } from '~/shared/fileAttachments'
 import { DEFAULT_FIELD_CONFIG, type Task, TaskStatus } from '~/shared/schema'
 import { getSessionUserId as getUserId, isAuthenticated } from './auth'
 import { ERRORS, IS_PROD } from './constants'
+import {
+  deleteR2Object,
+  getPresignedDownloadUrl,
+  getPresignedUploadUrl,
+} from './r2'
 import { storage } from './storage'
 import { makeTaskService } from './task-service-adapter'
 
@@ -173,6 +179,12 @@ const router = s.router(contract, {
         for (const m of result.mutations) {
           await storage.updateTask(m.id, userId, m.patch)
         }
+        const r2Keys = await storage.getAttachmentKeysForTaskTree(
+          params.id,
+          userId,
+        )
+        await storage.deleteTask(params.id, userId)
+        await Promise.allSettled(r2Keys.map((key) => deleteR2Object(key)))
         return { status: 204, body: undefined }
       },
     },
@@ -192,6 +204,93 @@ const router = s.router(contract, {
         const userId = getUserId(res)
         const settings = await storage.updateSettings(userId, body)
         return { status: 200, body: settings }
+      },
+    },
+  },
+  attachments: {
+    list: {
+      middleware: [isAuthenticated],
+      handler: async ({ query, res }) => {
+        const userId = getUserId(res)
+        const task = await storage.getTask(query.taskId, userId)
+        if (!task) {
+          return { status: 200, body: [] }
+        }
+        const result = await storage.getAttachments(query.taskId, userId)
+        return { status: 200, body: result }
+      },
+    },
+    listAll: {
+      middleware: [isAuthenticated],
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
+        const result = await storage.getAllAttachments(userId)
+        return { status: 200, body: result }
+      },
+    },
+    getUploadUrl: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
+        const task = await storage.getTask(body.taskId, userId)
+        if (!task) {
+          return ERRORS.TASK_NOT_FOUND
+        }
+        const totalUsed = await storage.getTotalStorageUsed(userId)
+        if (totalUsed + body.fileSize > MAX_TOTAL_STORAGE_BYTES) {
+          return ERRORS.STORAGE_LIMIT_EXCEEDED
+        }
+        const key = `${userId}/${body.taskId}/${Date.now()}-${body.fileName}`
+        const uploadUrl = await getPresignedUploadUrl(key, body.mimeType)
+        return { status: 200, body: { uploadUrl, key } }
+      },
+    },
+    create: {
+      middleware: [isAuthenticated],
+      handler: async ({ body, res }) => {
+        const userId = getUserId(res)
+        const task = await storage.getTask(body.taskId, userId)
+        if (!task) {
+          return ERRORS.TASK_NOT_FOUND
+        }
+        try {
+          const attachment = await storage.createAttachment({
+            ...body,
+            userId,
+          })
+          return { status: 201, body: attachment }
+        } catch {
+          await deleteR2Object(body.r2Key).catch(noop)
+          return ERRORS.ATTACHMENT_METADATA_FAILED
+        }
+      },
+    },
+    getDownloadUrl: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
+        const attachment = await storage.getAttachment(params.id, userId)
+        if (!attachment) {
+          return ERRORS.ATTACHMENT_NOT_FOUND
+        }
+        const downloadUrl = await getPresignedDownloadUrl(
+          attachment.r2Key,
+          attachment.fileName,
+        )
+        return { status: 200, body: { downloadUrl } }
+      },
+    },
+    delete: {
+      middleware: [isAuthenticated],
+      handler: async ({ params, res }) => {
+        const userId = getUserId(res)
+        const attachment = await storage.getAttachment(params.id, userId)
+        if (!attachment) {
+          return ERRORS.ATTACHMENT_NOT_FOUND
+        }
+        await storage.deleteAttachment(params.id, userId)
+        await deleteR2Object(attachment.r2Key)
+        return { status: 204, body: undefined }
       },
     },
   },

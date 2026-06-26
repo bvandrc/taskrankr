@@ -13,7 +13,9 @@ import express, {
   type Response,
 } from 'express'
 
+import { IS_PROD } from './constants'
 import { log } from './log'
+import { scheduleReconciliation } from './reconcile'
 import { registerRoutes } from './routes'
 import { serveStatic } from './static'
 
@@ -66,6 +68,9 @@ app.use((req, res, next) => {
 // biome-ignore lint/nursery/noFloatingPromises: top-level async entry point
 ;(async () => {
   registerRoutes(httpServer, app)
+  if (IS_PROD) {
+    scheduleReconciliation()
+  }
 
   // biome-ignore lint/suspicious/noExplicitAny: error type comes from somethere else
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

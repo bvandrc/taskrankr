@@ -24,6 +24,7 @@ import {
   type MutateTaskContent,
   useTaskMutations,
 } from '@/providers/TasksProvider'
+import type { LocalTask } from '@/types'
 import type { CreateTask, Task } from '~/shared/schema'
 import { SubtaskSortMode, TaskStatus } from '~/shared/schema'
 import { ConfirmDeleteDialog } from '../ConfirmDeleteDialog'
@@ -354,10 +355,27 @@ const TaskFormDialogProviderInner = ({
     return top.taskId
   }
 
-  const handleSubmit = async (data: MutateTaskContent) => {
+  const handleSubmit = async (
+    data: MutateTaskContent,
+  ): Promise<LocalTask | undefined> => {
     const top = navStack.at(-1)
     if (!top) return
     const isRoot = navStack.length === 1
+
+    if (top.taskId === null) {
+      // Fresh create with no draft: just create directly.
+      const localTask = await createTask({
+        ...data,
+        parentId: freshCreateParentId ?? undefined,
+      } as CreateTask)
+      // Defensive: any stray drafts get committed (shouldn't exist here).
+      if (hasDraftSession) commitDraftSession()
+      resetAndClose()
+      return localTask
+    }
+
+    setShowSaveOpenSubtasksConfirm(false)
+    setPendingSaveFormData(null)
 
     // Guard: when saving a completed task that has newly-added incomplete
     // subtasks, warn the user that the parent will be re-opened. Skip this
@@ -374,22 +392,7 @@ const TaskFormDialogProviderInner = ({
       return
     }
 
-    setShowSaveOpenSubtasksConfirm(false)
-    setPendingSaveFormData(null)
-
     try {
-      if (top.taskId === null) {
-        // Fresh create with no draft: just create directly.
-        await createTask({
-          ...data,
-          parentId: freshCreateParentId ?? undefined,
-        } as CreateTask)
-        // Defensive: any stray drafts get committed (shouldn't exist here).
-        if (hasDraftSession) await commitDraftSession()
-        resetAndClose()
-        return
-      }
-
       // Save form data to current entity. updateTask routes drafts internally.
       // If the user confirmed saving a completed task that has incomplete draft
       // subtasks, force the parent back to OPEN so the intent ("saving will

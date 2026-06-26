@@ -2,7 +2,9 @@
  * @fileoverview Firebase Admin SDK setup and Express middleware for verifying Bearer tokens.
  */
 
-import type { RequestHandler, Response } from 'express'
+import type { AppRoute, AppRouter } from '@ts-rest/core'
+import type { TsRestRequest } from '@ts-rest/express'
+import type { NextFunction, Response } from 'express'
 import { cert, getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 
@@ -25,9 +27,11 @@ export function getSessionUserId(res: Response): string {
   return uid
 }
 
-export const isAuthenticated: RequestHandler<
-  Record<string, string | number>
-> = async (req, res, next) => {
+export async function isAuthenticated<T extends AppRoute | AppRouter>(
+  req: TsRestRequest<T>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   const token = req.headers.authorization?.split('Bearer ')[1]
   if (!token) {
     res.status(401).json({ message: 'Unauthorized' })

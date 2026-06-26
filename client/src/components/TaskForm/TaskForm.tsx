@@ -2,13 +2,16 @@
  * @fileoverview Form component for creating and editing tasks
  */
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
+import { toastError } from '@/hooks/useToasts'
+import { uploadFiles } from '@/lib/attachment-upload'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
 import { getHasIncompleteSubtasks } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
@@ -18,6 +21,8 @@ import type {
   DeleteTaskArgs,
   MutateTaskContent,
 } from '@/providers/TasksProvider'
+import { useTaskMutations } from '@/providers/TasksProvider'
+import type { LocalTask } from '@/types'
 import {
   allRankFieldsNull,
   insertTaskSchemaRefined,
@@ -44,6 +49,7 @@ import {
 } from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
+import { AttachmentsCard, type AttachmentsCardHandle } from './AttachmentsCard'
 import { RankFieldSelect } from './RankFieldSelect'
 import { SubtasksCard } from './SubtasksCard'
 import { useTaskFormParentChain } from './useTaskFormParentChain'
@@ -111,7 +117,7 @@ const DateCreatedInput = ({ value, onChange }: DateCreatedInputProps) => (
 )
 
 export interface TaskFormProps {
-  onSubmit: (data: MutateTaskContent) => void
+  onSubmit: (data: MutateTaskContent) => Promise<LocalTask | undefined>
   initialData?: Task
   parentId?: number | null
   onCancel: () => void
@@ -192,12 +198,15 @@ export const TaskForm = ({
     void form.trigger()
   }, [settings.fieldConfig, form])
 
+  const { subscribeToIdReplacement } = useTaskMutations()
+  const queryClient = useQueryClient()
+  const attachmentsRef = useRef<AttachmentsCardHandle>(null)
   const isEditingExisting = !!initialData && !isDraft
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => {
+        onSubmit={form.handleSubmit(async (data) => {
           const submitted: MutateTaskContent = { ...data }
           if (
             submitted.status === TaskStatus.COMPLETED &&
@@ -205,7 +214,27 @@ export const TaskForm = ({
           ) {
             submitted.completedAt = new Date()
           }
-          onSubmit(submitted)
+
+          const isNewTask = !initialData || initialData.id <= 0
+          if (isNewTask) {
+            // Capture staged files before the dialog closes and unmounts this component.
+            const files = attachmentsRef.current?.getStagedFiles() ?? []
+            const localTask = await onSubmit(submitted)
+            if (files.length > 0 && localTask) {
+              const unsub = subscribeToIdReplacement(async (tempId, realId) => {
+                if (tempId !== localTask.id) return
+                unsub()
+                const errors = await uploadFiles(files, realId, queryClient)
+                for (const msg of errors) {
+                  toastError({ title: msg })
+                }
+              })
+            }
+          } else {
+            const committed = await attachmentsRef.current?.commit()
+            if (committed === false) return
+            await onSubmit(submitted)
+          }
         })}
         className="flex flex-col h-full"
         data-testid="task-form"
@@ -357,6 +386,15 @@ export const TaskForm = ({
             </div>
           </div>
         </div>
+
+        <AttachmentsCard
+          ref={attachmentsRef}
+          taskId={
+            initialData?.id != null && initialData.id > 0
+              ? initialData.id
+              : null
+          }
+        />
 
         <div className="pt-2 pb-4 px-4 flex gap-3 ">
           <Button

@@ -3,7 +3,10 @@
     "version": "0.5.0",
     "date": "2026-06-26",
     "title": "Change to Firebase Auth",
-    "changes": ["move from Replit auth to Firebase auth"]
+    "changes": [
+      "move from Replit auth to Firebase auth (email/password, Google, GitHub, and Microsoft sign-in options)",
+      "remove option to show or hide numbering in manual sort mode; always display them"
+    ]
   },
   {
     "version": "0.4.1",

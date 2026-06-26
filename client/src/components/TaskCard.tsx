@@ -342,7 +342,6 @@ export const TaskCard = ({
                   showRestore={showRestore}
                   showCompletedDate={showCompletedDate}
                   numberIndex={
-                    task.subtasksShowNumbers &&
                     task.subtaskSortMode === SubtaskSortMode.MANUAL
                       ? index
                       : undefined

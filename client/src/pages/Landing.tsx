@@ -16,6 +16,7 @@ import {
   Star,
   WifiOff,
 } from 'lucide-react'
+import { Link } from 'wouter'
 
 import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
@@ -174,6 +175,15 @@ const Landing = () => {
           </div>
         )}
       </main>
+
+      <footer className="py-4 text-center">
+        <Link
+          href={Routes.PRIVACY_POLICY}
+          className="text-xs text-muted-foreground/60 underline hover:text-muted-foreground"
+        >
+          Privacy Policy
+        </Link>
+      </footer>
 
       <WhyDifferentDialog
         open={showWhyDialog}

@@ -548,6 +548,14 @@ const Settings = () => {
         <p className="text-xs mt-1" data-testid="text-app-version">
           v{APP_VERSION}
         </p>
+        <p className="text-xs mt-2">
+          <Link
+            href={Routes.PRIVACY_POLICY}
+            className="underline hover:text-foreground"
+          >
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </ScrollablePage>
   )

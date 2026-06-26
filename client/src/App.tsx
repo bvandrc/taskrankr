@@ -34,6 +34,7 @@ const Completed = lazy(() => import('@/pages/Completed'))
 const Settings = lazy(() => import('@/pages/Settings'))
 const HowToUse = lazy(() => import('@/pages/HowToUse'))
 const HowToInstall = lazy(() => import('@/pages/HowToInstall'))
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 const Router = () => (
@@ -45,6 +46,7 @@ const Router = () => (
         <Route path={Routes.SETTINGS} component={Settings} />
         <Route path={Routes.HOW_TO_USE} component={HowToUse} />
         <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />
+        <Route path={Routes.PRIVACY_POLICY} component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -130,12 +132,22 @@ const AuthenticatedApp = () => {
 }
 
 const App = () => {
+  const [location] = useLocation()
+
   useEffect(() => {
     const loader = document.getElementById('app-loader')
     if (loader) {
       loader.remove()
     }
   }, [])
+
+  if (location === Routes.PRIVACY_POLICY) {
+    return (
+      <Suspense fallback={<Spinner fullScreen />}>
+        <PrivacyPolicy />
+      </Suspense>
+    )
+  }
 
   return (
     <ErrorBoundary>

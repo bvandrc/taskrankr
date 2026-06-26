@@ -26,6 +26,7 @@ export const Routes = {
   HOW_TO_USE: '/how-to-use',
   HOW_TO_INSTALL: '/how-to-install',
   COMPLETED: '/completed',
+  PRIVACY_POLICY: '/privacy-policy',
 } as const
 
 export const RANK_FIELD_ENUMS = {

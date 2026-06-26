@@ -10,6 +10,7 @@ import {
   OAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
 } from 'firebase/auth'
 import { Mail } from 'lucide-react'
 
@@ -96,7 +97,12 @@ const ChooseView = ({
         }
         label="Continue with Microsoft"
         data-testid="button-signin-microsoft"
-        onClick={() => signInWith(new OAuthProvider('microsoft.com'))}
+        onClick={() =>
+          void signInWithRedirect(
+            firebaseAuth,
+            new OAuthProvider('microsoft.com'),
+          )
+        }
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <div className="flex items-center gap-3 my-1">

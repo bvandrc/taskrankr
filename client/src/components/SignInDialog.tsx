@@ -70,8 +70,15 @@ const ChooseView = ({
     try {
       await signInWithPopup(firebaseAuth, provider)
       onSuccess()
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Sign in failed')
+    } catch (e: unknown) {
+      const err = e as { code?: string }
+      if (err?.code === 'auth/account-exists-with-different-credential') {
+        setError(
+          'An account already exists with this email. Sign in with the method you originally used.',
+        )
+      } else {
+        setError(e instanceof Error ? e.message : 'Sign in failed')
+      }
     }
   }
 
@@ -111,7 +118,7 @@ const ChooseView = ({
         data-testid="button-signin-github"
         onClick={() => signInWith(new GithubAuthProvider())}
       />
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-border" />
         <span className="text-xs text-muted-foreground">or</span>
@@ -197,7 +204,7 @@ const EmailView = ({
           required
         />
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <Button
         type="submit"
         disabled={loading}

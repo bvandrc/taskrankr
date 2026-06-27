@@ -3,7 +3,7 @@
  */
 
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { Route, Switch, useLocation } from 'wouter'
+import { Route, Switch } from 'wouter'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from '@/components/primitives/overlays/Toaster'
@@ -38,7 +38,8 @@ const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
 const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
-const Router = () => (
+/** Routes that require being authenticated or in guest mode. */
+const AuthenticatedAppRouter = () => (
   <div className="flex-1 flex flex-col min-h-0">
     <Suspense fallback={<Spinner centered />}>
       <Switch>
@@ -46,8 +47,6 @@ const Router = () => (
         <Route path={Routes.COMPLETED} component={Completed} />
         <Route path={Routes.SETTINGS} component={Settings} />
         <Route path={Routes.HOW_TO_USE} component={HowToUse} />
-        <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />
-        <Route path={Routes.PRIVACY_POLICY} component={PrivacyPolicy} />
         <Route path={Routes.DELETE_ACCOUNT} component={DeleteAccount} />
         <Route component={NotFound} />
       </Switch>
@@ -57,12 +56,10 @@ const Router = () => (
 
 const GuestRedirect = () => {
   const { enterGuestMode } = useGuestMode()
-  const [, setLocation] = useLocation()
 
   useEffect(() => {
     enterGuestMode()
-    setLocation(Routes.HOME)
-  }, [enterGuestMode, setLocation])
+  }, [enterGuestMode])
 
   return null
 }
@@ -71,7 +68,6 @@ const AuthenticatedApp = () => {
   const { isLoading, isAuthenticated } = useAuth()
   const { isGuestMode } = useGuestMode()
   const hasMigrated = useRef(false)
-  const [location] = useLocation()
 
   useEffect(() => {
     if (isAuthenticated && !isGuestMode && !hasMigrated.current) {
@@ -92,17 +88,12 @@ const AuthenticatedApp = () => {
   }
 
   if (!isAuthenticated && !isGuestMode) {
-    if (location === Routes.HOW_TO_INSTALL) {
-      return (
-        <Suspense fallback={<Spinner fullScreen />}>
-          <HowToInstall />
-        </Suspense>
-      )
-    }
-    if (location === Routes.GUEST) {
-      return <GuestRedirect />
-    }
-    return <Landing />
+    return (
+      <Switch>
+        <Route path={Routes.GUEST} component={GuestRedirect} />
+        <Route component={Landing} />
+      </Switch>
+    )
   }
 
   const shouldSync = isAuthenticated && !isGuestMode
@@ -121,7 +112,7 @@ const AuthenticatedApp = () => {
               <TaskFormDialogProvider>
                 <div className="h-dvh flex flex-col overflow-hidden">
                   <StatusBanner />
-                  <Router />
+                  <AuthenticatedAppRouter />
                   <WhatsNewDialog />
                 </div>
               </TaskFormDialogProvider>
@@ -134,8 +125,6 @@ const AuthenticatedApp = () => {
 }
 
 const App = () => {
-  const [location] = useLocation()
-
   useEffect(() => {
     const loader = document.getElementById('app-loader')
     if (loader) {
@@ -143,23 +132,23 @@ const App = () => {
     }
   }, [])
 
-  if (location === Routes.PRIVACY_POLICY) {
-    return (
-      <Suspense fallback={<Spinner fullScreen />}>
-        <PrivacyPolicy />
-      </Suspense>
-    )
-  }
-
   return (
     <ErrorBoundary>
       <AuthProvider>
         <TooltipProvider>
           <BannersProvider>
-            <GuestModeProvider>
-              <Toaster />
-              <AuthenticatedApp />
-            </GuestModeProvider>
+            <Suspense fallback={<Spinner fullScreen />}>
+              <Switch>
+                <Route path={Routes.PRIVACY_POLICY} component={PrivacyPolicy} />
+                <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />
+                <Route>
+                  <GuestModeProvider>
+                    <Toaster />
+                    <AuthenticatedApp />
+                  </GuestModeProvider>
+                </Route>
+              </Switch>
+            </Suspense>
           </BannersProvider>
         </TooltipProvider>
       </AuthProvider>

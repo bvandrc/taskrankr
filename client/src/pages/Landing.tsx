@@ -180,6 +180,7 @@ const Landing = () => {
         <Link
           href={Routes.PRIVACY_POLICY}
           className="text-xs text-muted-foreground/60 underline hover:text-muted-foreground"
+          data-testid="link-privacy-policy"
         >
           Privacy Policy
         </Link>

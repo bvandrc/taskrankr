@@ -35,9 +35,9 @@ const PrivacyPolicy = () => (
       <Section title="Information We Collect">
         <p>
           <strong>Account information:</strong> When you sign in with Google,
-          Microsoft, GitHub, Facebook, or email, we receive your name, email
-          address, and a unique identifier from that provider. We do not receive
-          or store your social-provider passwords.
+          Microsoft, GitHub, or email, we receive your name, email address, and
+          a unique identifier from that provider. We do not receive or store
+          your social-provider passwords.
         </p>
         <p>
           <strong>Task data:</strong> Tasks, subtasks, and settings you create

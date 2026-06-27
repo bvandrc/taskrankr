@@ -46,7 +46,6 @@ const Router = () => (
         <Route path={Routes.SETTINGS} component={Settings} />
         <Route path={Routes.HOW_TO_USE} component={HowToUse} />
         <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />
-        <Route path={Routes.PRIVACY_POLICY} component={PrivacyPolicy} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

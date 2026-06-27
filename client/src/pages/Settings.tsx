@@ -552,6 +552,7 @@ const Settings = () => {
           <Link
             href={Routes.PRIVACY_POLICY}
             className="underline hover:text-foreground"
+            data-testid="link-privacy-policy"
           >
             Privacy Policy
           </Link>

@@ -135,16 +135,6 @@ const ChooseView = ({
         onClick={() => signInWith(new GithubAuthProvider())}
       />
       {error && <ErrorText error={error} />}
-      <p className="text-center text-xs text-muted-foreground mt-1">
-        By signing in you agree to our{' '}
-        <Link
-          href={Routes.PRIVACY_POLICY}
-          className="underline hover:text-foreground"
-        >
-          Privacy Policy
-        </Link>
-        .
-      </p>
       <div className="flex items-center gap-3 my-1">
         <div className="flex-1 h-px bg-border" />
         <span className="text-xs text-muted-foreground">or</span>
@@ -157,6 +147,17 @@ const ChooseView = ({
         onClick={() => onSetView(View.EmailSignIn)}
         variant="outline"
       />
+      <p className="text-center text-xs text-muted-foreground mt-1">
+        By signing in you agree to our{' '}
+        <Link
+          href={Routes.PRIVACY_POLICY}
+          className="underline hover:text-foreground"
+          data-testid="link-privacy-policy"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </div>
   )
 }

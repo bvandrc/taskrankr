@@ -7,7 +7,6 @@ import { Input } from '@/components/primitives/forms/Input'
 import { Label } from '@/components/primitives/forms/Label'
 import { ScrollablePage } from '@/components/primitives/ScrollablePage'
 import { useAuth } from '@/hooks/useAuth'
-import { firebaseAuth } from '@/lib/auth-client'
 import { tsr } from '@/lib/ts-rest'
 
 const CONFIRM_PHRASE = 'delete my account'
@@ -31,7 +30,6 @@ const DeleteAccount = () => {
         setError('Something went wrong. Please try again.')
         return
       }
-      await firebaseAuth.currentUser?.delete()
       await logout()
       setLocation('/')
     } catch (err) {
@@ -67,6 +65,7 @@ const DeleteAccount = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder={CONFIRM_PHRASE}
             autoComplete="off"
+            data-testid="input-confirm-delete"
           />
         </div>
 
@@ -76,6 +75,7 @@ const DeleteAccount = () => {
           variant="danger"
           disabled={!confirmed || loading}
           onClick={handleDelete}
+          data-testid="button-delete-account"
         >
           {loading ? 'Deleting…' : 'Delete My Account'}
         </Button>

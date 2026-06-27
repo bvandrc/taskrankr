@@ -3,7 +3,7 @@
  */
 
 import { lazy, Suspense, useEffect, useRef } from 'react'
-import { Route, Switch } from 'wouter'
+import { Route, Switch, useLocation } from 'wouter'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from '@/components/primitives/overlays/Toaster'
@@ -56,10 +56,12 @@ const AuthenticatedAppRouter = () => (
 
 const GuestRedirect = () => {
   const { enterGuestMode } = useGuestMode()
+  const [, setLocation] = useLocation()
 
   useEffect(() => {
     enterGuestMode()
-  }, [enterGuestMode])
+    setLocation(Routes.HOME)
+  }, [enterGuestMode, setLocation])
 
   return null
 }

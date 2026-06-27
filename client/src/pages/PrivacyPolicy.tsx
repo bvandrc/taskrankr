@@ -76,8 +76,8 @@ const PrivacyPolicy = () => (
       <Section title="Data Retention">
         <p>
           Your data is retained as long as your account exists. You may delete
-          your account at any time by contacting us, which will permanently
-          remove your tasks and account information.
+          your account at any time from Settings → Delete Account, which will
+          permanently remove your tasks and account information.
         </p>
       </Section>
 

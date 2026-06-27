@@ -531,15 +531,14 @@ const Settings = () => {
               Permanently delete your account and all associated data. This
               cannot be undone.
             </p>
-            <Link href={Routes.DELETE_ACCOUNT}>
-              <Button
-                variant="outline"
-                className="gap-2 text-destructive border-destructive/30"
-              >
-                <Trash2 className="size-4" />
-                Delete Account
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="gap-2 text-destructive border-destructive/30"
+              href={Routes.DELETE_ACCOUNT}
+            >
+              <Trash2 className="size-4" />
+              Delete Account
+            </Button>
           </CollapsibleCard>
         )}
 

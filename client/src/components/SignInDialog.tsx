@@ -16,6 +16,7 @@ import {
 } from 'firebase/auth'
 import { Mail } from 'lucide-react'
 
+import { PrivacyPolicyLink } from '@/components/PrivacyPolicyLink'
 import { Button } from '@/components/primitives/Button'
 import { Input } from '@/components/primitives/forms/Input'
 import { Label } from '@/components/primitives/forms/Label'
@@ -145,6 +146,9 @@ const ChooseView = ({
         onClick={() => onSetView(View.EmailSignIn)}
         variant="outline"
       />
+      <p className="text-center text-xs text-muted-foreground mt-1">
+        By signing in you agree to our <PrivacyPolicyLink />.
+      </p>
     </div>
   )
 }

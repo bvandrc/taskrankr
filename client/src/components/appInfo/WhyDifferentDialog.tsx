@@ -145,8 +145,8 @@ export const WhyDifferentDialog = ({
             <p className="text-muted-foreground text-center">
               If you find any bugs or have feature suggestions, please email me
               at{' '}
-              <InlineLink href="mailto:taskrankr@gmail.com">
-                taskrankr@gmail.com
+              <InlineLink href="mailto:support@taskrankr.com">
+                support@taskrankr.com
               </InlineLink>
             </p>
           </div>

@@ -10,6 +10,7 @@ import type { Server } from 'node:http'
 import { createExpressEndpoints, initServer } from '@ts-rest/express'
 import { isNil, omit } from 'es-toolkit'
 import type { Express } from 'express'
+import { getAuth } from 'firebase-admin/auth'
 
 import { type AppError, TestPaths } from '~/shared/constants'
 import { contract } from '~/shared/contract'
@@ -192,6 +193,17 @@ const router = s.router(contract, {
         const userId = getUserId(res)
         const settings = await storage.updateSettings(userId, body)
         return { status: 200, body: settings }
+      },
+    },
+  },
+  account: {
+    delete: {
+      middleware: [isAuthenticated],
+      handler: async ({ res }) => {
+        const userId = getUserId(res)
+        await getAuth().deleteUser(userId)
+        await storage.deleteUserItems(userId)
+        return { status: 204, body: undefined }
       },
     },
   },

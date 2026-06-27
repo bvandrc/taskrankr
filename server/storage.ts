@@ -41,6 +41,7 @@ export interface IStorage {
     userId: string,
     updates: Partial<UserSettings>,
   ): Promise<UserSettings>
+  deleteUserItems(userId: string): Promise<void>
 }
 
 export class DatabaseStorage implements IStorage {
@@ -175,6 +176,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userSettings.userId, userId))
       .returning()
     return sanitizeSettings(settings)
+  }
+
+  async deleteUserItems(userId: string): Promise<void> {
+    await db.delete(tasks).where(eq(tasks.userId, userId))
+    await db.delete(userSettings).where(eq(userSettings.userId, userId))
   }
 }
 

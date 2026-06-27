@@ -9,7 +9,6 @@ import { isStandalonePWA } from 'is-standalone-pwa'
 import type { LucideIcon } from 'lucide-react'
 import {
   CheckCircle,
-  Clock,
   Download,
   Info,
   ListTodo,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react'
 
 import { WhyDifferentDialog } from '@/components/appInfo/WhyDifferentDialog'
+import { PrivacyPolicyLink } from '@/components/PrivacyPolicyLink'
 import { Button, type buttonVariants } from '@/components/primitives/Button'
 import { InlineLink } from '@/components/primitives/InlineText'
 import { SignInDialog } from '@/components/SignInDialog'
@@ -87,14 +87,14 @@ const Landing = () => {
   const [showSignIn, setShowSignIn] = useState(false)
 
   return (
-    <div className="max-h-screen bg-background text-foreground flex flex-col">
+    <div className="h-dvh bg-background text-foreground flex flex-col">
       <header className="p-6">
         <h1 className="text-xl font-bold" data-testid="text-logo">
           TaskRankr
         </h1>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <main className="flex-1 flex flex-col items-center justify-start pt-[8vh] px-6 text-center">
         <h2 className="text-4xl md:text-5xl font-bold leading-tight pb-2">
           Prioritize your tasks.
         </h2>
@@ -102,36 +102,27 @@ const Landing = () => {
           Rate and sort by priority, ease, enjoyment, and time for each task.
         </p>
 
-        <div className="flex flex-col items-center gap-3 pt-2 pb-6 text-sm text-muted-foreground">
-          <div className="flex justify-center gap-6">
-            <CaptionedIcon
-              icon={Star}
-              color="text-yellow-500"
-              label="Priority levels"
-            />
-            <CaptionedIcon
-              icon={CheckCircle}
-              color="text-emerald-500"
-              label="Ease levels"
-            />
-            <CaptionedIcon
-              icon={Clock}
-              color="text-blue-500"
-              label="Time tracking"
-            />
-          </div>
-          <div className="flex justify-center gap-6">
-            <CaptionedIcon
-              icon={ListTodo}
-              color="text-amber-500"
-              label="Nested tasks"
-            />
-            <CaptionedIcon
-              icon={WifiOff}
-              color="text-violet-600"
-              label="Works offline"
-            />
-          </div>
+        <div className="flex justify-center gap-6 pt-2 pb-6 text-sm text-muted-foreground">
+          <CaptionedIcon
+            icon={Star}
+            color="text-yellow-500"
+            label="Priority levels"
+          />
+          <CaptionedIcon
+            icon={CheckCircle}
+            color="text-emerald-500"
+            label="Ease levels"
+          />
+          <CaptionedIcon
+            icon={ListTodo}
+            color="text-amber-500"
+            label="Nested tasks"
+          />
+          <CaptionedIcon
+            icon={WifiOff}
+            color="text-violet-600"
+            label="Works offline"
+          />
         </div>
 
         <InlineLink
@@ -162,7 +153,7 @@ const Landing = () => {
         </div>
 
         {!isStandalone && (
-          <div className="mt-auto py-[8vh] flex justify-center">
+          <div className="mt-15 flex justify-center">
             <LandingButton
               href={Routes.HOW_TO_INSTALL}
               className="gap-2 bg-accent text-accent-foreground border border-accent-border"
@@ -174,6 +165,10 @@ const Landing = () => {
           </div>
         )}
       </main>
+
+      <footer className="py-4 text-center">
+        <PrivacyPolicyLink className="text-muted-foreground/60" />
+      </footer>
 
       <WhyDifferentDialog
         open={showWhyDialog}

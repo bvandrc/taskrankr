@@ -19,6 +19,7 @@ import { ContactCard } from '@/components/appInfo/ContactCard'
 import { SortInfo } from '@/components/appInfo/SortInfo'
 import { FullChangelogDialog } from '@/components/appInfo/WhatsNewDialog'
 import { BackButtonHeader } from '@/components/BackButton'
+import { PrivacyPolicyLink } from '@/components/PrivacyPolicyLink'
 import { Button } from '@/components/primitives/Button'
 import { CollapsibleCard } from '@/components/primitives/CollapsibleCard'
 import { Checkbox } from '@/components/primitives/forms/Checkbox'
@@ -525,6 +526,23 @@ const Settings = () => {
           </p>
         </CollapsibleCard>
 
+        {!isGuestMode && (
+          <CollapsibleCard title="Delete Account" className="bg-card/50">
+            <p className="text-sm text-muted-foreground mb-3">
+              Permanently delete your account and all associated data. This
+              cannot be undone.
+            </p>
+            <Button
+              variant="outline"
+              className="gap-2 text-destructive border-destructive/30"
+              href={Routes.DELETE_ACCOUNT}
+            >
+              <Trash2 className="size-4" />
+              Delete Account
+            </Button>
+          </CollapsibleCard>
+        )}
+
         <CollapsibleCard
           title="Clear Local Data"
           className="bg-card/50"
@@ -547,6 +565,9 @@ const Settings = () => {
         </p>
         <p className="text-xs mt-1" data-testid="text-app-version">
           v{APP_VERSION}
+        </p>
+        <p className="text-xs mt-2">
+          <PrivacyPolicyLink />
         </p>
       </div>
     </ScrollablePage>

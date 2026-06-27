@@ -18,6 +18,7 @@ const c = initContract()
 const ApiPaths = {
   TASKS: '/api/tasks',
   SETTINGS: '/api/settings',
+  ACCOUNT: '/api/account',
 } as const
 
 const errorSchemas = {
@@ -141,10 +142,23 @@ const settingsContract = c.router({
   },
 })
 
+const accountContract = c.router({
+  delete: {
+    method: 'DELETE',
+    path: ApiPaths.ACCOUNT,
+    body: c.noBody(),
+    responses: {
+      204: c.noBody(),
+    },
+    summary: 'Delete the authenticated user account and all associated data',
+  },
+})
+
 export const contract = c.router(
   {
     tasks: tasksContract,
     settings: settingsContract,
+    account: accountContract,
   },
   {
     pathPrefix: '',

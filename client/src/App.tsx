@@ -35,6 +35,7 @@ const Settings = lazy(() => import('@/pages/Settings'))
 const HowToUse = lazy(() => import('@/pages/HowToUse'))
 const HowToInstall = lazy(() => import('@/pages/HowToInstall'))
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'))
+const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 const Router = () => (
@@ -46,6 +47,8 @@ const Router = () => (
         <Route path={Routes.SETTINGS} component={Settings} />
         <Route path={Routes.HOW_TO_USE} component={HowToUse} />
         <Route path={Routes.HOW_TO_INSTALL} component={HowToInstall} />
+        <Route path={Routes.PRIVACY_POLICY} component={PrivacyPolicy} />
+        <Route path={Routes.DELETE_ACCOUNT} component={DeleteAccount} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

@@ -525,6 +525,24 @@ const Settings = () => {
           </p>
         </CollapsibleCard>
 
+        {!isGuestMode && (
+          <CollapsibleCard title="Delete Account" className="bg-card/50">
+            <p className="text-sm text-muted-foreground mb-3">
+              Permanently delete your account and all associated data. This
+              cannot be undone.
+            </p>
+            <Link href={Routes.DELETE_ACCOUNT}>
+              <Button
+                variant="outline"
+                className="gap-2 text-destructive border-destructive/30"
+              >
+                <Trash2 className="size-4" />
+                Delete Account
+              </Button>
+            </Link>
+          </CollapsibleCard>
+        )}
+
         <CollapsibleCard
           title="Clear Local Data"
           className="bg-card/50"

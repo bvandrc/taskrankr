@@ -15,8 +15,8 @@ import {
   signInWithPopup,
 } from 'firebase/auth'
 import { Mail } from 'lucide-react'
-import { Link } from 'wouter'
 
+import { PrivacyPolicyLink } from '@/components/PrivacyPolicyLink'
 import { Button } from '@/components/primitives/Button'
 import { Input } from '@/components/primitives/forms/Input'
 import { Label } from '@/components/primitives/forms/Label'
@@ -27,7 +27,6 @@ import {
   DialogTitle,
 } from '@/components/primitives/overlays/Dialog'
 import { firebaseAuth } from '@/lib/auth-client'
-import { Routes } from '@/lib/constants'
 
 const SocialButton = ({
   icon,
@@ -148,15 +147,7 @@ const ChooseView = ({
         variant="outline"
       />
       <p className="text-center text-xs text-muted-foreground mt-1">
-        By signing in you agree to our{' '}
-        <Link
-          href={Routes.PRIVACY_POLICY}
-          className="underline hover:text-foreground"
-          data-testid="link-privacy-policy"
-        >
-          Privacy Policy
-        </Link>
-        .
+        By signing in you agree to our <PrivacyPolicyLink />.
       </p>
     </div>
   )

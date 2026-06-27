@@ -19,6 +19,7 @@ import { ContactCard } from '@/components/appInfo/ContactCard'
 import { SortInfo } from '@/components/appInfo/SortInfo'
 import { FullChangelogDialog } from '@/components/appInfo/WhatsNewDialog'
 import { BackButtonHeader } from '@/components/BackButton'
+import { PrivacyPolicyLink } from '@/components/PrivacyPolicyLink'
 import { Button } from '@/components/primitives/Button'
 import { CollapsibleCard } from '@/components/primitives/CollapsibleCard'
 import { Checkbox } from '@/components/primitives/forms/Checkbox'
@@ -566,13 +567,7 @@ const Settings = () => {
           v{APP_VERSION}
         </p>
         <p className="text-xs mt-2">
-          <Link
-            href={Routes.PRIVACY_POLICY}
-            className="underline hover:text-foreground"
-            data-testid="link-privacy-policy"
-          >
-            Privacy Policy
-          </Link>
+          <PrivacyPolicyLink />
         </p>
       </div>
     </ScrollablePage>

@@ -14,12 +14,7 @@ import {
   TaskListTreeLayout,
 } from '@/components/TaskListPage'
 import { RANK_FIELDS_COLUMNS } from '@/lib/columns'
-import {
-  filterAndSortTree,
-  getDirectSubtasks,
-  mapById,
-  shouldBeHidden,
-} from '@/lib/task-tree-utils'
+import { filterAndSortTree, getDirectSubtasks } from '@/lib/task-tree-utils'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
 import { TaskStatus } from '~/shared/schema'
@@ -60,12 +55,8 @@ const Completed = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const completedTasks = useMemo(() => {
-    const taskById = mapById(allTasks)
-
     const buildSubtaskTree = (parentId: number): TaskWithSubtasks[] => {
-      const children = getDirectSubtasks(allTasks, parentId).filter(
-        (t) => !shouldBeHidden(t, taskById),
-      )
+      const children = getDirectSubtasks(allTasks, parentId)
       return children.map((child) => ({
         ...child,
         subtasks: buildSubtaskTree(child.id),
@@ -73,12 +64,7 @@ const Completed = () => {
     }
 
     const roots: TaskWithSubtasks[] = allTasks
-      .filter(
-        (task) =>
-          task.status === TaskStatus.COMPLETED &&
-          !task.parentId &&
-          !shouldBeHidden(task, taskById),
-      )
+      .filter((task) => task.status === TaskStatus.COMPLETED && !task.parentId)
       .map((task) => ({
         ...task,
         subtasks: buildSubtaskTree(task.id),

@@ -11,10 +11,10 @@ import {
   SortDirection,
 } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
-import { SortOption } from '~/shared/schema'
+import { RankFields } from '~/shared/schema'
 import { CollapsibleCard } from '../primitives/CollapsibleCard'
 
-const SORT_INFO_CONFIG = Object.values(SortOption).map((key) => ({
+const SORT_INFO_CONFIG = RankFields.map((key) => ({
   name: SORT_LABELS[key],
   sortOrderInfo: SORT_ORDER_MAP[key].map((field) => ({
     attr: field,

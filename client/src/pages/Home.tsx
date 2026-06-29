@@ -29,15 +29,15 @@ import {
 import { useSettings } from '@/providers/SettingsProvider'
 import { useTaskMutations, useTasks } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
-import { type FieldConfig, SortOption, TaskStatus } from '~/shared/schema'
+import { type FieldConfig, RankField, TaskStatus } from '~/shared/schema'
 
 const SortButtons = ({
   sortBy,
   setSortBy,
   fieldConfig,
 }: {
-  sortBy: SortOption
-  setSortBy: (value: SortOption) => void
+  sortBy: RankField
+  setSortBy: (value: RankField) => void
   fieldConfig: FieldConfig
 }) => (
   <div className="flex items-center gap-1 pr-1">
@@ -119,7 +119,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const sortBy = settings.sortBy
-  const setSortBy = (value: SortOption) => updateSettings({ sortBy: value })
+  const setSortBy = (value: RankField) => updateSettings({ sortBy: value })
 
   // Build tree from flat list, excluding completed tasks
   // Also extract in-progress and pinned tasks to be hoisted to top
@@ -187,8 +187,8 @@ const Home = () => {
     // Pinned roots sort priority-first when alwaysSortPinnedByPriority is on;
     // their subtasks always follow the user's normal sort order.
     const pinnedRootSortOrder =
-      settings.alwaysSortPinnedByPriority && sortBy !== SortOption.PRIORITY
-        ? [SortOption.PRIORITY, ...sortOrder]
+      settings.alwaysSortPinnedByPriority && sortBy !== RankField.PRIORITY
+        ? [RankField.PRIORITY, ...sortOrder]
         : sortOrder
     const sortedPinned = filterAndSortTree(pinnedTasks, {
       searchTerm,

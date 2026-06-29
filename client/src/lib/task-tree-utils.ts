@@ -15,7 +15,7 @@ import {
   type Ease,
   type Enjoyment,
   type Priority,
-  SortOption,
+  RankField,
   SubtaskSortMode,
   type Task,
   TaskStatus,
@@ -28,7 +28,7 @@ export * from '~/shared/utils/task-utils'
 // Sorting
 // *****************************************************************************
 
-const SortBy = { ...SortOption, DATE_COMPLETED: 'date_completed' } as const
+const SortBy = { ...RankField, DATE_COMPLETED: 'date_completed' } as const
 type SortBy = ValueOf<typeof SortBy>
 
 export enum SortDirection {
@@ -39,10 +39,10 @@ export enum SortDirection {
 /** Default sort direction per field (DESC = best-first). */
 export const SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
   date_completed: SortDirection.DESC,
-  priority: SortDirection.DESC,
-  ease: SortDirection.ASC,
-  enjoyment: SortDirection.DESC,
-  time: SortDirection.ASC,
+  [RankField.PRIORITY]: SortDirection.DESC,
+  [RankField.EASE]: SortDirection.ASC,
+  [RankField.ENJOYMENT]: SortDirection.DESC,
+  [RankField.TIME]: SortDirection.ASC,
 }
 
 const LEVEL_WEIGHTS = {
@@ -132,11 +132,11 @@ export const sortTasksByMode = <T extends Task>(
     : sortTasksByField(tasks, fieldSortOrder)
 
 export const SORT_ORDER_MAP = {
-  priority: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
-  ease: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
-  enjoyment: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
-  time: [SortBy.TIME, SortBy.PRIORITY, SortBy.EASE],
-} as const satisfies { [K in SortOption]: [K, ...SortBy[]] }
+  [RankField.PRIORITY]: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
+  [RankField.EASE]: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
+  [RankField.ENJOYMENT]: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
+  [RankField.TIME]: [SortBy.TIME, SortBy.PRIORITY, SortBy.EASE],
+} as const satisfies { [K in RankField]: [K, ...SortBy[]] }
 
 export const sortTaskTree = (
   tasks: TaskWithSubtasks[],

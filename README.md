@@ -57,6 +57,16 @@ npm run dev
 
 To stop Postgres: `npm run local:db:down`
 
+#### Database commands
+
+| Command | What it does | When to use |
+|---|---|---|
+| `db:generate` | Diffs your schema against the last snapshot and writes a new `.sql` migration file | After changing `shared/schema/tasks.zod.ts` (or other schema files) — commits the migration alongside the schema change |
+| `db:migrate` | Applies any pending migration files to the database | After pulling changes that include new migrations, or after running `db:generate` locally |
+| `db:push` | Pushes the current schema directly to the DB without generating a migration file | Quick local iteration when you don't need a migration history (e.g. experimenting with a column change you haven't committed yet) |
+
+**Rule of thumb**: use `db:generate` + `db:migrate` for real changes (they leave a traceable migration file). Use `db:push` only for throwaway local experiments — it bypasses the migration history and can leave your local DB out of sync with the tracked migrations.
+
 #### Which script to use
 
 Three scripts serve distinct purposes and can't be collapsed further:

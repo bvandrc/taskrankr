@@ -4,6 +4,7 @@ import {
   RankField,
   type Task,
   TaskStatus,
+  type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { getElementArrayText } from '.'
@@ -164,4 +165,36 @@ export const checkTaskFormSubtasks = (
         'Completed subtasks should be crossed out',
       ),
     )
+}
+
+export const setTaskFormSubtaskSettings = ({
+  autoHideCompleted,
+  inheritCompletionState,
+}: Partial<TaskSubtaskSettings> = {}) => {
+  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+  if (autoHideCompleted !== undefined) {
+    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(
+      autoHideCompleted,
+    )
+  }
+  if (inheritCompletionState !== undefined) {
+    cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(inheritCompletionState)
+  }
+}
+
+export const checkTaskFormSubtaskSettings = ({
+  autoHideCompleted,
+  inheritCompletionState,
+}: Partial<TaskSubtaskSettings> = {}) => {
+  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+  if (autoHideCompleted !== undefined) {
+    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
+      .getCheckedState()
+      .should('eq', autoHideCompleted)
+  }
+  if (inheritCompletionState !== undefined) {
+    cy.get(TaskForm.AUTOCOMPLETE_SWITCH)
+      .getCheckedState()
+      .should('eq', inheritCompletionState)
+  }
 }

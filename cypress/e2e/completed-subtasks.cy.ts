@@ -7,11 +7,13 @@ import {
 } from '@cypress/support/utils/intercepts'
 import { goToCompletedPage } from '@cypress/support/utils/navigation'
 import {
+  checkTaskFormSubtaskSettings,
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
   fillTaskForm,
   getTaskForm,
+  setTaskFormSubtaskSettings,
 } from '@cypress/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
@@ -72,6 +74,7 @@ describe('Completed Subtasks', () => {
     })
 
     getTaskForm(0).within(() => {
+      setTaskFormSubtaskSettings({ autoHideCompleted: false })
       clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
     })
 
@@ -101,6 +104,7 @@ describe('Completed Subtasks', () => {
         })
 
         getTaskForm(0).within(() => {
+          setTaskFormSubtaskSettings({ autoHideCompleted: false })
           checkTaskFormSubtasks([completedSubtask])
           clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
         })
@@ -161,8 +165,10 @@ describe('Completed Subtasks', () => {
       })
 
       getTaskForm(0).within(() => {
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+          inheritCompletionState: true,
+        })
         clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
 
@@ -195,6 +201,7 @@ describe('Completed Subtasks', () => {
       })
 
       getTaskForm(0).within(() => {
+        setTaskFormSubtaskSettings({ autoHideCompleted: false })
         clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
       })
       expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
@@ -204,8 +211,7 @@ describe('Completed Subtasks', () => {
       )
       openTaskEditForm(rootTask)
       getTaskForm(0).within(() => {
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        setTaskFormSubtaskSettings({ inheritCompletionState: true })
         clickSubmitBtnUpdate({ updatedTasks: [completedRootTask] })
       })
 
@@ -227,8 +233,10 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+          inheritCompletionState: true,
+        })
         clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
       checkNumCalls({ create: 2, update: 0 })
@@ -247,8 +255,10 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(1).within(() => {
-        cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-        cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(true)
+        setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+          inheritCompletionState: true,
+        })
         clickSubmitBtnUpdate({ updatedTasks: [subtask] })
       })
       checkNumCalls({ create: 3, update: 1 })
@@ -292,18 +302,15 @@ describe('Completed Subtasks', () => {
         })
 
         getTaskForm(0).within(() => {
-          cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
+          // default value
+          checkTaskFormSubtaskSettings({ autoHideCompleted: true })
         })
       })
 
       // after each, but we don't want failure to prevent other tests from running.
       const afterEachSafe = () => {
         getTaskForm(0).within(() => {
-          cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click() // show settings for debug purposes
-          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
-            .getCheckedState()
-            .should('be.true')
+          checkTaskFormSubtaskSettings({ autoHideCompleted: true })
           checkTaskFormSubtasks([subtask])
           clickSubmitBtnCreate({
             newTasks: [rootTask, subtask, completedSubtask2],
@@ -386,6 +393,7 @@ describe('Completed Subtasks', () => {
         const subtasks = [subtask, completedSubtask2]
 
         getTaskForm(0).within(() => {
+          setTaskFormSubtaskSettings({ autoHideCompleted: false })
           checkTaskFormSubtasks(subtasks)
           clickSubmitBtnCreate({ newTasks: [rootTask, ...subtasks] })
         })
@@ -400,8 +408,7 @@ describe('Completed Subtasks', () => {
         getTaskForm(0).within(() => {
           checkTaskFormSubtasks(subtasks)
 
-          cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-          cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
+          setTaskFormSubtaskSettings({ autoHideCompleted: true })
           checkTaskFormSubtasks([subtask])
           clickSubmitBtnUpdate({ updatedTasks: [rootTask] })
         })

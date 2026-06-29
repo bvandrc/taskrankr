@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Settings2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { SubtaskSortMode } from '~/shared/schema'
+import { SubtaskSortMode, type TaskSubtaskSettings } from '~/shared/schema'
 import { Switch } from '../../primitives/forms/Switch'
 import { VisibilityToggleButton } from '../../VisibilityToggleButton'
 
@@ -108,10 +108,9 @@ const SwitchRow = ({
   </label>
 )
 
-export interface SubtaskSettingsProps {
+export interface SubtaskSettingsProps
+  extends Omit<TaskSubtaskSettings, 'subtaskOrder' | 'subtaskSortMode'> {
   sortMode: SubtaskSortMode
-  autoHideCompleted: boolean
-  inheritCompletionState: boolean
   showHidden: boolean
   hiddenCount: number
   onSortModeChange: (mode: SubtaskSortMode) => void

@@ -64,6 +64,13 @@
       "when": 1782506293190,
       "tag": "0008_drop_subtasks_show_numbers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782757310625,
+      "tag": "0009_autohide_default_true",
+      "breakpoints": true
     }
   ]
 }

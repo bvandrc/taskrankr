@@ -233,7 +233,10 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
-        setTaskFormSubtaskSettings({ inheritCompletionState: true })
+        setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+          inheritCompletionState: true,
+        })
         clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
       checkNumCalls({ create: 2, update: 0 })
@@ -252,7 +255,10 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(1).within(() => {
-        setTaskFormSubtaskSettings({ inheritCompletionState: true })
+        setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+          inheritCompletionState: true,
+        })
         clickSubmitBtnUpdate({ updatedTasks: [subtask] })
       })
       checkNumCalls({ create: 3, update: 1 })

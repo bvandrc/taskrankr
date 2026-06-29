@@ -8,7 +8,8 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { mapValues } from 'es-toolkit'
 import { z } from 'zod'
 
-import { type RankField, SortOption } from './common'
+import { createObject } from '../utils'
+import { RankField, SortOption } from './common'
 import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
 
 export const fieldFlagsSchema = z.object({
@@ -18,21 +19,16 @@ export const fieldFlagsSchema = z.object({
 
 export type FieldFlags = z.infer<typeof fieldFlagsSchema>
 
-export const fieldConfigSchema = z.object({
-  priority: fieldFlagsSchema,
-  ease: fieldFlagsSchema,
-  enjoyment: fieldFlagsSchema,
-  time: fieldFlagsSchema,
-} satisfies Record<RankField, typeof fieldFlagsSchema>)
+export const fieldConfigSchema = z.object(
+  createObject(RankField, fieldFlagsSchema),
+)
 
 export type FieldConfig = z.infer<typeof fieldConfigSchema>
 
-export const DEFAULT_FIELD_CONFIG = {
-  priority: { visible: true, required: true },
-  ease: { visible: true, required: true },
-  enjoyment: { visible: true, required: true },
-  time: { visible: true, required: true },
-} as const satisfies FieldConfig
+export const DEFAULT_FIELD_CONFIG = createObject(RankField, {
+  visible: true,
+  required: true,
+} as const) satisfies FieldConfig
 
 /** Ensures `required` is always false whenever `visible` is false. */
 export const sanitizeSettings = <T extends Partial<UserSettings>>(

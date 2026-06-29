@@ -21,6 +21,7 @@ import {
 } from 'drizzle-zod'
 import { z } from 'zod'
 
+import { createObject } from '../utils'
 import { getZodSchemaDefaults } from '../utils/zod-utils'
 import { RankField } from './common'
 import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
@@ -200,9 +201,4 @@ export type TaskSubtaskSettings = Pick<
   | 'subtaskOrder'
 >
 
-export const allRankFieldsNull = {
-  priority: null,
-  ease: null,
-  enjoyment: null,
-  time: null,
-}
+export const allRankFieldsNull = createObject(RankField, null)

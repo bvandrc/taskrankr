@@ -8,7 +8,8 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { mapValues } from 'es-toolkit'
 import { z } from 'zod'
 
-import { type RankField, SortOption } from './common'
+import { createObject } from '../utils'
+import { RankField, RankFields } from './common'
 import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
 
 export const fieldFlagsSchema = z.object({
@@ -18,21 +19,16 @@ export const fieldFlagsSchema = z.object({
 
 export type FieldFlags = z.infer<typeof fieldFlagsSchema>
 
-export const fieldConfigSchema = z.object({
-  priority: fieldFlagsSchema,
-  ease: fieldFlagsSchema,
-  enjoyment: fieldFlagsSchema,
-  time: fieldFlagsSchema,
-} satisfies Record<RankField, typeof fieldFlagsSchema>)
+export const fieldConfigSchema = z.object(
+  createObject(RankFields, fieldFlagsSchema),
+)
 
 export type FieldConfig = z.infer<typeof fieldConfigSchema>
 
-export const DEFAULT_FIELD_CONFIG = {
-  priority: { visible: true, required: true },
-  ease: { visible: true, required: true },
-  enjoyment: { visible: true, required: true },
-  time: { visible: true, required: true },
-} as const satisfies FieldConfig
+export const DEFAULT_FIELD_CONFIG = createObject(RankFields, {
+  visible: true,
+  required: true,
+} as const) satisfies FieldConfig
 
 /** Ensures `required` is always false whenever `visible` is false. */
 export const sanitizeSettings = <T extends Partial<UserSettings>>(
@@ -50,7 +46,7 @@ export const sanitizeSettings = <T extends Partial<UserSettings>>(
   return settings
 }
 
-export const sortByPgEnum = createPgEnum('sort_by', SortOption)
+export const sortByPgEnum = createPgEnum('sort_by', RankField)
 
 export const userSettings = pgTable('user_settings', {
   userId: varchar('user_id').primaryKey(),
@@ -61,7 +57,7 @@ export const userSettings = pgTable('user_settings', {
   alwaysSortPinnedByPriority: boolean('always_sort_pinned_by_priority')
     .default(true)
     .notNull(),
-  sortBy: sortByPgEnum('sort_by').default(SortOption.PRIORITY).notNull(),
+  sortBy: sortByPgEnum('sort_by').default(RankField.PRIORITY).notNull(),
   fieldConfig: jsonb('field_config')
     .$type<FieldConfig>()
     .default(DEFAULT_FIELD_CONFIG)
@@ -74,7 +70,7 @@ const userSettingsSchemaRefine = {
   autoPinNewTasks: (s) => s.default(true),
   enableInProgressStatus: (s) => s.default(true),
   alwaysSortPinnedByPriority: (s) => s.default(true),
-  sortBy: (s) => s.default(SortOption.PRIORITY),
+  sortBy: (s) => s.default(RankField.PRIORITY),
   fieldConfig: fieldConfigSchema.default(DEFAULT_FIELD_CONFIG),
 } satisfies DrizzleZodDefaultRefine<typeof userSettings>
 

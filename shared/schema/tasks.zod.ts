@@ -21,8 +21,9 @@ import {
 } from 'drizzle-zod'
 import { z } from 'zod'
 
+import { createObject } from '../utils'
 import { getZodSchemaDefaults } from '../utils/zod-utils'
-import { RankField } from './common'
+import { type RankField, RankFields } from './common'
 import { createPgEnum, type DrizzleZodDefaultRefine } from './drizzle-utils'
 import type { UserSettings } from './settings.zod'
 
@@ -163,7 +164,7 @@ export const insertTaskSchema = createInsertSchema(tasks, {
 export const insertTaskSchemaRefined = (
   settings: Pick<UserSettings, 'fieldConfig'>,
 ) => {
-  const requiredRankFields: RankField[] = RankField.filter(
+  const requiredRankFields: RankField[] = RankFields.filter(
     (name) => settings.fieldConfig[name].required,
   )
 
@@ -200,9 +201,4 @@ export type TaskSubtaskSettings = Pick<
   | 'subtaskOrder'
 >
 
-export const allRankFieldsNull = {
-  priority: null,
-  ease: null,
-  enjoyment: null,
-  time: null,
-}
+export const allRankFieldsNull = createObject(RankFields, null)

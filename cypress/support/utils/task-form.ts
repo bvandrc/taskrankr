@@ -165,3 +165,39 @@ export const checkTaskFormSubtasks = (
       ),
     )
 }
+
+export const setTaskFormSubtaskSettings = ({
+  autoHideCompleted,
+  inheritCompletionState,
+}: Partial<
+  Pick<Task, 'autoHideCompleted' | 'inheritCompletionState'>
+> = {}) => {
+  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+  if (autoHideCompleted !== undefined) {
+    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(
+      autoHideCompleted,
+    )
+  }
+  if (inheritCompletionState !== undefined) {
+    cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(inheritCompletionState)
+  }
+}
+
+export const checkTaskFormSubtaskSettings = ({
+  autoHideCompleted,
+  inheritCompletionState,
+}: Partial<
+  Pick<Task, 'autoHideCompleted' | 'inheritCompletionState'>
+> = {}) => {
+  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
+  if (autoHideCompleted !== undefined) {
+    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
+      .getCheckedState()
+      .should('eq', autoHideCompleted)
+  }
+  if (inheritCompletionState !== undefined) {
+    cy.get(TaskForm.AUTOCOMPLETE_SWITCH)
+      .getCheckedState()
+      .should('eq', inheritCompletionState)
+  }
+}

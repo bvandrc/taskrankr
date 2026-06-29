@@ -70,9 +70,7 @@ describe('Hiding Subtasks', () => {
     })
 
     getTaskForm(0).within(() => {
-      cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-      cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(true)
-      checkTaskFormSubtasks([openSubtask]) // completed subtask is now hidden
+      checkTaskFormSubtasks([openSubtask]) // completed subtask is hidden by default
       clickSubmitBtnCreate({
         newTasks: [rootTask, openSubtask, completedSubtask],
       })

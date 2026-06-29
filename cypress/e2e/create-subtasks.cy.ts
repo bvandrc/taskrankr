@@ -15,6 +15,7 @@ import {
   clickSubmitBtnUpdate,
   fillTaskForm,
   getTaskForm,
+  setTaskFormSubtaskSettings,
 } from '@cypress/support/utils/task-form'
 import {
   expandAndCheckTree,
@@ -258,6 +259,7 @@ describe('Create Subtasks', () => {
         clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
+        setTaskFormSubtaskSettings({ autoHideCompleted: false })
         clickSubmitBtnUpdate({
           updatedTasks: [completedRootTask],
           newTasks: [completedSubtask],

@@ -5,15 +5,10 @@
 
 import { z } from 'zod'
 
-const zodEnvVal = z.string().min(1)
+import { createObject } from '../utils'
 
 export const createEnvSchema = <K extends string>(keys: K[]) =>
-  z.object(
-    Object.fromEntries(keys.map((k) => [k, zodEnvVal])) as Record<
-      K,
-      typeof zodEnvVal
-    >,
-  )
+  z.object(createObject(keys, () => z.string().min(1)))
 
 /** Firebase client config — required in both the browser bundle and Cypress. */
 export const firebaseClientEnvSchema = createEnvSchema([

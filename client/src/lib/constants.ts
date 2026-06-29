@@ -4,14 +4,7 @@
 
 import type { ValueOf } from 'type-fest'
 
-import {
-  Ease,
-  Enjoyment,
-  Priority,
-  type RankField,
-  SortOption,
-  Time,
-} from '~/shared/schema'
+import { Ease, Enjoyment, Priority, RankField, Time } from '~/shared/schema'
 
 export const STANDARD_DATE_FORMAT = {
   month: 'short',
@@ -31,10 +24,10 @@ export const Routes = {
 } as const
 
 export const RANK_FIELD_ENUMS = {
-  [SortOption.PRIORITY]: Priority,
-  [SortOption.EASE]: Ease,
-  [SortOption.ENJOYMENT]: Enjoyment,
-  [SortOption.TIME]: Time,
+  [RankField.PRIORITY]: Priority,
+  [RankField.EASE]: Ease,
+  [RankField.ENJOYMENT]: Enjoyment,
+  [RankField.TIME]: Time,
 } as const satisfies Record<RankField, Record<string, string>>
 
 export type RankFieldValueMap = {

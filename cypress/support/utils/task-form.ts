@@ -4,6 +4,7 @@ import {
   RankField,
   type Task,
   TaskStatus,
+  type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { getElementArrayText } from '.'
@@ -169,9 +170,7 @@ export const checkTaskFormSubtasks = (
 export const setTaskFormSubtaskSettings = ({
   autoHideCompleted,
   inheritCompletionState,
-}: Partial<
-  Pick<Task, 'autoHideCompleted' | 'inheritCompletionState'>
-> = {}) => {
+}: Partial<TaskSubtaskSettings> = {}) => {
   cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(
@@ -186,9 +185,7 @@ export const setTaskFormSubtaskSettings = ({
 export const checkTaskFormSubtaskSettings = ({
   autoHideCompleted,
   inheritCompletionState,
-}: Partial<
-  Pick<Task, 'autoHideCompleted' | 'inheritCompletionState'>
-> = {}) => {
+}: Partial<TaskSubtaskSettings> = {}) => {
   cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)

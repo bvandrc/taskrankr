@@ -192,6 +192,14 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>
 
 export type MutateTask = CreateTask | UpdateTask
 
+export type TaskSubtaskSettings = Pick<
+  Task,
+  | 'subtaskSortMode'
+  | 'autoHideCompleted'
+  | 'inheritCompletionState'
+  | 'subtaskOrder'
+>
+
 export const allRankFieldsNull = {
   priority: null,
   ease: null,

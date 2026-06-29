@@ -77,18 +77,15 @@ const FormItemContext = createContext<FormItemContextValue>(
   {} as FormItemContextValue,
 )
 
-export const FormItem = forwardRefHelper<HTMLDivElement>(
-  ({ className, ...props }, ref) => {
-    const id = useId()
+export const FormItem = forwardRefHelper<HTMLDivElement>((props, ref) => {
+  const id = useId()
 
-    return (
-      <FormItemContext.Provider value={{ id }}>
-        <div {...props} ref={ref} className={cn('space-y-2', className)} />
-      </FormItemContext.Provider>
-    )
-  },
-  'FormItem',
-)
+  return (
+    <FormItemContext.Provider value={{ id }}>
+      <div {...props} ref={ref} />
+    </FormItemContext.Provider>
+  )
+}, 'FormItem')
 
 export const FieldLabel = ({
   className,

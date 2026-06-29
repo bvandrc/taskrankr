@@ -192,7 +192,7 @@ export const TaskForm = ({
           data-testid="form-scroll-region"
           className="min-h-0 overflow-y-auto scrollbar-gutter-both py-2"
         >
-          <div className="flex-1 space-y-5 px-3">
+          <div className="flex-1 space-y-4 px-3">
             {visibleRankFields.length > 0 && (
               <div data-testid="rank-fields" className="grid grid-cols-2 gap-4">
                 {visibleRankFields.map(({ name, label, levels }) => (
@@ -224,7 +224,7 @@ export const TaskForm = ({
                     <Textarea
                       placeholder="Additional details..."
                       className="bg-secondary/20 border-white/5 min-h-12.5 max-h-50 resize-none focus-visible:ring-primary/50"
-                      style={{ fieldSizing: 'content' } as React.CSSProperties}
+                      style={{ fieldSizing: 'content' }}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -302,7 +302,7 @@ export const TaskForm = ({
           </div>
         </div>
 
-        <div className="pt-2 pb-4 px-4 flex gap-3 ">
+        <div className="p-4 flex gap-3 ">
           <Button
             data-testid="cancel-button"
             type="button"

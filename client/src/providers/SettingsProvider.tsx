@@ -19,7 +19,7 @@ import { debugLog } from '@/lib/debug-logger'
 import { getStorageKeys, type StorageMode, storage } from '@/lib/storage'
 import {
   DEFAULT_FIELD_CONFIG,
-  SortOption,
+  RankField,
   sanitizeSettings,
   type UserSettings,
 } from '~/shared/schema'
@@ -29,7 +29,7 @@ const DEFAULT_SETTINGS = {
   autoPinNewTasks: true,
   enableInProgressStatus: true,
   alwaysSortPinnedByPriority: true,
-  sortBy: SortOption.PRIORITY,
+  sortBy: RankField.PRIORITY,
   fieldConfig: DEFAULT_FIELD_CONFIG,
 } as const satisfies UserSettings
 

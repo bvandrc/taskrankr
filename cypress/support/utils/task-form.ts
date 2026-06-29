@@ -1,7 +1,8 @@
 import {
   DEFAULT_FIELD_CONFIG,
   type FieldConfig,
-  RankField,
+  type RankField,
+  RankFields,
   type Task,
   TaskStatus,
   type TaskSubtaskSettings,
@@ -22,7 +23,7 @@ export const fillTaskFormRankFields = (
   task: TaskFormData,
   settings: FieldConfig,
 ) => {
-  const requiredFields = RankField.filter(
+  const requiredFields = RankFields.filter(
     (field) => settings[field].visible && settings[field].required,
   )
 
@@ -30,7 +31,7 @@ export const fillTaskFormRankFields = (
     .should(requiredFields.length ? 'be.disabled' : 'not.be.disabled')
 
   const filled = new Set<RankField>()
-  for (const field of RankField) {
+  for (const field of RankFields) {
     const RankSelect = TaskForm.rankSelect(field)
     const value = task[field]
     const config = settings[field]

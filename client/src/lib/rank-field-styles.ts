@@ -3,7 +3,13 @@
  * (priority, ease, enjoyment, time).
  */
 
-import type { RankField } from '~/shared/schema'
+import {
+  Ease,
+  Enjoyment,
+  Priority,
+  type RankField,
+  Time,
+} from '~/shared/schema'
 import type { RankFieldValueMap } from './constants'
 
 const STYLES_COMMON = {
@@ -19,32 +25,32 @@ const STYLES_COMMON = {
 
 const RANK_FIELD_STYLES = {
   priority: {
-    highest: STYLES_COMMON.red_bold,
-    high: STYLES_COMMON.red,
-    medium: STYLES_COMMON.yellow,
-    low: STYLES_COMMON.green,
-    lowest: STYLES_COMMON.green_dull,
+    [Priority.HIGHEST]: STYLES_COMMON.red_bold,
+    [Priority.HIGH]: STYLES_COMMON.red,
+    [Priority.MEDIUM]: STYLES_COMMON.yellow,
+    [Priority.LOW]: STYLES_COMMON.green,
+    [Priority.LOWEST]: STYLES_COMMON.green_dull,
   },
   ease: {
-    hardest: STYLES_COMMON.red_dull,
-    hard: STYLES_COMMON.red,
-    medium: STYLES_COMMON.yellow,
-    easy: STYLES_COMMON.green,
-    easiest: STYLES_COMMON.green_bold,
+    [Ease.HARDEST]: STYLES_COMMON.red_dull,
+    [Ease.HARD]: STYLES_COMMON.red,
+    [Ease.MEDIUM]: STYLES_COMMON.yellow,
+    [Ease.EASY]: STYLES_COMMON.green,
+    [Ease.EASIEST]: STYLES_COMMON.green_bold,
   },
   enjoyment: {
-    lowest: STYLES_COMMON.red_dull,
-    low: STYLES_COMMON.red,
-    medium: STYLES_COMMON.yellow,
-    high: STYLES_COMMON.green,
-    highest: STYLES_COMMON.green_bold,
+    [Enjoyment.LOWEST]: STYLES_COMMON.red_dull,
+    [Enjoyment.LOW]: STYLES_COMMON.red,
+    [Enjoyment.MEDIUM]: STYLES_COMMON.yellow,
+    [Enjoyment.HIGH]: STYLES_COMMON.green,
+    [Enjoyment.HIGHEST]: STYLES_COMMON.green_bold,
   },
   time: {
-    highest: STYLES_COMMON.red_dull,
-    high: STYLES_COMMON.red,
-    medium: STYLES_COMMON.yellow,
-    low: STYLES_COMMON.green,
-    lowest: STYLES_COMMON.green_bold,
+    [Time.HIGHEST]: STYLES_COMMON.red_dull,
+    [Time.HIGH]: STYLES_COMMON.red,
+    [Time.MEDIUM]: STYLES_COMMON.yellow,
+    [Time.LOW]: STYLES_COMMON.green,
+    [Time.LOWEST]: STYLES_COMMON.green_bold,
   },
 } as const satisfies {
   [F in RankField]: Record<RankFieldValueMap[F], string>

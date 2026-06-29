@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { SortOption } from '~/shared/schema'
+import type { RankField } from '~/shared/schema'
 import { Button } from './primitives/Button'
 
 export const SortButton = ({
@@ -10,10 +10,10 @@ export const SortButton = ({
   onSelect,
 }: {
   label: string
-  value: SortOption
+  value: RankField
   className?: string
-  current: SortOption
-  onSelect: (v: SortOption) => void
+  current: RankField
+  onSelect: (v: RankField) => void
 }) => (
   <Button
     variant={current === value ? 'default' : 'ghost'}

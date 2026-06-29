@@ -132,10 +132,10 @@ export const sortTasksByMode = <T extends Task>(
     : sortTasksByField(tasks, fieldSortOrder)
 
 export const SORT_ORDER_MAP = {
-  priority: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
-  ease: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
-  enjoyment: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
-  time: [SortBy.TIME, SortBy.PRIORITY, SortBy.EASE],
+  [SortOption.PRIORITY]: [SortBy.PRIORITY, SortBy.EASE, SortBy.ENJOYMENT],
+  [SortOption.EASE]: [SortBy.EASE, SortBy.PRIORITY, SortBy.ENJOYMENT],
+  [SortOption.ENJOYMENT]: [SortBy.ENJOYMENT, SortBy.PRIORITY, SortBy.EASE],
+  [SortOption.TIME]: [SortBy.TIME, SortBy.PRIORITY, SortBy.EASE],
 } as const satisfies { [K in SortOption]: [K, ...SortBy[]] }
 
 export const sortTaskTree = (

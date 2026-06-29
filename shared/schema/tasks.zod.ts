@@ -103,7 +103,7 @@ export const tasks = pgTable('tasks', {
     .array()
     .default(sql`'{}'::integer[]`)
     .notNull(),
-  autoHideCompleted: boolean('auto_hide_completed').default(false).notNull(),
+  autoHideCompleted: boolean('auto_hide_completed').default(true).notNull(),
   inheritCompletionState: boolean('inherit_completion_state')
     .default(false)
     .notNull(),
@@ -126,7 +126,7 @@ const taskSchemaRefine = {
   status: (s) => s.default(TaskStatus.OPEN),
   subtaskSortMode: (s) => s.default(SubtaskSortMode.INHERIT),
   subtaskOrder: (s) => s.default([]),
-  autoHideCompleted: (s) => s.default(false),
+  autoHideCompleted: (s) => s.default(true),
   inheritCompletionState: (s) => s.default(false),
   // not sure the created schema from drizzle-zod performs the coercion,
   // so add here just in case / for safety.

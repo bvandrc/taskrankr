@@ -223,7 +223,9 @@ export const SubtasksCard = ({
 
   const handleSortModeChange = (newMode: SubtaskSortMode) => {
     form.setValue('subtaskSortMode', newMode, { shouldDirty: true })
-    form.setValue('autoHideCompleted', newMode !== SubtaskSortMode.MANUAL, { shouldDirty: true })
+    form.setValue('autoHideCompleted', newMode !== SubtaskSortMode.MANUAL, {
+      shouldDirty: true,
+    })
     // Materialize the current order into the form so dragging works immediately
     // under MANUAL mode. Includes hidden children so they keep their relative
     // position when the order is persisted on Save.

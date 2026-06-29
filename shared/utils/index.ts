@@ -1,8 +1,8 @@
-export const createObject = <const Keys extends readonly string[], Schema>(
+export const createObject = <const Keys extends readonly string[], Value>(
   keys: Keys,
-  value: Schema,
+  genValue: () => Value,
 ) =>
-  Object.fromEntries(keys.map((key) => [key, value])) as Record<
+  Object.fromEntries(keys.map((key) => [key, genValue()])) as Record<
     Keys[number],
-    Schema
+    Value
   >

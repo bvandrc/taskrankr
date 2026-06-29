@@ -201,4 +201,4 @@ export type TaskSubtaskSettings = Pick<
   | 'subtaskOrder'
 >
 
-export const allRankFieldsNull = createObject(RankFields, null)
+export const allRankFieldsNull = createObject(RankFields, () => null)

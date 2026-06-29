@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { createObject } from '../utils'
 
 export const createEnvSchema = <K extends string>(keys: K[]) =>
-  z.object(createObject(keys, z.string().min(1)))
+  z.object(createObject(keys, () => z.string().min(1)))
 
 /** Firebase client config — required in both the browser bundle and Cypress. */
 export const firebaseClientEnvSchema = createEnvSchema([

@@ -20,15 +20,19 @@ export const fieldFlagsSchema = z.object({
 export type FieldFlags = z.infer<typeof fieldFlagsSchema>
 
 export const fieldConfigSchema = z.object(
-  createObject(RankFields, fieldFlagsSchema),
+  createObject(RankFields, () => fieldFlagsSchema),
 )
 
 export type FieldConfig = z.infer<typeof fieldConfigSchema>
 
-export const DEFAULT_FIELD_CONFIG = createObject(RankFields, {
-  visible: true,
-  required: true,
-} as const) satisfies FieldConfig
+export const DEFAULT_FIELD_CONFIG = createObject(
+  RankFields,
+  () =>
+    ({
+      visible: true,
+      required: true,
+    }) as const,
+) satisfies FieldConfig
 
 /** Ensures `required` is always false whenever `visible` is false. */
 export const sanitizeSettings = <T extends Partial<UserSettings>>(

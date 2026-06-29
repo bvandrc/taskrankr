@@ -42,12 +42,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
 
   return (
     <FormItem>
-      <FormLabel
-        className="text-[10px] uppercase tracking-wider text-muted-foreground"
-        isRequired={isRequired}
-      >
-        {label}
-      </FormLabel>
+      <FormLabel isRequired={isRequired}>{label}</FormLabel>
       <Select
         onValueChange={(v) =>
           field.onChange(

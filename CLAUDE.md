@@ -32,7 +32,7 @@ In **development mode** (`npm run dev`), the Log In button auto-logs you in as t
 | `npm run local:preview` | Preview built bundle locally, test login enabled |
 | `npm run local:db:up` / `local:db:down` | Start / stop Docker Postgres |
 | `npm run db:migrate` | Run DB migrations |
-| `npm run db:generate` | Generate migration from schema changes |
+| `npm run db:generate -- --name <desc>` | Generate migration — always pass `--name` with a descriptive slug (e.g. `add_task_schedule`) |
 | `npm run db:push` | Push schema directly (no migration file) |
 | `npm run format` | Biome format — **run before every commit** |
 | `npm run lint` | Biome lint |

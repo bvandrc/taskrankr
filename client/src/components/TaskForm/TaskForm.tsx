@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
@@ -26,8 +25,8 @@ import {
   taskSchema,
 } from '~/shared/schema'
 import { Button } from '../primitives/Button'
-import { Calendar } from '../primitives/forms/Calendar'
 import { Checkbox } from '../primitives/forms/Checkbox'
+import { DateInput } from '../primitives/forms/DateInput'
 import {
   Form,
   FormControl,
@@ -37,11 +36,6 @@ import {
   FormMessage,
 } from '../primitives/forms/Form'
 import { Textarea } from '../primitives/forms/Textarea'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
 import { RankFieldSelect } from './RankFieldSelect'
@@ -63,52 +57,6 @@ const taskFormDefaultsSchema = taskSchema.omit({
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>
 
 type TaskFormValues = z.infer<ReturnType<typeof insertTaskSchemaRefined>>
-
-interface DateCreatedInputProps {
-  value: Date | undefined
-  onChange: (date: Date | undefined) => void
-}
-
-const DateCreatedInput = ({ value, onChange }: DateCreatedInputProps) => (
-  <FormItem className="flex items-center justify-between gap-4">
-    <div>
-      <FormLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        Date Created
-      </FormLabel>
-    </div>
-    <Popover>
-      <PopoverTrigger asChild>
-        <FormControl>
-          <Button
-            variant={'outline'}
-            className={cn(
-              'w-auto bg-secondary/10 border-white/5 h-8 text-xs py-1 px-3 font-normal',
-              !value && 'text-muted-foreground',
-            )}
-          >
-            {value ? format(value, 'PPP') : <span>Pick a date</span>}
-            <CalendarIcon className="size-3 ml-2 opacity-50" />
-          </Button>
-        </FormControl>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-0 bg-card border-white/10 z-[300]"
-        align="end"
-      >
-        <div className="p-3 border-b border-white/5 bg-secondary/50 text-[10px] uppercase tracking-wider text-muted-foreground text-center">
-          Select Creation Date
-        </div>
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onChange}
-          autoFocus
-          className="rounded-md border-0"
-        />
-      </PopoverContent>
-    </Popover>
-  </FormItem>
-)
 
 export interface TaskFormProps {
   onSubmit: (data: MutateTaskContent) => void
@@ -218,7 +166,7 @@ export const TaskForm = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium">Task Name</FormLabel>
+                <FormLabel>Task Name</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Task name"
@@ -240,12 +188,12 @@ export const TaskForm = ({
         </div>
 
         <div
-          className="min-h-0 overflow-y-auto [scrollbar-gutter:stable_both-edges] py-2"
           data-testid="form-scroll-region"
+          className="min-h-0 overflow-y-auto [scrollbar-gutter:stable_both-edges] py-2"
         >
           <div className="flex-1 space-y-5 px-3">
             {visibleRankFields.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div data-testid="rank-fields" className="grid grid-cols-2 gap-4">
                 {visibleRankFields.map(({ name, label, levels }) => (
                   <FormField
                     key={name}
@@ -270,9 +218,7 @@ export const TaskForm = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Description
-                  </FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Additional details..."
@@ -297,14 +243,20 @@ export const TaskForm = ({
               onShowHiddenChange={onShowHiddenChange}
             />
 
-            <div className="flex flex-col gap-4 mt-2 pb-4">
+            <div
+              data-testid="created-and-completed-section"
+              className="flex flex-col gap-3 mt-2"
+            >
               <FormField
                 control={form.control}
                 name="createdAt"
                 render={({ field }) => (
-                  <DateCreatedInput
+                  <DateInput
+                    label="Date Created"
                     value={field.value}
                     onChange={field.onChange}
+                    popoverHeader="Select Creation Date"
+                    buttonClassName="w-auto"
                   />
                 )}
               />
@@ -360,19 +312,19 @@ export const TaskForm = ({
 
         <div className="pt-2 pb-4 px-4 flex gap-3 ">
           <Button
+            data-testid="cancel-button"
             type="button"
             variant="outline"
             onClick={onCancel}
             className="flex-1 h-12 border-white/10 bg-background hover:bg-secondary/20 text-lg"
-            data-testid="cancel-button"
           >
             Cancel
           </Button>
           <Button
+            data-testid="submit-button"
             type="submit"
             disabled={!isValid}
             className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-bold text-lg disabled:bg-primary/80 disabled:cursor-not-allowed"
-            data-testid="submit-button"
           >
             {isEditingExisting ? 'Save' : 'Create'}
           </Button>

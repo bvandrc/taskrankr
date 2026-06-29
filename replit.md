@@ -10,7 +10,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Start (local build test)**: `npm run local:start` — serves the built bundle locally with test routes enabled; use this to run E2E against the compiled app
 - **Typecheck**: `npm run ts:check` (or `npm run check` for ts + cypress ts + lint)
 - **Lint / Format**: `npm run lint` / `npm run format` (Biome)
-- **DB Push / Generate / Migrate**: `npm run db:push` / `npm run db:generate` / `npm run db:migrate`
+- **DB Push / Generate / Migrate**: `npm run db:push` / `npm run db:generate -- --name <desc>` / `npm run db:migrate` — always pass `--name` with a descriptive slug when generating (e.g. `add_task_schedule`)
 - **E2E**: `npm run cy:run:user`, `npm run cy:run:guest`, `npm run cy:open:user`, `npm run cy:open:guest`
 - **Required Env Vars**: Replit Auth environment variables are managed by Replit.
 

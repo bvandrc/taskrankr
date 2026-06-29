@@ -100,7 +100,11 @@ export const FormLabel = forwardRefHelper<
     <Label
       {...props}
       ref={ref}
-      className={cn(error && redOnError && 'text-danger', className)}
+      className={cn(
+        'text-[10px] uppercase tracking-wider text-muted-foreground',
+        error && redOnError && 'text-danger',
+        className,
+      )}
       htmlFor={formItemId}
     >
       {children}

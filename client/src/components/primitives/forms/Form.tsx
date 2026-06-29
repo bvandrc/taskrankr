@@ -90,6 +90,19 @@ export const FormItem = forwardRefHelper<HTMLDivElement>(
   'FormItem',
 )
 
+export const FieldLabel = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span
+    {...props}
+    className={cn(
+      'text-[10px] uppercase tracking-wider text-muted-foreground',
+      className,
+    )}
+  />
+)
+
 export const FormLabel = forwardRefHelper<
   typeof LabelPrimitive.Root,
   { redOnError?: boolean; isRequired?: boolean }

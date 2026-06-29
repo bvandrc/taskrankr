@@ -112,7 +112,7 @@ const DesktopDialog = ({
       }}
     >
       <DialogContent
-        className="w-full max-w-[600px] max-h-[calc(100vh-2.5rem)] overflow-hidden bg-card border-white/10 p-6 shadow-2xl rounded-xl flex flex-col [&>form]:min-h-0"
+        className="w-full max-w-150 max-h-[calc(100vh-2.5rem)] overflow-hidden bg-card border-white/10 p-6 shadow-2xl rounded-xl flex flex-col [&>form]:min-h-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
@@ -158,7 +158,7 @@ const MobileDialog = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: '100%' }}
         transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden"
+        className="fixed inset-0 z-100 bg-background flex flex-col overflow-hidden"
         data-testid="task-form-dialog-mobile"
       >
         <TaskForm

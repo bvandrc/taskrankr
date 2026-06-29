@@ -28,6 +28,7 @@ import { Button } from '../primitives/Button'
 import { Checkbox } from '../primitives/forms/Checkbox'
 import { DateInput } from '../primitives/forms/DateInput'
 import {
+  FieldLabel,
   Form,
   FormControl,
   FormField,
@@ -189,7 +190,7 @@ export const TaskForm = ({
 
         <div
           data-testid="form-scroll-region"
-          className="min-h-0 overflow-y-auto [scrollbar-gutter:stable_both-edges] py-2"
+          className="min-h-0 overflow-y-auto scrollbar-gutter-both py-2"
         >
           <div className="flex-1 space-y-5 px-3">
             {visibleRankFields.length > 0 && (
@@ -222,7 +223,7 @@ export const TaskForm = ({
                   <FormControl>
                     <Textarea
                       placeholder="Additional details..."
-                      className="bg-secondary/20 border-white/5 min-h-[50px] max-h-[200px] resize-none focus-visible:ring-primary/50"
+                      className="bg-secondary/20 border-white/5 min-h-12.5 max-h-50 resize-none focus-visible:ring-primary/50"
                       style={{ fieldSizing: 'content' } as React.CSSProperties}
                       {...field}
                       value={field.value ?? ''}
@@ -243,70 +244,61 @@ export const TaskForm = ({
               onShowHiddenChange={onShowHiddenChange}
             />
 
-            <div
-              data-testid="created-and-completed-section"
-              className="flex flex-col gap-3 mt-2"
-            >
-              <FormField
-                control={form.control}
-                name="createdAt"
-                render={({ field }) => (
-                  <DateInput
-                    label="Date Created"
-                    value={field.value}
-                    onChange={field.onChange}
-                    popoverHeader="Select Creation Date"
-                    buttonClassName="w-auto"
-                  />
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="createdAt"
+              render={({ field }) => (
+                <DateInput
+                  label="Date Created"
+                  value={field.value}
+                  onChange={field.onChange}
+                  popoverHeader="Select Creation Date"
+                  buttonClassName="w-auto"
+                />
+              )}
+            />
 
-              {initialData?.status === TaskStatus.COMPLETED &&
-                initialData?.completedAt && (
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Date Completed
-                    </div>
-                    <div className="text-xs text-emerald-400/70 bg-emerald-400/5 px-2 py-1 rounded border border-emerald-400/10">
-                      {format(new Date(initialData.completedAt), 'PPP p')}
-                    </div>
+            {initialData?.status === TaskStatus.COMPLETED &&
+              initialData?.completedAt && (
+                <div className="flex items-center justify-between gap-4">
+                  <FieldLabel>Date Completed</FieldLabel>
+                  <div className="text-xs text-emerald-400/70 bg-emerald-400/5 px-2 py-1 rounded border border-emerald-400/10">
+                    {format(new Date(initialData.completedAt), 'PPP p')}
                   </div>
-                )}
+                </div>
+              )}
 
-              <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
-                {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is an input. */}
-                <label
-                  className={cn(
-                    'flex items-center justify-between gap-4',
-                    hasIncompleteSubtasks
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer',
-                  )}
-                  data-testid="checkbox-mark-completed"
-                >
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Completed
-                  </div>
-                  <Checkbox
-                    checked={form.watch('status') === TaskStatus.COMPLETED}
-                    disabled={hasIncompleteSubtasks}
-                    onCheckedChange={(checked) => {
-                      const newStatus =
-                        checked === true
-                          ? TaskStatus.COMPLETED
-                          : ((initialData?.status !== TaskStatus.COMPLETED
-                              ? initialData?.status
-                              : TaskStatus.OPEN) ?? TaskStatus.OPEN)
-                      form.setValue('status', newStatus, {
-                        shouldValidate: true,
-                      })
-                    }}
-                    className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                    data-testid="mark-completed-checkbox"
-                  />
-                </label>
-              </SubtaskBlockedTooltip>
-            </div>
+            <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
+              {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is an input. */}
+              <label
+                className={cn(
+                  'flex items-center justify-between gap-4',
+                  hasIncompleteSubtasks
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer',
+                )}
+                data-testid="checkbox-mark-completed"
+              >
+                <FieldLabel>Completed</FieldLabel>
+                <Checkbox
+                  checked={form.watch('status') === TaskStatus.COMPLETED}
+                  disabled={hasIncompleteSubtasks}
+                  onCheckedChange={(checked) => {
+                    const newStatus =
+                      checked === true
+                        ? TaskStatus.COMPLETED
+                        : ((initialData?.status !== TaskStatus.COMPLETED
+                            ? initialData?.status
+                            : TaskStatus.OPEN) ?? TaskStatus.OPEN)
+                    form.setValue('status', newStatus, {
+                      shouldValidate: true,
+                    })
+                  }}
+                  className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                  data-testid="mark-completed-checkbox"
+                />
+              </label>
+            </SubtaskBlockedTooltip>
           </div>
         </div>
 

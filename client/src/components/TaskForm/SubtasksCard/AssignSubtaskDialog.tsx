@@ -4,6 +4,15 @@
 
 import { useMemo, useState } from 'react'
 
+import { Button } from '@/components/primitives/Button'
+import { Checkbox } from '@/components/primitives/forms/Checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/primitives/overlays/Dialog'
+import { SearchInput } from '@/components/SearchInput'
 import {
   collectDescendantIds,
   filterRootTasks,
@@ -12,15 +21,6 @@ import {
 import { cn, handleKeyDown } from '@/lib/utils'
 import { useTasks } from '@/providers/TasksProvider'
 import { type Task, TaskStatus } from '~/shared/schema'
-import { Button } from '../../primitives/Button'
-import { Checkbox } from '../../primitives/forms/Checkbox'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../../primitives/overlays/Dialog'
-import { SearchInput } from '../../SearchInput'
 
 const LAYER_CLASS = 'z-[200]'
 

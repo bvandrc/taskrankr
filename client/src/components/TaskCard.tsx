@@ -39,7 +39,7 @@ const Title = ({
 }) => (
   <h3
     className={cn(
-      'font-semibold text-base break-words',
+      'font-semibold text-base wrap-break-word',
       isCompleted ? 'text-muted-foreground line-through' : 'text-foreground',
     )}
     data-testid="task-title"
@@ -246,13 +246,13 @@ export const TaskCard = ({
         className={cn(
           'relative flex items-center gap-2 pr-2 pl-1 py-1.5 rounded-lg border transition-all duration-200 select-none cursor-pointer',
           isNestedWithStatus
-            ? 'border-transparent hover:bg-white/[0.02] hover:border-white/[0.05]'
+            ? 'border-transparent hover:bg-white/2 hover:border-white/5'
             : isInProgress
               ? 'border-blue-500/30 bg-blue-500/5'
               : isPinned
                 ? 'border-slate-400/30 bg-slate-500/5'
-                : 'border-transparent hover:bg-white/[0.02] hover:border-white/[0.05]',
-          isHolding && 'bg-white/[0.05] scale-[0.99] transition-transform',
+                : 'border-transparent hover:bg-white/2 hover:border-white/5',
+          isHolding && 'bg-white/5 scale-[0.99] transition-transform',
         )}
         style={{ marginLeft: `${level * 16}px` }}
         onClick={() => openEditDialog(task)}
@@ -288,7 +288,7 @@ export const TaskCard = ({
             )}
             {isPinned && <PinIcon setShowConfirm={setShowConfirm} />}
           </div>
-          <div className="flex flex-col items-end shrink-0 md:w-[268px] md:pr-0">
+          <div className="flex flex-col items-end shrink-0 md:w-67 md:pr-0">
             <RankBadges
               task={task}
               fieldConfig={settings.fieldConfig}
@@ -331,7 +331,7 @@ export const TaskCard = ({
           >
             <div className="relative">
               <div
-                className="absolute left-[26px] top-0 bottom-3 w-px bg-white/[0.05]"
+                className="absolute left-6.5 top-0 bottom-3 w-px bg-white/5"
                 style={{ marginLeft: `${level * 16}px` }}
               />
               {task.subtasks.map((subtask, index) => (

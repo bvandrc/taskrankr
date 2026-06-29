@@ -3,10 +3,10 @@ import type { SwitchProps } from '@radix-ui/react-switch'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, Settings2 } from 'lucide-react'
 
+import { Switch } from '@/components/primitives/forms/Switch'
+import { VisibilityToggleButton } from '@/components/VisibilityToggleButton'
 import { cn } from '@/lib/utils'
 import { SubtaskSortMode, type TaskSubtaskSettings } from '~/shared/schema'
-import { Switch } from '../../primitives/forms/Switch'
-import { VisibilityToggleButton } from '../../VisibilityToggleButton'
 
 const SortingMethodSwitch = ({
   sortMode,

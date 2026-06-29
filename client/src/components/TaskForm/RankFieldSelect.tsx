@@ -63,7 +63,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
         </FormControl>
-        <SelectContent className="bg-card border-white/10 z-[200]">
+        <SelectContent className="bg-card border-white/10 z-200">
           {showNoneOption && (
             <SelectItem
               value={NONE_VALUE}

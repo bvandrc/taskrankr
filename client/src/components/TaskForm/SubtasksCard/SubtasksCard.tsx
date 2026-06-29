@@ -22,6 +22,7 @@ import {
 import { Link, Plus } from 'lucide-react'
 import { useFormContext } from 'react-hook-form'
 
+import { CollapsibleCard } from '@/components/primitives/CollapsibleCard'
 import { useFormFieldsWithDefaults } from '@/hooks/useFormFieldsWithDefaults'
 import {
   getById,
@@ -41,7 +42,6 @@ import {
   type Task,
   taskSchemaDefaults,
 } from '~/shared/schema'
-import { CollapsibleCard } from '../../primitives/CollapsibleCard'
 import { type Subtask, SubtaskRowItem } from './SubtaskRowItem'
 import { SubtasksSettings } from './SubtasksSettings'
 
@@ -301,7 +301,7 @@ export const SubtasksCard = ({
           disabled={disableAddSubtask}
           className={cn(
             ADD_SUBTASK_BTN_CLASS,
-            'flex-[4] gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+            'flex-4 gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
           )}
           data-testid="button-add-subtask"
         >

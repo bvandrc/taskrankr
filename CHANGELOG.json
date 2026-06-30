@@ -1,9 +1,10 @@
 [
   {
     "version": "0.6.0",
-    "date": "PENDING",
-    "title": "PENDING",
+    "date": "2026-06-30",
+    "title": "Task Form Schedule Feature & Layout Improvements",
     "changes": [
+      "add task form priority, hide until, and due date scheduling",
       "cleanup task form layout",
       "cleanup text sizing and datepicker layout"
     ]

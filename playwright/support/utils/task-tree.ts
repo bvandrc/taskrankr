@@ -173,7 +173,6 @@ export async function changeStatusViaStatusChangeDialog(
 
 export async function checkCompletedPage(
   page: Page,
-  isLoggedIn: boolean,
   completedTasks: TaskTreeNode[],
 ): Promise<void> {
   await checkIsAtHomePage(page)

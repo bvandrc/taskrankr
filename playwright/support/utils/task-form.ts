@@ -288,7 +288,10 @@ export async function selectDate(
   const captionText = await page
     .locator(Selectors.DatePicker.MONTH_YEAR)
     .textContent()
-  const displayed = parse(captionText!.trim(), 'MMMM yyyy', new Date())
+  if (!captionText) {
+    throw new Error('Date picker caption text not found')
+  }
+  const displayed = parse(captionText.trim(), 'MMMM yyyy', new Date())
   const monthDiff =
     (date.getFullYear() - displayed.getFullYear()) * 12 +
     (date.getMonth() - displayed.getMonth())

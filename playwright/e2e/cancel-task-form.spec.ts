@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { checkTasksDontExist } from '@test/support/utils/api'
@@ -10,8 +11,6 @@ import {
   getTaskForm,
 } from '@test/support/utils/task-form'
 import { openTaskEditForm } from '@test/support/utils/task-tree'
-
-import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm, ConfirmDialog } = Selectors
 

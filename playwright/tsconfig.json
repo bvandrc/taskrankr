@@ -9,7 +9,7 @@
     "strict": true,
     "paths": {
       "@test/support/*": ["./support/*"],
-      "@client/*": ["../client/src/*"],
+      "~/client*": ["../client/src/*"],
       "~/shared/*": ["../shared/*"],
       "@/*": ["../client/src/*"]
     }

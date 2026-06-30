@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { checkNumCalls } from '@test/support/utils/intercepts'
@@ -13,8 +14,6 @@ import {
   checkCompletedPage,
   openTaskEditForm,
 } from '@test/support/utils/task-tree'
-
-import { TaskStatus } from '~/shared/schema'
 
 test.describe('Completed Tasks', () => {
   test.beforeEach(async ({ page, isLoggedIn }) => {

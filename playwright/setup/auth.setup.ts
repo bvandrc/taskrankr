@@ -1,6 +1,7 @@
 import path from 'node:path'
-import { Routes } from '@client/lib/constants'
 import { test as setup } from '@playwright/test'
+
+import { Routes } from '~/client/lib/constants'
 import { Selectors } from '@test/support/constants/selectors'
 
 const authFile = path.join(import.meta.dirname, '../.auth/user.json')

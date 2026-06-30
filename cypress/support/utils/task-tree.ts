@@ -41,7 +41,7 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
       .then(($el) =>
         cy
           .wrap($el)
-          .find(TaskCard.THIS_TASK_CONTENT)
+          .find(TaskCard.THIS_TASK_INFO)
           .first()
           .within(() => {
             for (const field of RankFields) {

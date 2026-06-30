@@ -66,7 +66,12 @@ const checkTitleAndSubtasks = (
 
   const taskCard = getTaskCard()
 
-  if (!task.subtasks?.length) return
+  if (!task.subtasks?.length) {
+    taskCard
+      .find(`${TaskCard.COLLAPSE_BTN},${TaskCard.EXPAND_BTN}`)
+      .should('not.exist')
+    return
+  }
 
   taskCard.then(($card) => {
     const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()

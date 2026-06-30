@@ -106,18 +106,10 @@ const checkTitleAndSubtasks = async (
       return cy.wrap($card)
     })
     .within(async () => {
-      await checkSubtasksInCard(task, tier + 1, { settings })
+      for (const subtask of task?.subtasks ?? []) {
+        await checkTitleAndSubtasks(subtask, tier + 1, { settings })
+      }
     })
-}
-
-const checkSubtasksInCard = async (
-  task: TaskTreeNode,
-  tier: number,
-  options: SettingsOptions = {},
-) => {
-  for (const subtask of task?.subtasks ?? []) {
-    await checkTitleAndSubtasks(subtask, tier, options)
-  }
 }
 
 export const expandAndCheckTree = async (

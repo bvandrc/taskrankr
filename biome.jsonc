@@ -8,7 +8,7 @@
           "options": {
             "groups": [
               [":NODE:", "react"],
-              [":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:", "!@cypress/**"],
+              [":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:", "!@test/**"],
               ":BLANK_LINE:",
               [":ALIAS:", ":PATH:"]
             ]

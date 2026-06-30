@@ -1,15 +1,16 @@
-import { Routes } from '../../client/src/lib/constants'
-import { type FieldConfig, TaskStatus } from '../../shared/schema'
-import { DefaultTaskFields, Selectors } from '../support/constants'
-import { test } from '../support/fixtures'
-import { checkNumCalls } from '../support/utils/intercepts'
-import { setSettings } from '../support/utils/settings'
+import { Routes } from '@client/lib/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { test } from '@test/support/fixtures'
+import { checkNumCalls } from '@test/support/utils/intercepts'
+import { setSettings } from '@test/support/utils/settings'
 import {
   clickSubmitBtnCreate,
   fillTaskForm,
   getTaskForm,
-} from '../support/utils/task-form'
-import { expandAndCheckTree } from '../support/utils/task-tree'
+} from '@test/support/utils/task-form'
+import { expandAndCheckTree } from '@test/support/utils/task-tree'
+
+import { type FieldConfig, TaskStatus } from '~/shared/schema'
 
 test.describe('Task Creation', () => {
   test.beforeEach(async ({ page, isLoggedIn }) => {

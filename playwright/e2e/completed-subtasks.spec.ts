@@ -1,9 +1,8 @@
-import { Routes } from '../../client/src/lib/constants'
-import { TaskStatus } from '../../shared/schema'
-import { DefaultTaskFields, Selectors } from '../support/constants'
-import { expect, test } from '../support/fixtures'
-import { type CreatedTask, checkNumCalls } from '../support/utils/intercepts'
-import { goToCompletedPage } from '../support/utils/navigation'
+import { Routes } from '@client/lib/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { expect, test } from '@test/support/fixtures'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { goToCompletedPage } from '@test/support/utils/navigation'
 import {
   checkTaskFormSubtaskSettings,
   checkTaskFormSubtasks,
@@ -12,13 +11,15 @@ import {
   fillTaskForm,
   getTaskForm,
   setTaskFormSubtaskSettings,
-} from '../support/utils/task-form'
+} from '@test/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
   checkCompletedPage,
   expandAndCheckTree,
   openTaskEditForm,
-} from '../support/utils/task-tree'
+} from '@test/support/utils/task-tree'
+
+import { TaskStatus } from '~/shared/schema'
 
 test.describe('Completed Subtasks', () => {
   test.beforeEach(async ({ page, isLoggedIn }) => {

@@ -1,16 +1,17 @@
-import { Routes } from '../../client/src/lib/constants'
-import { TaskStatus } from '../../shared/schema'
-import { DefaultTaskFields, Selectors } from '../support/constants'
-import { expect, test } from '../support/fixtures'
-import { checkTasksDontExist } from '../support/utils/api'
-import { checkNumCalls } from '../support/utils/intercepts'
+import { Routes } from '@client/lib/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { expect, test } from '@test/support/fixtures'
+import { checkTasksDontExist } from '@test/support/utils/api'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
   fillTaskForm,
   getTaskForm,
-} from '../support/utils/task-form'
-import { openTaskEditForm } from '../support/utils/task-tree'
+} from '@test/support/utils/task-form'
+import { openTaskEditForm } from '@test/support/utils/task-tree'
+
+import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm, ConfirmDialog } = Selectors
 

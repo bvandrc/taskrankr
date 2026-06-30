@@ -5,8 +5,8 @@ import {
   type Response,
 } from '@playwright/test'
 
-import { TestPaths } from '../../shared/constants'
-import type { Task } from '../../shared/schema'
+import { TestPaths } from '~/shared/constants'
+import type { Task } from '~/shared/schema'
 import { ApiPaths } from './constants'
 
 export type UserMode = 'user' | 'guest'

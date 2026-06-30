@@ -1,8 +1,7 @@
-import { Routes } from '../../client/src/lib/constants'
-import { Priority, TaskStatus } from '../../shared/schema'
-import { DefaultTaskFields, Selectors } from '../support/constants'
-import { test } from '../support/fixtures'
-import { checkNumCalls } from '../support/utils/intercepts'
+import { Routes } from '@client/lib/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { test } from '@test/support/fixtures'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   assignSubtask,
   checkTaskFormSubtasks,
@@ -10,11 +9,13 @@ import {
   clickSubmitBtnUpdate,
   fillTaskForm,
   getTaskForm,
-} from '../support/utils/task-form'
+} from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
-} from '../support/utils/task-tree'
+} from '@test/support/utils/task-tree'
+
+import { Priority, TaskStatus } from '~/shared/schema'
 
 test.describe('Assign Subtasks', () => {
   test.beforeEach(async ({ page, isLoggedIn }) => {

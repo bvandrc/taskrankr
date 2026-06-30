@@ -57,7 +57,7 @@ export const CollapsibleCard = ({
       <button
         type="button"
         className={cn(
-          'flex items-center justify-between w-full text-left',
+          'flex items-center justify-between w-full text-left cursor-pointer',
           triggerClassName,
         )}
         onClick={(e) => {

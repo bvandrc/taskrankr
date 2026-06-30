@@ -9,7 +9,7 @@ export const EmptyState = ({
   description: string
   action?: React.ReactNode
 }) => (
-  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 border-2 border-dashed border-white/5 rounded-3xl bg-white/[0.01]">
+  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 border-2 border-dashed border-white/5 rounded-3xl bg-white/1">
     <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mb-2">
       {icon}
     </div>

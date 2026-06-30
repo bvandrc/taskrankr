@@ -2,12 +2,12 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { EyeOff, GripVertical, Pencil, Trash2 } from 'lucide-react'
 
+import { Button } from '@/components/primitives/Button'
 import { getTaskStatuses } from '@/lib/task-tree-utils'
 import { cn } from '@/lib/utils'
 import type { DeleteTaskArgs } from '@/providers/TasksProvider'
 import type { LocalTask } from '@/types'
 import { SubtaskSortMode, type Task } from '~/shared/schema'
-import { Button } from '../../primitives/Button'
 
 export type Subtask = LocalTask & { depth: number; subtaskIndex?: number }
 
@@ -79,7 +79,7 @@ export const SubtaskRowItem = ({
         )}
         <span
           className={cn(
-            'text-sm break-words',
+            'text-sm wrap-break-word',
             isCompleted && 'line-through text-muted-foreground',
           )}
           data-testid={`subtask-name-${task.id}`}

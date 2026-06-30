@@ -38,6 +38,7 @@ export const Selectors = {
     NAME_INPUT: testId('task-name-input'),
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
     MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
+    DATE_CREATED_PICKER: testId('date-created-picker'),
     // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
@@ -88,5 +89,10 @@ export const Selectors = {
   Toasts: {
     ERROR: testId('toast-danger'),
     DEFAULT: testId('toast-default'),
+  },
+  DatePicker: {
+    MONTH_YEAR: '[data-radix-popper-content-wrapper] [role="status"]',
+    PREV_MONTH_BTN: `[aria-label="Go to the Previous Month"]`,
+    NEXT_MONTH_BTN: `[aria-label="Go to the Next Month"]`,
   },
 } as const

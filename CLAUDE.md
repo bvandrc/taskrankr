@@ -32,7 +32,7 @@ In **development mode** (`npm run dev`), the Log In button auto-logs you in as t
 | `npm run local:preview` | Preview built bundle locally, test login enabled |
 | `npm run local:db:up` / `local:db:down` | Start / stop Docker Postgres |
 | `npm run db:migrate` | Run DB migrations |
-| `npm run db:generate` | Generate migration from schema changes |
+| `npm run db:generate -- --name <desc>` | Generate migration — always pass `--name` with a descriptive slug (e.g. `add_task_schedule`) |
 | `npm run db:push` | Push schema directly (no migration file) |
 | `npm run format` | Biome format — **run before every commit** |
 | `npm run lint` | Biome lint |
@@ -98,10 +98,10 @@ migrations/      Drizzle migration files
 - **Icons**: Use `Icon` component from `LucideIcon.tsx` only for conditional/dynamic icons — not for single static icons.
 - **Comments/JSDoc**: Describe *what* and *why* from the caller's perspective. Don't restate implementation. Keep to 1–2 lines. No hedge prefixes. Don't repeat what the type signature conveys.
 - **Terminology**: "Rank fields" = the 4 sortable badge fields: priority, ease, enjoyment, time.
-- **Test IDs**: Use `data-testid` (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
+- **Test IDs**: Use `data-testid` as the HTML attribute and as the prop name in component interfaces (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
 - **Icon sizing**: Use `size-X` Tailwind class, not `w-X h-X`.
 - **es-toolkit**: Use `omit`/`pick` from `es-toolkit` to avoid enumerating large object spreads by hand.
-- **Formatting**: Run `npm run format` before every commit.
+- **Formatting**: Run `npm run format` after making edits and before every commit.
 
 ## Gotchas
 

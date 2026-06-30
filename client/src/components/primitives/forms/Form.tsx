@@ -77,17 +77,24 @@ const FormItemContext = createContext<FormItemContextValue>(
   {} as FormItemContextValue,
 )
 
-export const FormItem = forwardRefHelper<HTMLDivElement>(
-  ({ className, ...props }, ref) => {
-    const id = useId()
+export const FormItem = forwardRefHelper<HTMLDivElement>((props, ref) => {
+  const id = useId()
 
-    return (
-      <FormItemContext.Provider value={{ id }}>
-        <div {...props} ref={ref} className={cn('space-y-2', className)} />
-      </FormItemContext.Provider>
-    )
-  },
-  'FormItem',
+  return (
+    <FormItemContext.Provider value={{ id }}>
+      <div {...props} ref={ref} />
+    </FormItemContext.Provider>
+  )
+}, 'FormItem')
+
+const FIELD_LABEL_CLASS =
+  'text-xs uppercase tracking-wider text-muted-foreground'
+
+export const FieldLabel = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span {...props} className={cn(FIELD_LABEL_CLASS, className)} />
 )
 
 export const FormLabel = forwardRefHelper<
@@ -100,7 +107,11 @@ export const FormLabel = forwardRefHelper<
     <Label
       {...props}
       ref={ref}
-      className={cn(error && redOnError && 'text-danger', className)}
+      className={cn(
+        FIELD_LABEL_CLASS,
+        error && redOnError && 'text-danger',
+        className,
+      )}
       htmlFor={formItemId}
     >
       {children}

@@ -5,7 +5,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
@@ -26,9 +25,10 @@ import {
   taskSchema,
 } from '~/shared/schema'
 import { Button } from '../primitives/Button'
-import { Calendar } from '../primitives/forms/Calendar'
 import { Checkbox } from '../primitives/forms/Checkbox'
+import { DateInput } from '../primitives/forms/DateInput'
 import {
+  FieldLabel,
   Form,
   FormControl,
   FormField,
@@ -37,11 +37,6 @@ import {
   FormMessage,
 } from '../primitives/forms/Form'
 import { Textarea } from '../primitives/forms/Textarea'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '../primitives/overlays/Popover'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
 import { RankFieldSelect } from './RankFieldSelect'
@@ -63,52 +58,6 @@ const taskFormDefaultsSchema = taskSchema.omit({
 type TaskFormDefaults = z.infer<typeof taskFormDefaultsSchema>
 
 type TaskFormValues = z.infer<ReturnType<typeof insertTaskSchemaRefined>>
-
-interface DateCreatedInputProps {
-  value: Date | undefined
-  onChange: (date: Date | undefined) => void
-}
-
-const DateCreatedInput = ({ value, onChange }: DateCreatedInputProps) => (
-  <FormItem className="flex items-center justify-between gap-4">
-    <div>
-      <FormLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        Date Created
-      </FormLabel>
-    </div>
-    <Popover>
-      <PopoverTrigger asChild>
-        <FormControl>
-          <Button
-            variant={'outline'}
-            className={cn(
-              'w-auto bg-secondary/10 border-white/5 h-8 text-xs py-1 px-3 font-normal',
-              !value && 'text-muted-foreground',
-            )}
-          >
-            {value ? format(value, 'PPP') : <span>Pick a date</span>}
-            <CalendarIcon className="size-3 ml-2 opacity-50" />
-          </Button>
-        </FormControl>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-0 bg-card border-white/10 z-[300]"
-        align="end"
-      >
-        <div className="p-3 border-b border-white/5 bg-secondary/50 text-[10px] uppercase tracking-wider text-muted-foreground text-center">
-          Select Creation Date
-        </div>
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onChange}
-          autoFocus
-          className="rounded-md border-0"
-        />
-      </PopoverContent>
-    </Popover>
-  </FormItem>
-)
 
 export interface TaskFormProps {
   onSubmit: (data: MutateTaskContent) => void
@@ -218,18 +167,14 @@ export const TaskForm = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium">Task Name</FormLabel>
+                <FormLabel>Task Name</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Task name"
                     data-testid="task-name-input"
-                    className="bg-secondary/20 border-white/5 min-h-0 py-2 text-lg focus-visible:ring-primary/50 resize-none overflow-hidden leading-snug"
+                    className="bg-secondary/20 border-white/5 min-h-0 py-2 text-lg focus-visible:ring-primary/50 resize-none leading-snug"
                     rows={1}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement
-                      target.style.height = 'auto'
-                      target.style.height = `${target.scrollHeight}px`
-                    }}
+                    style={{ fieldSizing: 'content' }}
                     {...field}
                   />
                 </FormControl>
@@ -240,12 +185,12 @@ export const TaskForm = ({
         </div>
 
         <div
-          className="min-h-0 overflow-y-auto [scrollbar-gutter:stable_both-edges] py-2"
           data-testid="form-scroll-region"
+          className="min-h-0 overflow-y-auto scrollbar-gutter-both py-2"
         >
-          <div className="flex-1 space-y-5 px-3">
+          <div className="flex-1 space-y-4 px-3">
             {visibleRankFields.length > 0 && (
-              <div className="grid grid-cols-2 gap-4">
+              <div data-testid="rank-fields" className="grid grid-cols-2 gap-4">
                 {visibleRankFields.map(({ name, label, levels }) => (
                   <FormField
                     key={name}
@@ -270,14 +215,12 @@ export const TaskForm = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Description
-                  </FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Additional details..."
-                      className="bg-secondary/20 border-white/5 min-h-[50px] max-h-[200px] resize-none focus-visible:ring-primary/50"
-                      style={{ fieldSizing: 'content' } as React.CSSProperties}
+                      className="bg-secondary/20 border-white/5 min-h-12.5 max-h-50 resize-none focus-visible:ring-primary/50"
+                      style={{ fieldSizing: 'content' }}
                       {...field}
                       value={field.value ?? ''}
                     />
@@ -297,82 +240,80 @@ export const TaskForm = ({
               onShowHiddenChange={onShowHiddenChange}
             />
 
-            <div className="flex flex-col gap-4 mt-2 pb-4">
-              <FormField
-                control={form.control}
-                name="createdAt"
-                render={({ field }) => (
-                  <DateCreatedInput
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="createdAt"
+              render={({ field }) => (
+                <DateInput
+                  label="Date Created"
+                  value={field.value}
+                  onChange={field.onChange}
+                  popoverHeader="Select Creation Date"
+                  buttonClassName="w-auto"
+                  data-testid="date-created-picker"
+                />
+              )}
+            />
 
-              {initialData?.status === TaskStatus.COMPLETED &&
-                initialData?.completedAt && (
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                      Date Completed
-                    </div>
-                    <div className="text-xs text-emerald-400/70 bg-emerald-400/5 px-2 py-1 rounded border border-emerald-400/10">
-                      {format(new Date(initialData.completedAt), 'PPP p')}
-                    </div>
+            {initialData?.status === TaskStatus.COMPLETED &&
+              initialData?.completedAt && (
+                <div className="flex items-center justify-between gap-4">
+                  <FieldLabel>Date Completed</FieldLabel>
+                  <div className="text-xs text-emerald-400/70 bg-emerald-400/5 px-2 py-1 rounded border border-emerald-400/10">
+                    {format(new Date(initialData.completedAt), 'PPP p')}
                   </div>
-                )}
+                </div>
+              )}
 
-              <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
-                {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is an input. */}
-                <label
-                  className={cn(
-                    'flex items-center justify-between gap-4',
-                    hasIncompleteSubtasks
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'cursor-pointer',
-                  )}
-                  data-testid="checkbox-mark-completed"
-                >
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Completed
-                  </div>
-                  <Checkbox
-                    checked={form.watch('status') === TaskStatus.COMPLETED}
-                    disabled={hasIncompleteSubtasks}
-                    onCheckedChange={(checked) => {
-                      const newStatus =
-                        checked === true
-                          ? TaskStatus.COMPLETED
-                          : ((initialData?.status !== TaskStatus.COMPLETED
-                              ? initialData?.status
-                              : TaskStatus.OPEN) ?? TaskStatus.OPEN)
-                      form.setValue('status', newStatus, {
-                        shouldValidate: true,
-                      })
-                    }}
-                    className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
-                    data-testid="mark-completed-checkbox"
-                  />
-                </label>
-              </SubtaskBlockedTooltip>
-            </div>
+            <SubtaskBlockedTooltip blocked={hasIncompleteSubtasks}>
+              {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is an input. */}
+              <label
+                className={cn(
+                  'flex items-center justify-between gap-4',
+                  hasIncompleteSubtasks
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer',
+                )}
+                data-testid="checkbox-mark-completed"
+              >
+                <FieldLabel>Completed</FieldLabel>
+                <Checkbox
+                  checked={form.watch('status') === TaskStatus.COMPLETED}
+                  disabled={hasIncompleteSubtasks}
+                  onCheckedChange={(checked) => {
+                    const newStatus =
+                      checked === true
+                        ? TaskStatus.COMPLETED
+                        : ((initialData?.status !== TaskStatus.COMPLETED
+                            ? initialData?.status
+                            : TaskStatus.OPEN) ?? TaskStatus.OPEN)
+                    form.setValue('status', newStatus, {
+                      shouldValidate: true,
+                    })
+                  }}
+                  className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                  data-testid="mark-completed-checkbox"
+                />
+              </label>
+            </SubtaskBlockedTooltip>
           </div>
         </div>
 
-        <div className="pt-2 pb-4 px-4 flex gap-3 ">
+        <div className="p-4 flex gap-3 ">
           <Button
+            data-testid="cancel-button"
             type="button"
             variant="outline"
             onClick={onCancel}
             className="flex-1 h-12 border-white/10 bg-background hover:bg-secondary/20 text-lg"
-            data-testid="cancel-button"
           >
             Cancel
           </Button>
           <Button
+            data-testid="submit-button"
             type="submit"
             disabled={!isValid}
             className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-bold text-lg disabled:bg-primary/80 disabled:cursor-not-allowed"
-            data-testid="submit-button"
           >
             {isEditingExisting ? 'Save' : 'Create'}
           </Button>

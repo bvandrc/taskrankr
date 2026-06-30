@@ -11,8 +11,8 @@ import { Routes } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { InlineLink } from '../primitives/InlineText'
 
-const TEXT_SECTION_STYLE = 'text-emerald-300'
-const TEXT_PARAGRAPH_LEAD_STYLE = cn(TEXT_SECTION_STYLE, 'font-medium')
+const TEXT_SECTION_CLASS = 'text-emerald-300'
+const TEXT_PARAGRAPH_LEAD_CLASS = cn(TEXT_SECTION_CLASS, 'font-medium')
 
 export const WhyDifferentDialog = ({
   open,
@@ -38,7 +38,7 @@ export const WhyDifferentDialog = ({
         <DialogHeader>
           <DialogTitle
             data-testid="text-why-different-title"
-            className={TEXT_SECTION_STYLE}
+            className={TEXT_SECTION_CLASS}
           >
             Why TaskRankr?
           </DialogTitle>
@@ -52,7 +52,7 @@ export const WhyDifferentDialog = ({
             believe it can help you too!
           </p>
 
-          <h3 className={cn(TEXT_SECTION_STYLE, 'font-semibold pt-1')}>
+          <h3 className={cn(TEXT_SECTION_CLASS, 'font-semibold pt-1')}>
             What sets TaskRankr apart:
           </h3>
 
@@ -60,7 +60,7 @@ export const WhyDifferentDialog = ({
             <li className="flex gap-2">
               <Star className="size-4 text-yellow-500 mt-0.5 shrink-0" />
               <div>
-                <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
+                <span className={TEXT_PARAGRAPH_LEAD_CLASS}>
                   More priority levels.
                 </span>{' '}
                 Other apps let you sort by priority, but only have 3 levels.
@@ -72,7 +72,7 @@ export const WhyDifferentDialog = ({
             <li className="flex gap-2">
               <CheckCircle className="size-4 text-emerald-500 mt-0.5 shrink-0" />
               <div>
-                <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
+                <span className={TEXT_PARAGRAPH_LEAD_CLASS}>
                   Sort by ease, enjoyment, and time.
                 </span>{' '}
                 At different times of life, or the week, or the day, there is
@@ -107,7 +107,7 @@ export const WhyDifferentDialog = ({
             <li className="flex gap-2">
               <ListTodo className="size-4 text-amber-500 mt-0.5 shrink-0" />
               <div>
-                <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
+                <span className={TEXT_PARAGRAPH_LEAD_CLASS}>
                   Jot down ideas without clutter.
                 </span>{' '}
                 More-specific sorting means you can freely jot down random ideas
@@ -119,7 +119,7 @@ export const WhyDifferentDialog = ({
             <li className="flex gap-2">
               <ListTodo className="size-4 text-blue-500 mt-0.5 shrink-0" />
               <div>
-                <span className={TEXT_PARAGRAPH_LEAD_STYLE}>
+                <span className={TEXT_PARAGRAPH_LEAD_CLASS}>
                   The best subtask system out there.
                 </span>{' '}
                 Create subtasks, subtasks of subtasks, and so on. Subtasks get

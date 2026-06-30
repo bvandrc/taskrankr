@@ -39,7 +39,7 @@ const Title = ({
 }) => (
   <h3
     className={cn(
-      'font-semibold text-base break-words',
+      'font-semibold text-base wrap-break-word',
       isCompleted ? 'text-muted-foreground line-through' : 'text-foreground',
     )}
     data-testid="task-title"
@@ -53,11 +53,11 @@ const Title = ({
 
 const TaskBadge = ({
   value,
-  styleClass,
+  className,
   muted,
 }: {
   value: string
-  styleClass: string
+  className: string
   muted?: boolean
 }) => (
   <Badge
@@ -66,7 +66,7 @@ const TaskBadge = ({
       'px-1 py-0 border text-[8px] font-bold uppercase w-16 justify-center shrink-0',
       muted
         ? 'text-muted-foreground/50 bg-transparent border-muted/30'
-        : styleClass,
+        : className,
     )}
     data-testid={`badge-${value}`}
   >
@@ -90,7 +90,7 @@ const InProgressBadge = ({
   >
     <TaskBadge
       value="In Progress"
-      styleClass="text-blue-400 bg-blue-400/10 border-blue-400/20"
+      className="text-blue-400 bg-blue-400/10 border-blue-400/20"
     />
   </div>
 )
@@ -127,7 +127,7 @@ const RankBadges = ({
         <TaskBadge
           key={field}
           value={value ?? ''}
-          styleClass={getRankFieldStyle(field, value, 'opacity-0')}
+          className={getRankFieldStyle(field, value, 'opacity-0')}
           muted={isCompleted}
         />
       )
@@ -246,13 +246,13 @@ export const TaskCard = ({
         className={cn(
           'relative flex items-center gap-2 pr-2 pl-1 py-1.5 rounded-lg border transition-all duration-200 select-none cursor-pointer',
           isNestedWithStatus
-            ? 'border-transparent hover:bg-white/[0.02] hover:border-white/[0.05]'
+            ? 'border-transparent hover:bg-white/2 hover:border-white/5'
             : isInProgress
               ? 'border-blue-500/30 bg-blue-500/5'
               : isPinned
                 ? 'border-slate-400/30 bg-slate-500/5'
-                : 'border-transparent hover:bg-white/[0.02] hover:border-white/[0.05]',
-          isHolding && 'bg-white/[0.05] scale-[0.99] transition-transform',
+                : 'border-transparent hover:bg-white/2 hover:border-white/5',
+          isHolding && 'bg-white/5 scale-[0.99] transition-transform',
         )}
         style={{ marginLeft: `${level * 16}px` }}
         onClick={() => openEditDialog(task)}
@@ -288,14 +288,14 @@ export const TaskCard = ({
             )}
             {isPinned && <PinIcon setShowConfirm={setShowConfirm} />}
           </div>
-          <div className="flex flex-col items-end shrink-0 md:w-[268px] md:pr-0">
+          <div className="flex flex-col items-end shrink-0 md:w-67 md:pr-0">
             <RankBadges
               task={task}
               fieldConfig={settings.fieldConfig}
               isCompleted={isNestedCompleted}
             />
             {showCompletedDate && task.completedAt && (
-              <span className="text-[10px] text-muted-foreground mt-0.5">
+              <span className="text-xs text-muted-foreground mt-0.5">
                 Completed:{' '}
                 {new Date(task.completedAt).toLocaleDateString(
                   'en-US',
@@ -331,7 +331,7 @@ export const TaskCard = ({
           >
             <div className="relative">
               <div
-                className="absolute left-[26px] top-0 bottom-3 w-px bg-white/[0.05]"
+                className="absolute left-6.5 top-0 bottom-3 w-px bg-white/5"
                 style={{ marginLeft: `${level * 16}px` }}
               />
               {task.subtasks.map((subtask, index) => (

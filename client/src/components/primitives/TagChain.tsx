@@ -41,13 +41,13 @@ export const TagChain = ({
   return (
     <div className={cn('flex items-center gap-1.5 flex-wrap', className)}>
       {displayLabel && (
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
           {displayLabel}:
         </span>
       )}
       {items.map((item, idx) => (
         <div key={item.id} className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-secondary/10 px-2 py-0.5 rounded border border-gray-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground bg-secondary/10 px-2 py-0.5 rounded border border-gray-400">
             {item.name}
           </span>
           {idx < items.length - 1 && (

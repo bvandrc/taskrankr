@@ -35,28 +35,28 @@ test.describe('Assign Subtasks', () => {
 
   const rootTask = {
     ...DefaultTaskFields,
-    name: 'E2E Root Task',
+    name: taskName('E2E Root Task'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const orphanTask = {
     ...DefaultTaskFields,
     priority: Priority.HIGH,
-    name: 'E2E Orphan Task 1',
+    name: taskName('E2E Orphan Task 1'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const orphanTask2 = {
     ...DefaultTaskFields,
     priority: Priority.MEDIUM,
-    name: 'E2E Orphan Task 2',
+    name: taskName('E2E Orphan Task 2'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const newSubtask = {
     ...DefaultTaskFields,
     priority: Priority.LOW,
-    name: 'E2E Brand New Subtask',
+    name: taskName('E2E Brand New Subtask'),
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
 

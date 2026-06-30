@@ -33,24 +33,24 @@ test.describe('Create Subtasks', () => {
 
   const rootTask = {
     ...DefaultTaskFields,
-    name: 'E2E Root Level Task',
+    name: taskName('E2E Root Level Task'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const subtask = {
     ...DefaultTaskFields,
     status: TaskStatus.OPEN,
-    name: 'E2E Subtask 1',
+    name: taskName('E2E Subtask 1'),
   } as const satisfies CreatedTask
 
   const subtask2 = {
     ...subtask,
-    name: 'E2E Subtask 2',
+    name: taskName('E2E Subtask 2'),
   } as const satisfies CreatedTask
 
   const subtask3 = {
     ...subtask,
-    name: 'E2E Subtask 3',
+    name: taskName('E2E Subtask 3'),
   } as const satisfies CreatedTask
 
   const completedRootTask = {

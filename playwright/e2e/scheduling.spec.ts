@@ -26,7 +26,7 @@ test.describe('Scheduling', () => {
 
   const baseTask = {
     ...DefaultTaskFields,
-    name: 'E2E Test Task',
+    name: taskName('E2E Test Task'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 

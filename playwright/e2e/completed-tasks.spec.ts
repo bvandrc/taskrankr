@@ -22,7 +22,7 @@ const { TaskForm } = Selectors
 
 const task = {
   ...DefaultTaskFields,
-  name: 'E2E Test Task',
+  name: taskName('E2E Test Task'),
 }
 
 test.describe('Completed Tasks', () => {

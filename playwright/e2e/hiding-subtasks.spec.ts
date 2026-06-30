@@ -58,19 +58,19 @@ test.describe('Hiding Subtasks', () => {
 
   const rootTask = {
     ...DefaultTaskFields,
-    name: 'E2E Root Task',
+    name: taskName('E2E Root Task'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const openSubtask = {
     ...DefaultTaskFields,
-    name: 'E2E Open Subtask',
+    name: taskName('E2E Open Subtask'),
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
 
   const completedSubtask = {
     ...DefaultTaskFields,
-    name: 'E2E Completed Subtask',
+    name: taskName('E2E Completed Subtask'),
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 

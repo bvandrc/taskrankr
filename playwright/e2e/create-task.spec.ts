@@ -18,7 +18,7 @@ test.describe('Task Creation', () => {
 
   const task = {
     ...DefaultTaskFields,
-    name: 'E2E Root Level Task',
+    name: taskName('E2E Root Level Task'),
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
@@ -41,7 +41,7 @@ test.describe('Task Creation', () => {
 
     const newTask = {
       ...task,
-      name: 'Field Config Test Task',
+      name: taskName('Field Config Test Task'),
       ease: null,
       enjoyment: null,
     } satisfies CreatedTask

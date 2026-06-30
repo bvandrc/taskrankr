@@ -327,6 +327,29 @@ export const TasksProvider = ({
     tasksRef.current = tasks
   }, [tasks])
 
+  // Wake up at the next schedule boundary to fire time-based state changes
+  // (priority escalations, hideUntil transitions). Clears itself on cleanup so
+  // only one timer is live at a time; re-schedules whenever tasks change.
+  useEffect(() => {
+    if (!isInitialized) return
+    const now = Date.now()
+    let nextMs: number | null = null
+    for (const task of tasks) {
+      if (!task.schedule) continue
+      for (const val of Object.values(task.schedule)) {
+        if (val instanceof Date) {
+          const ms = val.getTime() - now
+          if (ms > 0 && (nextMs === null || ms < nextMs)) nextMs = ms
+        }
+      }
+    }
+    if (nextMs === null) return
+    const id = setTimeout(() => {
+      reconcileAndSetTasks(tasksRef.current, 'timer')
+    }, nextMs)
+    return () => clearTimeout(id)
+  }, [tasks, isInitialized, reconcileAndSetTasks])
+
   // Helper to update a task by ID
   const updateTaskById = useCallback(
     (

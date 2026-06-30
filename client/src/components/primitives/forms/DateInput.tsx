@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { addDays, format } from 'date-fns'
 import { Calendar as CalendarIcon, X } from 'lucide-react'
 import type { Matcher } from 'react-day-picker'
 
@@ -34,8 +34,8 @@ export const DateInput = ({
   canClear = true,
 }: DateInputProps) => {
   const disabledMatcher: Matcher[] = []
-  if (minDate) disabledMatcher.push({ before: minDate })
-  if (maxDate) disabledMatcher.push({ after: maxDate })
+  if (minDate) disabledMatcher.push({ before: addDays(minDate, 1) })
+  if (maxDate) disabledMatcher.push({ after: addDays(maxDate, -1) })
 
   return (
     <FormItem className="space-y-0">

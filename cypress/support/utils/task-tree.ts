@@ -38,9 +38,8 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
       )
       .closest(TaskCard.CARD)
       .should('have.attr', 'data-status', task.status)
-      .then(($el) =>
-        cy
-          .wrap($el)
+      .then(($el) => {
+        cy.wrap($el)
           .find(TaskCard.THIS_TASK_INFO)
           .first()
           .within(() => {
@@ -53,9 +52,9 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
                 badge.should('not.exist')
               }
             }
-            return cy.wrap($el)
-          }),
-      )
+          })
+        return cy.wrap($el)
+      })
 
   const taskCard = getTaskCard()
 

@@ -8,7 +8,7 @@ import {
   type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { getElementArrayText } from '.'
+import { getElementArrayText, type SettingsOptions } from '.'
 import { checkTasksDontExistBackend } from './api'
 import { type CreatedTask, waitForCreate, waitForUpdate } from './intercepts'
 
@@ -58,11 +58,7 @@ export const fillTaskForm = (
   {
     settings = DEFAULT_FIELD_CONFIG,
     hasIncompleteSubtasks = false,
-  }: {
-    /**
-     * @default DEFAULT_FIELD_CONFIG
-     */
-    settings?: FieldConfig
+  }: SettingsOptions & {
     /**
      * @default false
      */

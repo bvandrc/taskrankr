@@ -2,8 +2,10 @@ import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
 import { attachCustomCommands } from 'cypress-firebase'
 import { format, parse } from 'date-fns'
+import { cloneDeepWith } from 'es-toolkit'
 
 import { TestPaths } from '~/shared/constants'
+import { contract } from '~/shared/contract'
 import type { Task as AppTask } from '~/shared/schema'
 import { createEnvSchema } from '~/shared/schema'
 import { ApiPaths, Selectors } from './constants'
@@ -37,6 +39,11 @@ declare global {
       getApiTasks(): Chainable<AppTask[]>
       /** Deletes all tasks for the test user. */
       clearTestUserTasks(): Chainable<void>
+      /** Patches a task in localStorage (and the backend if logged in) by task name. */
+      modifyTaskLocalAndBackend(
+        taskName: string,
+        patch: Partial<AppTask>,
+      ): Chainable<void>
       /** Resets the test user's settings to their defaults on the server. */
       resetTestUserSettings(): Chainable<void>
 
@@ -86,6 +93,36 @@ Cypress.Commands.add('getApiTasks', () =>
 Cypress.Commands.add('clearTestUserTasks', () => {
   cy.request('DELETE', TestPaths.TEST_TASKS) //
     .should('have.property', 'status', 200)
+})
+
+Cypress.Commands.add('modifyTaskLocalAndBackend', (taskName, patch) => {
+  const storageMode = isLoggedIn() ? 'auth' : 'guest'
+  const storageKey = `taskrankr-${storageMode}-tasks`
+  const normalizedPatch = cloneDeepWith(patch, (v) =>
+    v instanceof Date ? v.toISOString() : undefined,
+  )
+
+  cy.window().then((win) => {
+    const stored: AppTask[] = JSON.parse(
+      win.localStorage.getItem(storageKey) ?? '[]',
+    )
+    const task = stored.find((t) => t.name === taskName)
+    if (!task) throw new Error(`Task "${taskName}" not found in localStorage`)
+
+    Object.assign(task, normalizedPatch)
+    win.localStorage.setItem(storageKey, JSON.stringify(stored))
+
+    if (isLoggedIn() && typeof task.id === 'number' && task.id > 0) {
+      cy.getAuthToken().then((token) =>
+        cy.request({
+          method: 'PATCH',
+          url: contract.tasks.update.path.replace(':id', task.id.toString()),
+          body: normalizedPatch,
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      )
+    }
+  })
 })
 
 Cypress.Commands.add('resetTestUserSettings', () => {

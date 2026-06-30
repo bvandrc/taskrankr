@@ -16,7 +16,7 @@ import {
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
 
-import { Priority, TaskStatus } from '~/shared/schema'
+import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm } = Selectors
 
@@ -85,34 +85,5 @@ describe('Scheduling', () => {
     cy.contains(hiddenTask.name).should('not.exist')
   })
 
-  it.skip('reconciles priority escalation on load when escalation date has passed', () => {
-    const taskLow = {
-      ...baseTask,
-      priority: Priority.LOW,
-    } as const satisfies CreatedTask
-
-    cy.log('Step 1: Create task with priority=low')
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(taskLow)
-    clickSubmitBtnCreate({ newTasks: [taskLow] })
-
-    cy.log('Step 2: Inject a past medium-escalation date')
-    cy.modifyTaskLocalAndBackend(taskLow.name, {
-      schedule: {
-        // past date
-        [Priority.MEDIUM]: new Date(Date.now() - 60_000),
-      },
-    })
-
-    cy.log(
-      'Step 3: Reload — reconcileScheduledPriority should promote priority to medium',
-    )
-    cy.reload()
-
-    cy.log('Step 4: Task card should now show badge-medium (promoted priority)')
-    cy.contains(Selectors.TaskCard.TITLE, taskLow.name)
-      .closest(Selectors.TaskCard.CARD)
-      .find('[data-testid="badge-medium"]')
-      .should('exist')
-  })
+  // TODO: reconciles priority escalation on load when escalation date has passed
 })

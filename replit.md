@@ -82,7 +82,6 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 ## Gotchas
 
 - **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `playwright/support/constants/selectors.ts` before using them in Playwright tests.
-- **Playwright Test Files**: Spec files are picked up by glob (`testMatch: /e2e\/.*\.spec\.ts/`) — no manual registration needed.
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
 - **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
 - **Vite duplicate-React / Invalid hook call**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Any change to `vite.config.ts` (even adding a `define` entry) invalidates Vite's dep-optimisation hash; the first load after the change triggers a re-bundle that races with module loading and can land two React instances simultaneously. `workbox-window` has the same problem mid-session (only discovered when the SW first runs). Do not remove these options, and avoid touching `vite.config.ts` when a client-side change suffices. If a new package triggers the symptom, add it to `optimizeDeps.include`.

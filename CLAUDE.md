@@ -108,7 +108,7 @@ migrations/      Drizzle migration files
 ## Gotchas
 
 - **Playwright selectors**: Always add new `data-testid` values to `playwright/support/constants/selectors.ts` before using them in tests.
-- **Playwright projects**: Spec files are picked up by glob (`testMatch: /e2e\/.*\.spec\.ts/`) — no manual registration needed. The `user` project depends on the `setup` project, which authenticates and saves `storageState`.
+- **Playwright projects**: The `user` project depends on the `setup` project, which authenticates and saves `storageState`.
 - **Fonts**: Only Inter and Outfit are approved. Do not re-add the massive multi-font `<link>` tag.
 - **Stale dev server after `npm install`**: Restart the server before debugging "Invalid hook call" errors — a clean restart often fixes it.
 - **Vite dedupe**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Don't remove these; avoid editing `vite.config.ts` when a client-side change suffices. If a new package causes duplicate-React errors, add it to `optimizeDeps.include`.

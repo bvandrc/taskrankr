@@ -59,7 +59,7 @@ describe('Task Creation', () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()
     fillTaskForm(newTask, { settings: fieldConfig })
     clickSubmitBtnCreate({ newTasks: [newTask] })
-    expandAndCheckTree(newTask)
+    expandAndCheckTree(newTask, { settings: fieldConfig })
     checkNumCalls({ create: 1 })
   })
 })

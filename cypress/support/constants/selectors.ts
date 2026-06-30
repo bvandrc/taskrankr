@@ -29,9 +29,12 @@ export const Selectors = {
   },
   TaskCard: {
     CARD: testIdStartsWith('task-card-'),
+    THIS_TASK_INFO: testIdStartsWith('task-info-'),
     TITLE: testId('task-title'),
     EXPAND_BTN: testIdStartsWith('button-expand-'),
     COLLAPSE_BTN: testIdStartsWith('button-collapse-'),
+    IN_PROGRESS_BADGE: testId('badge-in-progress'),
+    RankFieldBadge: (field: RankField) => testId(`badge-${field}`),
   },
   TaskForm: {
     FORM: testId('task-form'),

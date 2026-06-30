@@ -52,10 +52,15 @@ const Title = ({
 )
 
 const TaskBadge = ({
+  'data-testid': testId,
   value,
   className,
   muted,
 }: {
+  /**
+   * resolves to `badge-${testId}`
+   */
+  'data-testid': string
   value: string
   className: string
   muted?: boolean
@@ -68,7 +73,7 @@ const TaskBadge = ({
         ? 'text-muted-foreground/50 bg-transparent border-muted/30'
         : className,
     )}
-    data-testid={`badge-${value}`}
+    data-testid={`badge-${testId}`}
   >
     {value}
   </Badge>
@@ -91,6 +96,7 @@ const InProgressBadge = ({
     <TaskBadge
       value="In Progress"
       className="text-blue-400 bg-blue-400/10 border-blue-400/20"
+      data-testid="in-progress"
     />
   </div>
 )
@@ -129,6 +135,7 @@ const RankBadges = ({
           value={value ?? ''}
           className={getRankFieldStyle(field, value, 'opacity-0')}
           muted={isCompleted}
+          data-testid={field}
         />
       )
     })}
@@ -233,7 +240,6 @@ export const TaskCard = ({
       className="group relative"
       data-testid={`task-card-${task.id}`}
       data-tier={`${level}`}
-      data-status={task.status}
     >
       <motion.div
         {...(level === 0
@@ -276,7 +282,11 @@ export const TaskCard = ({
           )}
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
+        <div
+          className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4"
+          data-testid={`task-info-${task.id}`}
+          data-status={task.status}
+        >
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
             <Title
               name={task.name}
@@ -329,7 +339,10 @@ export const TaskCard = ({
             }}
             className="overflow-hidden will-change-[height]"
           >
-            <div className="relative">
+            <div
+              className="relative"
+              data-testid={`subtasks-container-${task.id}`}
+            >
               <div
                 className="absolute left-6.5 top-0 bottom-3 w-px bg-white/5"
                 style={{ marginLeft: `${level * 16}px` }}

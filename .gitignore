@@ -13,3 +13,6 @@ client/dev-dist
 cypress/results
 cypress/videos
 cypress/screenshots
+
+playwright/results
+test-results/

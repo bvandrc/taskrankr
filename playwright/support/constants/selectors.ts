@@ -1,15 +1,9 @@
-import type { FieldConfig, RankField } from '~/shared/schema'
+import type { FieldConfig, RankField } from '../../../shared/schema'
 
 const testId = <S extends string>(testid: S) =>
   `[data-testid="${testid}"]` as const
 const testIdStartsWith = <S extends string>(testid: S) =>
   `[data-testid^="${testid}"]` as const
-// biome-ignore lint/correctness/noUnusedVariables: remove rule when/if used
-const testIdContains = <S extends string>(testid: S) =>
-  `[data-testid*="${testid}"]` as const
-// biome-ignore lint/correctness/noUnusedVariables: remove rule when/if used
-const testIdEndsWith = <S extends string>(testid: S) =>
-  `[data-testid$="${testid}"]` as const
 
 export const Selectors = {
   Pages: {
@@ -43,16 +37,15 @@ export const Selectors = {
     rankSelect: (field: RankField) => testId(`rank-select-${field}`),
     MARK_COMPLETED_CHECKBOX: testId('mark-completed-checkbox'),
     DATE_CREATED_PICKER: testId('date-created-picker'),
-    // subtasks
     SUBTASKS_CARD: testId('subtasks-card'),
     ADD_SUBTASK_BTN: testId('button-add-subtask'),
     ASSIGN_SUBTASK_BTN: testId('button-assign-subtask'),
     SUBTASK_ROW: testIdStartsWith('subtask-row-'),
     SUBTASK_NAME: testIdStartsWith('subtask-name-'),
     SUBTASK_SETTINGS_BTN: testId('button-subtask-settings'),
-    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'), //autocomplete when all subtasks completed
+    AUTOCOMPLETE_SWITCH: testId('switch-inherit-completion-state'),
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
-    SHOW_HIDDEN_BTN: testId('button-show-hidden'), //show hidden subtasks
+    SHOW_HIDDEN_BTN: testId('button-show-hidden'),
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
     MORE_SECTION: testId('more-section'),
     Schedule: {
@@ -60,10 +53,8 @@ export const Selectors = {
       CLEAR_DUE_AT_BTN: '[aria-label="Clear Due At"]',
       HIDE_UNTIL_PICKER: testId('schedule-hideUntil-picker'),
     },
-    // form bns
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),
-    // cancel dialog
     CANCEL_CONFIRM_DIALOG: testId('cancel-task-form-confirm-dialog'),
     CANCEL_CONFIRM_BTN: testId('button-confirm'),
     CANCEL_DENY_BTN: testId('button-cancel'),
@@ -102,7 +93,7 @@ export const Selectors = {
   },
   DatePicker: {
     MONTH_YEAR: '[data-radix-popper-content-wrapper] [role="status"]',
-    PREV_MONTH_BTN: `[aria-label="Go to the Previous Month"]`,
-    NEXT_MONTH_BTN: `[aria-label="Go to the Next Month"]`,
+    PREV_MONTH_BTN: '[aria-label="Go to the Previous Month"]',
+    NEXT_MONTH_BTN: '[aria-label="Go to the Next Month"]',
   },
 } as const

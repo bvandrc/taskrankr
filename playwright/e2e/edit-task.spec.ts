@@ -1,0 +1,65 @@
+import { Routes } from '../../client/src/lib/constants'
+import { TaskStatus } from '../../shared/schema'
+import { DefaultTaskFields, Selectors } from '../support/constants'
+import { test } from '../support/fixtures'
+import { checkNumCalls } from '../support/utils/intercepts'
+import {
+  checkDate,
+  clickSubmitBtnCreate,
+  clickSubmitBtnUpdate,
+  fillTaskForm,
+  getTaskForm,
+  selectDate,
+} from '../support/utils/task-form'
+import { openTaskEditForm } from '../support/utils/task-tree'
+
+test.describe('Edit Task', () => {
+  test.beforeEach(async ({ page, isLoggedIn }) => {
+    await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
+  })
+
+  test('date created shows today and can be changed via the date picker', async ({
+    page,
+    isLoggedIn,
+    taskName,
+    requestTracker,
+  }) => {
+    const task = {
+      ...DefaultTaskFields,
+      name: taskName('E2E Edit Task'),
+      status: TaskStatus.PINNED,
+    }
+
+    const today = new Date()
+    const newDay = today.getDate() === 1 ? 2 : 1
+    const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
+
+    await page.locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
+    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+      newTasks: [task],
+    })
+
+    await openTaskEditForm(page, task)
+    await checkDate(
+      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      today,
+    )
+    await selectDate(
+      page,
+      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      newDate,
+    )
+
+    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+      updatedTasks: [task],
+    })
+    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+
+    await openTaskEditForm(page, task)
+    await checkDate(
+      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      newDate,
+    )
+  })
+})

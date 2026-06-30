@@ -1,4 +1,4 @@
-import { contract } from '~/shared/contract'
+import { contract } from '../../../shared/contract'
 import {
   Ease,
   Enjoyment,
@@ -6,7 +6,7 @@ import {
   Priority,
   type Task,
   Time,
-} from '~/shared/schema'
+} from '../../../shared/schema'
 
 export * from './selectors'
 
@@ -19,8 +19,7 @@ export const ApiPaths = {
   UPDATE_SETTINGS: contract.settings.update.path,
 }
 
-export const DefaultTask = {
-  name: 'E2E Test Task',
+export const DefaultTaskFields = {
   priority: Priority.HIGH,
   ease: Ease.MEDIUM,
   enjoyment: Enjoyment.LOW,

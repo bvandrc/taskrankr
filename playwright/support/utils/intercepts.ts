@@ -1,0 +1,94 @@
+import { expect, type Page } from '@playwright/test'
+
+import type { Task } from '../../../shared/schema'
+import { Selectors } from '../constants'
+import { type RequestCounts, waitForCreate, waitForUpdate } from '../fixtures'
+import { checkTasksDontExist, checkTasksExist } from './api'
+
+export type CreatedTask = Pick<Task, 'name' | 'status'> &
+  Partial<Pick<Task, 'priority' | 'ease' | 'enjoyment' | 'time' | 'schedule'>>
+
+export type SubmitBtnArgs = {
+  newTasks?: CreatedTask[]
+  updatedTasks?: CreatedTask[]
+  confirmDialog?: string
+}
+
+export async function maybeWaitForResponses(
+  page: Page,
+  isLoggedIn: boolean,
+  type: 'create' | 'update',
+  count: number,
+  expectedStatus: number,
+): Promise<void> {
+  if (!isLoggedIn || count === 0) return
+  const waiter =
+    type === 'create' ? waitForCreate(page, count) : waitForUpdate(page, count)
+  await waiter
+  await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+}
+
+export function checkNumCalls(
+  tracker: RequestCounts,
+  isLoggedIn: boolean,
+  expected: {
+    create?: number
+    update?: number
+    delete?: number
+    updateSettings?: number
+  },
+) {
+  // In guest mode, no API calls are expected regardless of the passed values
+  const effectiveExpected = isLoggedIn
+    ? expected
+    : Object.fromEntries(
+        Object.entries(expected).map(([k, v]) => [
+          k,
+          v !== undefined ? 0 : undefined,
+        ]),
+      )
+
+  if (effectiveExpected.create !== undefined)
+    expect(tracker.create, 'create call count').toBe(effectiveExpected.create)
+  if (effectiveExpected.update !== undefined)
+    expect(tracker.update, 'update call count').toBe(effectiveExpected.update)
+  if (effectiveExpected.delete !== undefined)
+    expect(tracker.delete, 'delete call count').toBe(effectiveExpected.delete)
+  if (effectiveExpected.updateSettings !== undefined)
+    expect(tracker.updateSettings, 'updateSettings call count').toBe(
+      effectiveExpected.updateSettings,
+    )
+}
+
+export async function waitForCreateAndVerify(
+  page: Page,
+  isLoggedIn: boolean,
+  tasks: CreatedTask[],
+): Promise<void> {
+  await maybeWaitForResponses(page, isLoggedIn, 'create', tasks.length, 201)
+  await checkTasksExist(page, isLoggedIn, tasks)
+}
+
+export async function waitForUpdateAndVerify(
+  page: Page,
+  isLoggedIn: boolean,
+  tasks: CreatedTask[],
+): Promise<void> {
+  await maybeWaitForResponses(page, isLoggedIn, 'update', tasks.length, 200)
+  await checkTasksExist(page, isLoggedIn, tasks)
+}
+
+export async function checkTasksDontExistAndAssertDontExist(
+  page: Page,
+  isLoggedIn: boolean,
+  tasks: CreatedTask[],
+): Promise<void> {
+  tasks.forEach((task) => {
+    // UI check: task name shouldn't appear anywhere
+    void page
+      .locator(`text="${task.name}"`)
+      .waitFor({ state: 'detached', timeout: 500 })
+      .catch(() => undefined)
+  })
+  await checkTasksDontExist(page, isLoggedIn, tasks)
+}

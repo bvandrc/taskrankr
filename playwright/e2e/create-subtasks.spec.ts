@@ -53,9 +53,7 @@ test.describe('Create Subtasks', () => {
     await clickSubmitBtnCreate(getTaskForm(1))
 
     await checkTaskFormSubtasks(form0, [subtask])
-    await clickSubmitBtnCreate(form0, {
-      newTasks: [rootTask, subtask],
-    })
+    await clickSubmitBtnCreate(form0, { newTasks: [rootTask, subtask] })
 
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
@@ -238,9 +236,7 @@ test.describe('Create Subtasks', () => {
       const form0 = getTaskForm(0)
       await fillTaskForm(form0, rootTask)
       await form0.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      await clickSubmitBtnCreate(form0, {
-        newTasks: [completedRootTask],
-      })
+      await clickSubmitBtnCreate(form0, { newTasks: [completedRootTask] })
 
       // STEP 1: Navigate to completed page and open the edit form
       await goToCompletedPage()
@@ -288,9 +284,7 @@ test.describe('Create Subtasks', () => {
       const form0 = getTaskForm(0)
       await fillTaskForm(form0, rootTask)
       await form0.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      await clickSubmitBtnCreate(form0, {
-        newTasks: [completedRootTask],
-      })
+      await clickSubmitBtnCreate(form0, { newTasks: [completedRootTask] })
 
       await goToCompletedPage()
       await openTaskEditForm(completedRootTask)
@@ -303,9 +297,7 @@ test.describe('Create Subtasks', () => {
       await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
       await clickSubmitBtnCreate(form1)
 
-      await setTaskFormSubtaskSettings(editForm0, {
-        autoHideCompleted: false,
-      })
+      await setTaskFormSubtaskSettings(editForm0, { autoHideCompleted: false })
       await clickSubmitBtnUpdate(editForm0, {
         updatedTasks: [completedRootTask],
         newTasks: [completedSubtask],

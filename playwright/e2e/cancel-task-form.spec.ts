@@ -66,9 +66,7 @@ for (const { contextName, isEdit } of [
         // STEP 0.1: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
-        await clickSubmitBtnCreate(getTaskForm(0), {
-          newTasks: [rootTask],
-        })
+        await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
         // STEP 0.2: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
@@ -130,9 +128,7 @@ for (const { contextName, isEdit } of [
         // STEP 0.1: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
-        await clickSubmitBtnCreate(getTaskForm(0), {
-          newTasks: [rootTask],
-        })
+        await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
         // STEP 0.2: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
@@ -205,9 +201,7 @@ for (const { contextName, isEdit } of [
         // STEP 0.1: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
-        await clickSubmitBtnCreate(getTaskForm(0), {
-          newTasks: [rootTask],
-        })
+        await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
         // STEP 0.2: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })

@@ -26,9 +26,7 @@ test.describe('Task Creation', () => {
 
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [task],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [task] })
 
     await expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
@@ -45,28 +43,24 @@ test.describe('Task Creation', () => {
       time: { visible: true, required: false },
     } as const satisfies FieldConfig
 
-    const task = {
+    const newTask = {
       ...DefaultTaskFields,
       name: taskName('Field Config Test Task'),
       status: TaskStatus.PINNED,
       ease: null,
       enjoyment: null,
-    }
+    } satisfies CreatedTask
 
-    // STEP: Update rank field settings
+    // STEP 1: Update rank field settings
     await setSettings({ fieldConfig })
     checkNumCalls({ updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
-    // STEP: Create task using new field config, verify in tree
+    // STEP 2: Create task using new field config, verify in tree
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), task, {
-      settings: fieldConfig,
-    })
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [task],
-    })
-    await expandAndCheckTree(task, { settings: fieldConfig })
+    await fillTaskForm(getTaskForm(0), newTask, { settings: fieldConfig })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [newTask] })
+    await expandAndCheckTree(newTask, { settings: fieldConfig })
     checkNumCalls({ create: 1 })
   })
 })

@@ -52,15 +52,11 @@ test.describe('Assign Subtasks', () => {
     // STEP: Create orphan tasks
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), orphanTask)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [orphanTask],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask] })
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), orphanTask2)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [orphanTask2],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask2] })
 
     // STEP 1: Create root task, create new subtask, assign sibling orphanTask
     await page.locator(Selectors.CREATE_TASK_BTN).click()

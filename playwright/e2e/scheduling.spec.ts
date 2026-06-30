@@ -48,9 +48,7 @@ test.describe('Scheduling', () => {
     // STEP 1: Create task with due date
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), taskWithDueDate)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [taskWithDueDate],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [taskWithDueDate] })
     checkNumCalls({ create: 1, update: 0 })
 
     // STEP 2: Verify due badge displays on task card with correct text
@@ -60,9 +58,7 @@ test.describe('Scheduling', () => {
     await openTaskEditForm(taskWithDueDate)
     await openMoreSection(getTaskForm(0))
     await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-    await clickSubmitBtnUpdate(getTaskForm(0), {
-      updatedTasks: [baseTask],
-    })
+    await clickSubmitBtnUpdate(getTaskForm(0), { updatedTasks: [baseTask] })
     checkNumCalls({ create: 1, update: 1 })
 
     // STEP 4: Verify due badge is gone
@@ -92,9 +88,7 @@ test.describe('Scheduling', () => {
     // STEP 1: Create task with hideUntil = tomorrow
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), hiddenTask)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [hiddenTask],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [hiddenTask] })
 
     // STEP 2: Task should not be visible in the home page list
     await expect(getPage().getByText(hiddenTask.name)).not.toBeAttached()

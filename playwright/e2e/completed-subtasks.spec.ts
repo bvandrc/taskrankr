@@ -190,9 +190,7 @@ test.describe('Completed Subtasks', () => {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnCreate(form0, {
-        newTasks: [rootTask, subtask],
-      })
+      await clickSubmitBtnCreate(form0, { newTasks: [rootTask, subtask] })
       checkNumCalls({ create: 2, update: 0 })
       await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
@@ -232,9 +230,7 @@ test.describe('Completed Subtasks', () => {
       await fillTaskForm(form1, subtask)
       await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
       await clickSubmitBtnCreate(form1)
-      await setTaskFormSubtaskSettings(form0, {
-        autoHideCompleted: false,
-      })
+      await setTaskFormSubtaskSettings(form0, { autoHideCompleted: false })
       await clickSubmitBtnCreate(form0, {
         newTasks: [rootTask, completedSubtask],
       })
@@ -291,9 +287,7 @@ test.describe('Completed Subtasks', () => {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnCreate(form0, {
-        newTasks: [rootTask, subtask],
-      })
+      await clickSubmitBtnCreate(form0, { newTasks: [rootTask, subtask] })
       checkNumCalls({ create: 2, update: 0 })
       await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
@@ -375,9 +369,7 @@ test.describe('Completed Subtasks', () => {
         await clickSubmitBtnCreate(form1)
 
         // STEP: Submit root task — completed subtask hidden in tree
-        await checkTaskFormSubtaskSettings(form0, {
-          autoHideCompleted: true,
-        })
+        await checkTaskFormSubtaskSettings(form0, { autoHideCompleted: true })
         await checkTaskFormSubtasks(form0, [subtask])
         await clickSubmitBtnCreate(form0, {
           newTasks: [rootTask, subtask, completedSubtask2],
@@ -432,9 +424,7 @@ test.describe('Completed Subtasks', () => {
         await clickSubmitBtnCreate(getTaskForm(1))
 
         // STEP: Submit root task — completed subtask hidden in tree
-        await checkTaskFormSubtaskSettings(form0, {
-          autoHideCompleted: true,
-        })
+        await checkTaskFormSubtaskSettings(form0, { autoHideCompleted: true })
         await checkTaskFormSubtasks(form0, [subtask])
         await clickSubmitBtnCreate(form0, {
           newTasks: [rootTask, subtask, completedSubtask2],

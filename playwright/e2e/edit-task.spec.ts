@@ -36,9 +36,7 @@ test.describe('Edit Task', () => {
     // STEP 1: Create task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [task],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [task] })
 
     // STEP 2: Open edit form, verify Date Created shows today
     await openTaskEditForm(task)

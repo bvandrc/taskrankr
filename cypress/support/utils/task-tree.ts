@@ -55,7 +55,7 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
           const value = task[field]
           const badge = cy.wrap($el).find(TaskCard.RankFieldBadge(field))
           if (value != null) {
-            badge.should('have.text', value.toUpperCase())
+            badge.should('have.text', value)
           } else {
             badge.should('not.exist')
           }

@@ -295,7 +295,7 @@ export const TaskCard = ({
               isCompleted={isNestedCompleted}
             />
             {showCompletedDate && task.completedAt && (
-              <span className="text-[10px] text-muted-foreground mt-0.5">
+              <span className="text-xs text-muted-foreground mt-0.5">
                 Completed:{' '}
                 {new Date(task.completedAt).toLocaleDateString(
                   'en-US',

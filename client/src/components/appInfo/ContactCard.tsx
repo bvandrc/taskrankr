@@ -40,7 +40,7 @@ const ContactCardInner = ({
           <Button
             variant="outline"
             size="xs"
-            className="text-[11px] text-muted-foreground/60 gap-1.5 hover:text-muted-foreground/80"
+            className="text-xs text-muted-foreground/60 gap-1.5 hover:text-muted-foreground/80"
             onClick={() => debugLog.download(isGuestMode)}
             data-testid="button-download-debug-logs"
           >

@@ -46,6 +46,7 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
         } else {
           cy.wrap($el).find(TaskCard.DUE_BADGE).should('not.exist')
         }
+        return cy.wrap($el)
       })
 
   const taskCard = getTaskCard()

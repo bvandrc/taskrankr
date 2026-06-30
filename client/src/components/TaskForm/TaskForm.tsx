@@ -287,9 +287,7 @@ export const TaskForm = ({
                         : ((initialData?.status !== TaskStatus.COMPLETED
                             ? initialData?.status
                             : TaskStatus.OPEN) ?? TaskStatus.OPEN)
-                    form.setValue('status', newStatus, {
-                      shouldValidate: true,
-                    })
+                    form.setValue('status', newStatus, { shouldValidate: true })
                   }}
                   className="border-emerald-500/50 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                   data-testid="mark-completed-checkbox"

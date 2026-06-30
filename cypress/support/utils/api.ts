@@ -1,3 +1,6 @@
+import { cloneDeepWith } from 'es-toolkit'
+import type { SetRequired } from 'type-fest'
+
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
 import { isLoggedIn } from './test-runner'
@@ -26,7 +29,7 @@ function checkTasksBackend(
 }
 
 export const checkTasksExistBackend = (
-  tasks: Pick<Task, 'name' | 'status'>[],
+  tasks: SetRequired<Partial<Task>, 'name' | 'status'>[],
 ) =>
   checkTasksBackend((givenTasks, message) => {
     const expectedTaskNames = tasks.map((t) => t.name)
@@ -39,10 +42,13 @@ export const checkTasksExistBackend = (
     )
     for (const expectedTask of tasks) {
       const givenTask = givenTasks.find((t) => t.name === expectedTask.name)
+      const normalized = cloneDeepWith(expectedTask, (v) =>
+        v instanceof Date ? v.toISOString() : undefined,
+      )
       expect(
         givenTask,
         `Task "${expectedTask.name}" exists in ${message} with correct props`,
-      ).to.deep.include(expectedTask)
+      ).to.deep.include(normalized)
     }
   }, isLoggedIn())
 

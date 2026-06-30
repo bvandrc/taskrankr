@@ -1,11 +1,16 @@
-import { type Task, TaskStatus } from '~/shared/schema'
+import {
+  type RankField,
+  RankFields,
+  type Task,
+  TaskStatus,
+} from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
-type TaskTreeNode = Pick<Task, 'name' | 'status'> & {
+type TaskTreeNode = Pick<CreatedTask, 'name' | 'status' | RankField> & {
   subtasks?: TaskTreeNode[]
 }
 
@@ -33,6 +38,24 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
       )
       .closest(TaskCard.CARD)
       .should('have.attr', 'data-status', task.status)
+      .then(($el) =>
+        cy
+          .wrap($el)
+          .find(TaskCard.THIS_TASK_CONTENT)
+          .first()
+          .within(() => {
+            for (const field of RankFields) {
+              const value = task[field]
+              const badge = cy.get(TaskCard.RankFieldBadge(field))
+              if (value != null) {
+                badge.should('have.text', value)
+              } else {
+                badge.should('not.exist')
+              }
+            }
+            return cy.wrap($el)
+          }),
+      )
 
   const taskCard = getTaskCard()
 

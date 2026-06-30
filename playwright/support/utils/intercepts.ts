@@ -1,8 +1,9 @@
-import { expect, type Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 
 import type { Task } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { type RequestCounts, waitForCreate, waitForUpdate } from '../fixtures'
+import { getPage } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &
@@ -15,17 +16,15 @@ export type SubmitBtnArgs = {
 }
 
 export async function maybeWaitForResponses(
-  page: Page,
   isLoggedIn: boolean,
   type: 'create' | 'update',
   count: number,
   expectedStatus: number,
 ): Promise<void> {
   if (!isLoggedIn || count === 0) return
-  const waiter =
-    type === 'create' ? waitForCreate(page, count) : waitForUpdate(page, count)
+  const waiter = type === 'create' ? waitForCreate(count) : waitForUpdate(count)
   await waiter
-  await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+  await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 }
 
 export function checkNumCalls(
@@ -61,28 +60,26 @@ export function checkNumCalls(
 }
 
 export async function waitForCreateAndVerify(
-  page: Page,
   isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(page, isLoggedIn, 'create', tasks.length, 201)
-  await checkTasksExist(page, isLoggedIn, tasks)
+  await maybeWaitForResponses(isLoggedIn, 'create', tasks.length, 201)
+  await checkTasksExist(isLoggedIn, tasks)
 }
 
 export async function waitForUpdateAndVerify(
-  page: Page,
   isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(page, isLoggedIn, 'update', tasks.length, 200)
-  await checkTasksExist(page, isLoggedIn, tasks)
+  await maybeWaitForResponses(isLoggedIn, 'update', tasks.length, 200)
+  await checkTasksExist(isLoggedIn, tasks)
 }
 
 export async function checkTasksDontExistAndAssertDontExist(
-  page: Page,
   isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
+  const page = getPage()
   tasks.forEach((task) => {
     // UI check: task name shouldn't appear anywhere
     void page
@@ -90,5 +87,5 @@ export async function checkTasksDontExistAndAssertDontExist(
       .waitFor({ state: 'detached', timeout: 500 })
       .catch(() => undefined)
   })
-  await checkTasksDontExist(page, isLoggedIn, tasks)
+  await checkTasksDontExist(isLoggedIn, tasks)
 }

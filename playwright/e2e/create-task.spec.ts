@@ -29,12 +29,12 @@ test.describe('Task Creation', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
+    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
       newTasks: [task],
     })
 
-    await expandAndCheckTree(page, task)
+    await expandAndCheckTree(task)
     checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
   })
 
@@ -59,18 +59,18 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     }
 
-    await setSettings(page, isLoggedIn, requestTracker, { fieldConfig })
+    await setSettings(isLoggedIn, requestTracker, { fieldConfig })
     checkNumCalls(requestTracker, isLoggedIn, { updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task, {
+    await fillTaskForm(getTaskForm(0), isLoggedIn, task, {
       settings: fieldConfig,
     })
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
       newTasks: [task],
     })
-    await expandAndCheckTree(page, task, { settings: fieldConfig })
+    await expandAndCheckTree(task, { settings: fieldConfig })
     checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
   })
 })

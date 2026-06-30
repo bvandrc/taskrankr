@@ -41,23 +41,23 @@ test.describe('Scheduling', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, taskWithDueDate)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), isLoggedIn, taskWithDueDate)
+    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
       newTasks: [taskWithDueDate],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
 
-    await expandAndCheckTree(page, taskWithDueDate)
+    await expandAndCheckTree(taskWithDueDate)
 
-    await openTaskEditForm(page, taskWithDueDate)
-    await openMoreSection(getTaskForm(page, 0))
+    await openTaskEditForm(taskWithDueDate)
+    await openMoreSection(getTaskForm(0))
     await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
       updatedTasks: [baseTask],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
 
-    await expandAndCheckTree(page, baseTask)
+    await expandAndCheckTree(baseTask)
   })
 
   test('task with hideUntil in the future is hidden from home page', async ({
@@ -83,8 +83,8 @@ test.describe('Scheduling', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, hiddenTask)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), isLoggedIn, hiddenTask)
+    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
       newTasks: [hiddenTask],
     })
 

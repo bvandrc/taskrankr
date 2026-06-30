@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage } from '@test/support/utils/navigation'
 import {
@@ -26,23 +27,22 @@ test.describe('Completed Subtasks', () => {
   })
 
   async function createRootWithUncompletedSubtask(
-    page: Parameters<typeof fillTaskForm>[1],
     isLoggedIn: boolean,
-    rootTask: Parameters<typeof fillTaskForm>[3] & {
+    rootTask: Parameters<typeof fillTaskForm>[2] & {
       status: CreatedTask['status']
     },
-    subtask: Parameters<typeof fillTaskForm>[3] & {
+    subtask: Parameters<typeof fillTaskForm>[2] & {
       status: CreatedTask['status']
     },
   ) {
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    const form0 = getTaskForm(page, 0)
-    await fillTaskForm(form0, page, isLoggedIn, rootTask)
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    const form0 = getTaskForm(0)
+    await fillTaskForm(form0, isLoggedIn, rootTask)
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-    await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
-    await setTaskFormSubtaskSettings(form0, page, { autoHideCompleted: false })
-    await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+    await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
+    await setTaskFormSubtaskSettings(form0, { autoHideCompleted: false })
+    await clickSubmitBtnCreate(form0, isLoggedIn, {
       newTasks: [rootTask, subtask] as CreatedTask[],
     })
   }
@@ -66,25 +66,25 @@ test.describe('Completed Subtasks', () => {
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    const form0 = getTaskForm(page, 0)
-    await fillTaskForm(form0, page, isLoggedIn, rootTask)
+    const form0 = getTaskForm(0)
+    await fillTaskForm(form0, isLoggedIn, rootTask)
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-    const form1 = getTaskForm(page, 1)
-    await fillTaskForm(form1, page, isLoggedIn, subtask)
+    const form1 = getTaskForm(1)
+    await fillTaskForm(form1, isLoggedIn, subtask)
     await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-    await clickSubmitBtnCreate(form1, page, isLoggedIn)
-    await setTaskFormSubtaskSettings(form0, page, { autoHideCompleted: false })
+    await clickSubmitBtnCreate(form1, isLoggedIn)
+    await setTaskFormSubtaskSettings(form0, { autoHideCompleted: false })
     await checkTaskFormSubtasks(form0, [completedSubtask])
-    await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+    await clickSubmitBtnCreate(form0, isLoggedIn, {
       newTasks: [rootTask, completedSubtask],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 0 })
 
-    await expandAndCheckTree(page, {
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [completedSubtask],
     })
-    await goToCompletedPage(page)
+    await goToCompletedPage()
     await expect(page.getByText(subtask.name)).not.toBeAttached()
     await expect(page.getByText(rootTask.name)).not.toBeAttached()
   })
@@ -107,24 +107,24 @@ test.describe('Completed Subtasks', () => {
     }
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
-    await createRootWithUncompletedSubtask(page, isLoggedIn, rootTask, subtask)
+    await createRootWithUncompletedSubtask(isLoggedIn, rootTask, subtask)
     checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 0 })
-    await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
-    await openTaskEditForm(page, subtask)
-    await getTaskForm(page, 0)
+    await openTaskEditForm(subtask)
+    await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
       updatedTasks: [completedSubtask],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 1 })
 
-    await expandAndCheckTree(page, {
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [completedSubtask],
     })
-    await goToCompletedPage(page)
+    await goToCompletedPage()
     await expect(page.getByText(subtask.name)).not.toBeAttached()
     await expect(page.getByText(rootTask.name)).not.toBeAttached()
   })
@@ -147,23 +147,22 @@ test.describe('Completed Subtasks', () => {
     }
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
-    await createRootWithUncompletedSubtask(page, isLoggedIn, rootTask, subtask)
+    await createRootWithUncompletedSubtask(isLoggedIn, rootTask, subtask)
     checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 0 })
-    await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
     await changeStatusViaStatusChangeDialog(
-      page,
       isLoggedIn,
       subtask,
       TaskStatus.COMPLETED,
     )
     checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 1 })
 
-    await expandAndCheckTree(page, {
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [completedSubtask],
     })
-    await goToCompletedPage(page)
+    await goToCompletedPage()
     await expect(page.getByText(subtask.name)).not.toBeAttached()
     await expect(page.getByText(rootTask.name)).not.toBeAttached()
   })
@@ -189,23 +188,22 @@ test.describe('Completed Subtasks', () => {
       const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const form0 = getTaskForm(page, 0)
-      await fillTaskForm(form0, page, isLoggedIn, rootTask)
+      const form0 = getTaskForm(0)
+      await fillTaskForm(form0, isLoggedIn, rootTask)
       await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-      await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
-      await setTaskFormSubtaskSettings(form0, page, {
+      await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+      await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
+      await setTaskFormSubtaskSettings(form0, {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+      await clickSubmitBtnCreate(form0, isLoggedIn, {
         newTasks: [rootTask, subtask],
       })
       checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 0 })
-      await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       await changeStatusViaStatusChangeDialog(
-        page,
         isLoggedIn,
         subtask,
         TaskStatus.COMPLETED,
@@ -214,7 +212,7 @@ test.describe('Completed Subtasks', () => {
         },
       )
       checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 2 })
-      await checkCompletedPage(page, isLoggedIn, [
+      await checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
     })
@@ -239,33 +237,33 @@ test.describe('Completed Subtasks', () => {
       const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const form0 = getTaskForm(page, 0)
-      await fillTaskForm(form0, page, isLoggedIn, rootTask)
+      const form0 = getTaskForm(0)
+      await fillTaskForm(form0, isLoggedIn, rootTask)
       await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      const form1 = getTaskForm(page, 1)
-      await fillTaskForm(form1, page, isLoggedIn, subtask)
+      const form1 = getTaskForm(1)
+      await fillTaskForm(form1, isLoggedIn, subtask)
       await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      await clickSubmitBtnCreate(form1, page, isLoggedIn)
-      await setTaskFormSubtaskSettings(form0, page, {
+      await clickSubmitBtnCreate(form1, isLoggedIn)
+      await setTaskFormSubtaskSettings(form0, {
         autoHideCompleted: false,
       })
-      await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+      await clickSubmitBtnCreate(form0, isLoggedIn, {
         newTasks: [rootTask, completedSubtask],
       })
-      await expandAndCheckTree(page, {
+      await expandAndCheckTree({
         ...rootTask,
         subtasks: [completedSubtask],
       })
 
-      await openTaskEditForm(page, rootTask)
-      await setTaskFormSubtaskSettings(getTaskForm(page, 0), page, {
+      await openTaskEditForm(rootTask)
+      await setTaskFormSubtaskSettings(getTaskForm(0), {
         inheritCompletionState: true,
       })
-      await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+      await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
         updatedTasks: [completedRootTask],
       })
       checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 1 })
-      await checkCompletedPage(page, isLoggedIn, [
+      await checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
     })
@@ -296,41 +294,40 @@ test.describe('Completed Subtasks', () => {
       const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const form0 = getTaskForm(page, 0)
-      await fillTaskForm(form0, page, isLoggedIn, rootTask)
+      const form0 = getTaskForm(0)
+      await fillTaskForm(form0, isLoggedIn, rootTask)
       await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-      await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
-      await setTaskFormSubtaskSettings(form0, page, {
+      await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+      await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
+      await setTaskFormSubtaskSettings(form0, {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+      await clickSubmitBtnCreate(form0, isLoggedIn, {
         newTasks: [rootTask, subtask],
       })
       checkNumCalls(requestTracker, isLoggedIn, { create: 2, update: 0 })
-      await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
-      await openTaskEditForm(page, subtask)
-      const editForm1 = getTaskForm(page, 1)
+      await openTaskEditForm(subtask)
+      const editForm1 = getTaskForm(1)
       await editForm1.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 2), page, isLoggedIn, subtask2)
-      await clickSubmitBtnCreate(getTaskForm(page, 2), page, isLoggedIn)
-      await setTaskFormSubtaskSettings(editForm1, page, {
+      await fillTaskForm(getTaskForm(2), isLoggedIn, subtask2)
+      await clickSubmitBtnCreate(getTaskForm(2), isLoggedIn)
+      await setTaskFormSubtaskSettings(editForm1, {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnUpdate(editForm1, page, isLoggedIn, {
+      await clickSubmitBtnUpdate(editForm1, isLoggedIn, {
         updatedTasks: [subtask],
       })
       checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 1 })
-      await expandAndCheckTree(page, {
+      await expandAndCheckTree({
         ...rootTask,
         subtasks: [{ ...subtask, subtasks: [subtask2] }],
       })
 
       await changeStatusViaStatusChangeDialog(
-        page,
         isLoggedIn,
         subtask2,
         TaskStatus.COMPLETED,
@@ -339,7 +336,7 @@ test.describe('Completed Subtasks', () => {
         },
       )
       checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 4 })
-      await checkCompletedPage(page, isLoggedIn, [
+      await checkCompletedPage([
         {
           ...completedRootTask,
           subtasks: [{ ...completedSubtask, subtasks: [completedSubtask2] }],
@@ -374,32 +371,32 @@ test.describe('Completed Subtasks', () => {
         const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
 
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        const form0 = getTaskForm(page, 0)
-        await fillTaskForm(form0, page, isLoggedIn, rootTask)
+        const form0 = getTaskForm(0)
+        await fillTaskForm(form0, isLoggedIn, rootTask)
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-        await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+        await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+        await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
         // default is autoHideCompleted: true
-        await checkTaskFormSubtaskSettings(form0, page, {
+        await checkTaskFormSubtaskSettings(form0, {
           autoHideCompleted: true,
         })
 
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        const form1 = getTaskForm(page, 1)
-        await fillTaskForm(form1, page, isLoggedIn, subtask2)
+        const form1 = getTaskForm(1)
+        await fillTaskForm(form1, isLoggedIn, subtask2)
         await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        await clickSubmitBtnCreate(form1, page, isLoggedIn)
+        await clickSubmitBtnCreate(form1, isLoggedIn)
 
-        await checkTaskFormSubtaskSettings(form0, page, {
+        await checkTaskFormSubtaskSettings(form0, {
           autoHideCompleted: true,
         })
         await checkTaskFormSubtasks(form0, [subtask])
-        await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+        await clickSubmitBtnCreate(form0, isLoggedIn, {
           newTasks: [rootTask, subtask, completedSubtask2],
         })
         checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 0 })
-        await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
 
       test('via completion checkbox in edit subtask form', async ({
@@ -426,35 +423,35 @@ test.describe('Completed Subtasks', () => {
         const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
 
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        const form0 = getTaskForm(page, 0)
-        await fillTaskForm(form0, page, isLoggedIn, rootTask)
+        const form0 = getTaskForm(0)
+        await fillTaskForm(form0, isLoggedIn, rootTask)
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-        await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
-        await checkTaskFormSubtaskSettings(form0, page, {
+        await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+        await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
+        await checkTaskFormSubtaskSettings(form0, {
           autoHideCompleted: true,
         })
 
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask2)
-        await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+        await fillTaskForm(getTaskForm(1), isLoggedIn, subtask2)
+        await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
         await checkTaskFormSubtasks(form0, [subtask, subtask2])
         await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).last().click()
-        await getTaskForm(page, 1)
+        await getTaskForm(1)
           .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
           .click()
-        await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+        await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
-        await checkTaskFormSubtaskSettings(form0, page, {
+        await checkTaskFormSubtaskSettings(form0, {
           autoHideCompleted: true,
         })
         await checkTaskFormSubtasks(form0, [subtask])
-        await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+        await clickSubmitBtnCreate(form0, isLoggedIn, {
           newTasks: [rootTask, subtask, completedSubtask2],
         })
         checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 0 })
-        await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
     })
 
@@ -483,42 +480,42 @@ test.describe('Completed Subtasks', () => {
         const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
 
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        const form0 = getTaskForm(page, 0)
-        await fillTaskForm(form0, page, isLoggedIn, rootTask)
+        const form0 = getTaskForm(0)
+        await fillTaskForm(form0, isLoggedIn, rootTask)
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-        await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+        await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+        await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
         await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-        const form1 = getTaskForm(page, 1)
-        await fillTaskForm(form1, page, isLoggedIn, subtask2)
+        const form1 = getTaskForm(1)
+        await fillTaskForm(form1, isLoggedIn, subtask2)
         await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        await clickSubmitBtnCreate(form1, page, isLoggedIn)
+        await clickSubmitBtnCreate(form1, isLoggedIn)
 
-        await setTaskFormSubtaskSettings(form0, page, {
+        await setTaskFormSubtaskSettings(form0, {
           autoHideCompleted: false,
         })
         await checkTaskFormSubtasks(form0, [subtask, completedSubtask2])
-        await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+        await clickSubmitBtnCreate(form0, isLoggedIn, {
           newTasks: [rootTask, subtask, completedSubtask2],
         })
-        await expandAndCheckTree(page, {
+        await expandAndCheckTree({
           ...rootTask,
           subtasks: [subtask, completedSubtask2],
         })
         checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 0 })
 
-        await openTaskEditForm(page, rootTask)
-        const editForm0 = getTaskForm(page, 0)
+        await openTaskEditForm(rootTask)
+        const editForm0 = getTaskForm(0)
         await checkTaskFormSubtasks(editForm0, [subtask, completedSubtask2])
-        await setTaskFormSubtaskSettings(editForm0, page, {
+        await setTaskFormSubtaskSettings(editForm0, {
           autoHideCompleted: true,
         })
         await checkTaskFormSubtasks(editForm0, [subtask])
-        await clickSubmitBtnUpdate(editForm0, page, isLoggedIn, {
+        await clickSubmitBtnUpdate(editForm0, isLoggedIn, {
           updatedTasks: [rootTask],
         })
         checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 1 })
-        await expandAndCheckTree(page, { ...rootTask, subtasks: [subtask] })
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
     })
   })

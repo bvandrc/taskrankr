@@ -33,25 +33,25 @@ test.describe('Hiding Subtasks', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    const form0 = getTaskForm(page, 0)
-    await fillTaskForm(form0, page, isLoggedIn, rootTask)
+    const form0 = getTaskForm(0)
+    await fillTaskForm(form0, isLoggedIn, rootTask)
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, openSubtask)
-    await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+    await fillTaskForm(getTaskForm(1), isLoggedIn, openSubtask)
+    await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-    const form1 = getTaskForm(page, 1)
-    await fillTaskForm(form1, page, isLoggedIn, completedSubtask)
+    const form1 = getTaskForm(1)
+    await fillTaskForm(form1, isLoggedIn, completedSubtask)
     await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-    await clickSubmitBtnCreate(form1, page, isLoggedIn)
+    await clickSubmitBtnCreate(form1, isLoggedIn)
 
     // completed subtask is hidden by default (autoHideCompleted: true)
     await checkTaskFormSubtasks(form0, [openSubtask])
-    await clickSubmitBtnCreate(form0, page, isLoggedIn, {
+    await clickSubmitBtnCreate(form0, isLoggedIn, {
       newTasks: [rootTask, openSubtask, completedSubtask],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 3, update: 0 })
 
-    await openTaskEditForm(page, rootTask)
+    await openTaskEditForm(rootTask)
   })
 
   test('shows and hides hidden subtasks via the toggle button', async ({
@@ -69,7 +69,7 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     }
-    const form0 = getTaskForm(page, 0)
+    const form0 = getTaskForm(0)
 
     await checkTaskFormSubtasks(form0, [openSubtask])
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
@@ -95,7 +95,7 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     }
-    const form0 = getTaskForm(page, 0)
+    const form0 = getTaskForm(0)
 
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
     await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
@@ -103,7 +103,7 @@ test.describe('Hiding Subtasks', () => {
     await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).first().click()
 
     // Save without changes — returns to parent with show-hidden preserved
-    await clickSubmitBtnUpdate(getTaskForm(page, 1), page, isLoggedIn)
+    await clickSubmitBtnUpdate(getTaskForm(1), isLoggedIn)
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
   })
 
@@ -122,14 +122,14 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     }
-    const form0 = getTaskForm(page, 0)
+    const form0 = getTaskForm(0)
 
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
     await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
     await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).first().click()
 
-    await getTaskForm(page, 1).locator(Selectors.TaskForm.CANCEL_BTN).click()
+    await getTaskForm(1).locator(Selectors.TaskForm.CANCEL_BTN).click()
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
   })
 })

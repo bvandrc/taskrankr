@@ -1,13 +1,9 @@
-import {
-  test as baseTest,
-  expect,
-  type Page,
-  type Response,
-} from '@playwright/test'
+import { test as baseTest, expect, type Response } from '@playwright/test'
 
 import { TestPaths } from '~/shared/constants'
 import type { Task } from '~/shared/schema'
 import { ApiPaths } from './constants'
+import { getPage, setPage } from './page-context'
 
 export type UserMode = 'user' | 'guest'
 
@@ -45,12 +41,12 @@ function isUpdateResponse(r: Response) {
 }
 
 export function waitForNResponses(
-  page: Page,
   predicate: (r: Response) => boolean,
   n: number,
   timeout = 15_000,
 ): Promise<void> {
   if (n === 0) return Promise.resolve()
+  const page = getPage()
   return new Promise<void>((resolve, reject) => {
     let count = 0
     const timer = setTimeout(() => {
@@ -75,11 +71,11 @@ export function waitForNResponses(
   })
 }
 
-export const waitForCreate = (page: Page, n: number) =>
-  waitForNResponses(page, isCreateResponse, n)
+export const waitForCreate = (n: number) =>
+  waitForNResponses(isCreateResponse, n)
 
-export const waitForUpdate = (page: Page, n: number) =>
-  waitForNResponses(page, isUpdateResponse, n)
+export const waitForUpdate = (n: number) =>
+  waitForNResponses(isUpdateResponse, n)
 
 export const test = baseTest.extend<Fixtures>({
   userMode: async (_fixtures, use, testInfo) => {
@@ -131,6 +127,8 @@ export const test = baseTest.extend<Fixtures>({
 
   _setup: [
     async ({ page, isLoggedIn, testSuffix }, use) => {
+      setPage(page)
+
       if (isLoggedIn) {
         await page.request.delete(TestPaths.TEST_RESET_SETTINGS)
       }

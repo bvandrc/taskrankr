@@ -1,28 +1,26 @@
-import { expect, type Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 import { cloneDeepWith } from 'es-toolkit'
 
 import type { Task, UserSettings } from '../../../shared/schema'
 import { ApiPaths } from '../constants'
+import { getPage } from '../page-context'
 import type { CreatedTask } from './intercepts'
 
-export function getLocalStateTasks(
-  page: Page,
-  isLoggedIn: boolean,
-): Promise<Task[]> {
+export function getLocalStateTasks(isLoggedIn: boolean): Promise<Task[]> {
   const key = `taskrankr-${isLoggedIn ? 'auth' : 'guest'}-tasks`
-  return page.evaluate((storageKey) => {
+  return getPage().evaluate((storageKey) => {
     const raw = localStorage.getItem(storageKey)
     return raw ? (JSON.parse(raw) as Task[]) : []
   }, key)
 }
 
-export async function getApiTasks(page: Page): Promise<Task[]> {
-  const res = await page.request.get(ApiPaths.GET_TASKS)
+export async function getApiTasks(): Promise<Task[]> {
+  const res = await getPage().request.get(ApiPaths.GET_TASKS)
   return res.json()
 }
 
-export async function getSettings(page: Page): Promise<UserSettings> {
-  const res = await page.request.get(ApiPaths.GET_SETTINGS)
+export async function getSettings(): Promise<UserSettings> {
+  const res = await getPage().request.get(ApiPaths.GET_SETTINGS)
   return res.json()
 }
 
@@ -33,12 +31,11 @@ function normalizeTask(task: CreatedTask): Record<string, unknown> {
 }
 
 export async function checkTasksExist(
-  page: Page,
   isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
   await expect(async () => {
-    const localTasks = await getLocalStateTasks(page, isLoggedIn)
+    const localTasks = await getLocalStateTasks(isLoggedIn)
     const expectedNames = tasks.map((t) => t.name)
     expect(
       localTasks.map((t) => t.name),
@@ -60,7 +57,7 @@ export async function checkTasksExist(
 
   if (isLoggedIn) {
     await expect(async () => {
-      const apiTasks = await getApiTasks(page)
+      const apiTasks = await getApiTasks()
       for (const expectedTask of tasks) {
         const found = apiTasks.find((t) => t.name === expectedTask.name)
         expect(found, `Task "${expectedTask.name}" in backend`).toBeDefined()
@@ -71,12 +68,11 @@ export async function checkTasksExist(
 }
 
 export async function checkTasksDontExist(
-  page: Page,
   isLoggedIn: boolean,
   tasks: Pick<Task, 'name'>[],
 ): Promise<void> {
   await expect(async () => {
-    const localTasks = await getLocalStateTasks(page, isLoggedIn)
+    const localTasks = await getLocalStateTasks(isLoggedIn)
     const localNames = new Set(localTasks.map((t) => t.name))
     for (const task of tasks) {
       expect(
@@ -88,7 +84,7 @@ export async function checkTasksDontExist(
 
   if (isLoggedIn) {
     await expect(async () => {
-      const apiTasks = await getApiTasks(page)
+      const apiTasks = await getApiTasks()
       const apiNames = new Set(apiTasks.map((t) => t.name))
       for (const task of tasks) {
         expect(

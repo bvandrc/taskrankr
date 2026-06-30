@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test'
+import { expect, type Locator } from '@playwright/test'
 import { format, parse } from 'date-fns'
 import type { PickDeep } from 'type-fest'
 
@@ -13,6 +13,7 @@ import {
 } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
+import { getPage } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 import type { CreatedTask, SubmitBtnArgs } from './intercepts'
 import { getCheckedStateOf, toggleStateOf } from './settings'
@@ -24,13 +25,12 @@ export type TaskFormData = PickDeep<
   'name' | 'schedule.hideUntil' | 'schedule.dueAt' | RankField
 >
 
-export function getTaskForm(page: Page, tier = 0): Locator {
-  return page.locator(`${TaskForm.FORM}[data-tier="${tier}"]`)
+export function getTaskForm(tier = 0): Locator {
+  return getPage().locator(`${TaskForm.FORM}[data-tier="${tier}"]`)
 }
 
 export async function fillTaskFormRankFields(
   form: Locator,
-  page: Page,
   task: TaskFormData,
   settings: FieldConfig,
 ): Promise<void> {
@@ -54,7 +54,7 @@ export async function fillTaskFormRankFields(
       await expect(rankSelect).toBeVisible()
       if (value != null) {
         await rankSelect.click()
-        await page
+        await getPage()
           .locator('[role="listbox"]')
           .getByText(new RegExp(`^${value}$`))
           .click()
@@ -74,7 +74,6 @@ export async function fillTaskFormRankFields(
 
 export async function fillTaskForm(
   form: Locator,
-  page: Page,
   isLoggedIn: boolean,
   task: TaskFormData,
   {
@@ -85,7 +84,7 @@ export async function fillTaskForm(
     hasIncompleteSubtasks?: boolean
   } = {},
 ): Promise<void> {
-  await checkTasksDontExist(page, isLoggedIn, [task])
+  await checkTasksDontExist(isLoggedIn, [task])
 
   await expect(form.locator(TaskForm.SUBMIT_BTN)).toBeDisabled()
   await expect(form.locator(TaskForm.ADD_SUBTASK_BTN)).toBeDisabled()
@@ -93,7 +92,7 @@ export async function fillTaskForm(
   await form.locator(TaskForm.NAME_INPUT).fill(task.name)
   await expect(form.locator(TaskForm.ADD_SUBTASK_BTN)).not.toBeDisabled()
 
-  await fillTaskFormRankFields(form, page, task, settings)
+  await fillTaskFormRankFields(form, task, settings)
 
   const completedCheckbox = form.locator(TaskForm.MARK_COMPLETED_CHECKBOX)
   if (hasIncompleteSubtasks) {
@@ -107,13 +106,11 @@ export async function fillTaskForm(
     await openMoreSection(form)
     if (schedule.hideUntil)
       await selectDate(
-        page,
         form.locator(TaskForm.Schedule.HIDE_UNTIL_PICKER),
         schedule.hideUntil,
       )
     if (schedule.dueAt)
       await selectDate(
-        page,
         form.locator(TaskForm.Schedule.DUE_AT_PICKER),
         schedule.dueAt,
       )
@@ -122,23 +119,20 @@ export async function fillTaskForm(
 
 async function clickSubmitBtn(
   form: Locator,
-  page: Page,
   isLoggedIn: boolean,
   submitBtnText: string,
   { newTasks = [], updatedTasks = [], confirmDialog }: SubmitBtnArgs = {},
 ): Promise<void> {
   if (newTasks.length > 0) {
-    await checkTasksDontExist(page, isLoggedIn, newTasks)
+    await checkTasksDontExist(isLoggedIn, newTasks)
   }
 
   // Set up waiters BEFORE clicking to capture all responses
   const createWaiter =
-    isLoggedIn && newTasks.length > 0
-      ? waitForCreate(page, newTasks.length)
-      : null
+    isLoggedIn && newTasks.length > 0 ? waitForCreate(newTasks.length) : null
   const updateWaiter =
     isLoggedIn && updatedTasks.length > 0
-      ? waitForUpdate(page, updatedTasks.length)
+      ? waitForUpdate(updatedTasks.length)
       : null
 
   const submitBtn = form.locator(TaskForm.SUBMIT_BTN)
@@ -147,6 +141,7 @@ async function clickSubmitBtn(
   await submitBtn.click()
 
   if (confirmDialog) {
+    const page = getPage()
     await expect(page.locator(confirmDialog)).toBeVisible()
     await page.locator(Selectors.ConfirmDialog.CONFIRM_BTN).click()
   }
@@ -154,10 +149,11 @@ async function clickSubmitBtn(
   if (createWaiter) await createWaiter
   if (updateWaiter) await updateWaiter
 
+  const page = getPage()
   await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 
   if (newTasks.length > 0 || updatedTasks.length > 0) {
-    await checkTasksExist(page, isLoggedIn, [...newTasks, ...updatedTasks])
+    await checkTasksExist(isLoggedIn, [...newTasks, ...updatedTasks])
     // Form should disappear after root-level submit
     await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
   }
@@ -165,29 +161,26 @@ async function clickSubmitBtn(
 
 export function clickSubmitBtnCreate(
   form: Locator,
-  page: Page,
   isLoggedIn: boolean,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
-  return clickSubmitBtn(form, page, isLoggedIn, 'Create', args)
+  return clickSubmitBtn(form, isLoggedIn, 'Create', args)
 }
 
 export function clickSubmitBtnUpdate(
   form: Locator,
-  page: Page,
   isLoggedIn: boolean,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
-  return clickSubmitBtn(form, page, isLoggedIn, 'Save', args)
+  return clickSubmitBtn(form, isLoggedIn, 'Save', args)
 }
 
 export async function assignSubtask(
   form: Locator,
-  page: Page,
   task: CreatedTask,
 ): Promise<void> {
   await form.locator(TaskForm.ASSIGN_SUBTASK_BTN).click()
-  const dialog = page.locator(AssignSubtaskDialog.DIALOG)
+  const dialog = getPage().locator(AssignSubtaskDialog.DIALOG)
   await expect(dialog).toBeVisible()
   await dialog
     .locator(AssignSubtaskDialog.TASK_OPTION)
@@ -220,7 +213,6 @@ export async function checkTaskFormSubtasks(
 
 export async function setTaskFormSubtaskSettings(
   form: Locator,
-  page: Page,
   {
     autoHideCompleted,
     inheritCompletionState,
@@ -229,23 +221,17 @@ export async function setTaskFormSubtaskSettings(
   await form.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     await toggleStateOf(
-      page,
       TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
       autoHideCompleted,
     )
   }
   if (inheritCompletionState !== undefined) {
-    await toggleStateOf(
-      page,
-      TaskForm.AUTOCOMPLETE_SWITCH,
-      inheritCompletionState,
-    )
+    await toggleStateOf(TaskForm.AUTOCOMPLETE_SWITCH, inheritCompletionState)
   }
 }
 
 export async function checkTaskFormSubtaskSettings(
   form: Locator,
-  page: Page,
   {
     autoHideCompleted,
     inheritCompletionState,
@@ -254,13 +240,12 @@ export async function checkTaskFormSubtaskSettings(
   await form.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     const state = await getCheckedStateOf(
-      page,
       TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
     )
     expect(state).toBe(autoHideCompleted)
   }
   if (inheritCompletionState !== undefined) {
-    const state = await getCheckedStateOf(page, TaskForm.AUTOCOMPLETE_SWITCH)
+    const state = await getCheckedStateOf(TaskForm.AUTOCOMPLETE_SWITCH)
     expect(state).toBe(inheritCompletionState)
   }
 }
@@ -279,10 +264,10 @@ export async function checkDate(
 }
 
 export async function selectDate(
-  page: Page,
   datePicker: Locator,
   date: Date,
 ): Promise<void> {
+  const page = getPage()
   await datePicker.click()
 
   const captionText = await page

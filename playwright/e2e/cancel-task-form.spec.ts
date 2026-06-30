@@ -37,14 +37,14 @@ for (const { contextName, isEdit } of [
         }
 
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
-        await getTaskForm(page, 0).locator(TaskForm.CANCEL_BTN).click()
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
+        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
         await expect(
           page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
         ).not.toBeAttached()
         await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
-        await checkTasksDontExist(page, isLoggedIn, [rootTask])
+        await checkTasksDontExist(isLoggedIn, [rootTask])
         checkNumCalls(requestTracker, isLoggedIn, { create: 0, update: 0 })
       })
     }
@@ -68,23 +68,23 @@ for (const { contextName, isEdit } of [
 
       if (isEdit) {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
-        await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
+        await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
           newTasks: [rootTask],
         })
-        await openTaskEditForm(page, rootTask)
+        await openTaskEditForm(rootTask)
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
       }
 
-      await getTaskForm(page, 0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-      await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+      await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
+      await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+      await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
-      await checkTaskFormSubtasks(getTaskForm(page, 0), [subtask])
-      await getTaskForm(page, 0).locator(TaskForm.CANCEL_BTN).click()
+      await checkTaskFormSubtasks(getTaskForm(0), [subtask])
+      await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toContainText(
@@ -96,11 +96,11 @@ for (const { contextName, isEdit } of [
         page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
       ).not.toBeAttached()
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
-      await checkTasksDontExist(page, isLoggedIn, [subtask])
+      await checkTasksDontExist(isLoggedIn, [subtask])
       if (isEdit) {
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
-        await checkTasksDontExist(page, isLoggedIn, [rootTask])
+        await checkTasksDontExist(isLoggedIn, [rootTask])
         checkNumCalls(requestTracker, isLoggedIn, { create: 0, update: 0 })
       }
     })
@@ -129,29 +129,29 @@ for (const { contextName, isEdit } of [
 
       if (isEdit) {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
-        await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
+        await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
           newTasks: [rootTask],
         })
-        await openTaskEditForm(page, rootTask)
+        await openTaskEditForm(rootTask)
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
       }
 
-      await getTaskForm(page, 0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask)
-      await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+      await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
+      await fillTaskForm(getTaskForm(1), isLoggedIn, subtask)
+      await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
-      await checkTaskFormSubtasks(getTaskForm(page, 0), [subtask])
-      await getTaskForm(page, 0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, subtask2)
-      await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+      await checkTaskFormSubtasks(getTaskForm(0), [subtask])
+      await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
+      await fillTaskForm(getTaskForm(1), isLoggedIn, subtask2)
+      await clickSubmitBtnCreate(getTaskForm(1), isLoggedIn)
 
       // Deny discard — form is preserved
-      await checkTaskFormSubtasks(getTaskForm(page, 0), [subtask, subtask2])
-      await getTaskForm(page, 0).locator(TaskForm.CANCEL_BTN).click()
+      await checkTaskFormSubtasks(getTaskForm(0), [subtask, subtask2])
+      await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toContainText(
@@ -160,10 +160,10 @@ for (const { contextName, isEdit } of [
       await page.locator(ConfirmDialog.DENY_BTN).click()
 
       await expect(page.locator(TaskForm.NAME_INPUT)).toHaveValue(rootTask.name)
-      await checkTaskFormSubtasks(getTaskForm(page, 0), [subtask, subtask2])
+      await checkTaskFormSubtasks(getTaskForm(0), [subtask, subtask2])
 
       // Confirm discard — all removed
-      await getTaskForm(page, 0).locator(TaskForm.CANCEL_BTN).click()
+      await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
       await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toContainText(
         '2 unsaved subtask',
@@ -174,11 +174,11 @@ for (const { contextName, isEdit } of [
         page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
       ).not.toBeAttached()
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
-      await checkTasksDontExist(page, isLoggedIn, [subtask, subtask2])
+      await checkTasksDontExist(isLoggedIn, [subtask, subtask2])
       if (isEdit) {
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
-        await checkTasksDontExist(page, isLoggedIn, [rootTask])
+        await checkTasksDontExist(isLoggedIn, [rootTask])
         checkNumCalls(requestTracker, isLoggedIn, { create: 0, update: 0 })
       }
     })
@@ -202,26 +202,26 @@ for (const { contextName, isEdit } of [
 
       if (isEdit) {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
-        await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
+        await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
           newTasks: [rootTask],
         })
-        await openTaskEditForm(page, rootTask)
+        await openTaskEditForm(rootTask)
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, rootTask)
+        await fillTaskForm(getTaskForm(0), isLoggedIn, rootTask)
       }
 
-      await getTaskForm(page, 0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-      await getTaskForm(page, 1).locator(TaskForm.NAME_INPUT).fill(subtask.name)
-      await getTaskForm(page, 1).locator(TaskForm.CANCEL_BTN).click()
+      await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
+      await getTaskForm(1).locator(TaskForm.NAME_INPUT).fill(subtask.name)
+      await getTaskForm(1).locator(TaskForm.CANCEL_BTN).click()
 
       // Cancel parent — no confirmation needed (no submitted subtasks)
-      await expect(
-        getTaskForm(page, 0).locator(TaskForm.NAME_INPUT),
-      ).toHaveValue(rootTask.name)
-      await getTaskForm(page, 0).locator(TaskForm.CANCEL_BTN).click()
+      await expect(getTaskForm(0).locator(TaskForm.NAME_INPUT)).toHaveValue(
+        rootTask.name,
+      )
+      await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
       await expect(
         page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
@@ -230,7 +230,7 @@ for (const { contextName, isEdit } of [
       if (isEdit) {
         checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
       } else {
-        await checkTasksDontExist(page, isLoggedIn, [rootTask, subtask])
+        await checkTasksDontExist(isLoggedIn, [rootTask, subtask])
         checkNumCalls(requestTracker, isLoggedIn, { create: 0, update: 0 })
       }
     })

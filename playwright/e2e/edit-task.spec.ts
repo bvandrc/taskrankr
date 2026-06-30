@@ -35,30 +35,29 @@ test.describe('Edit Task', () => {
     const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
+    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
       newTasks: [task],
     })
 
-    await openTaskEditForm(page, task)
+    await openTaskEditForm(task)
     await checkDate(
-      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
       today,
     )
     await selectDate(
-      page,
-      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
       newDate,
     )
 
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
       updatedTasks: [task],
     })
     checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
 
-    await openTaskEditForm(page, task)
+    await openTaskEditForm(task)
     await checkDate(
-      getTaskForm(page, 0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
+      getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
       newDate,
     )
   })

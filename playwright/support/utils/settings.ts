@@ -1,36 +1,32 @@
-import { expect, type Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 import type { Entries } from 'type-fest'
 
 import type { FieldConfig, UserSettings } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import type { RequestCounts } from '../fixtures'
+import { getPage } from '../page-context'
 import { getSettings } from './api'
 
 const { Menu, Settings } = Selectors
 
-async function getCheckedState(page: Page, selector: string): Promise<boolean> {
-  const state = await page.locator(selector).getAttribute('data-state')
+async function getCheckedState(selector: string): Promise<boolean> {
+  const state = await getPage().locator(selector).getAttribute('data-state')
   if (state === 'checked') return true
   if (state === 'unchecked') return false
   throw new Error(`Element ${selector} does not have a data-state attribute`)
 }
 
-async function toggleState(
-  page: Page,
-  selector: string,
-  newState: boolean,
-): Promise<void> {
-  const current = await getCheckedState(page, selector)
+async function toggleState(selector: string, newState: boolean): Promise<void> {
+  const current = await getCheckedState(selector)
   expect(current, `expected current state to be ${!newState}`).toBe(!newState)
-  await page.locator(selector).click()
-  await expect(page.locator(selector)).toHaveAttribute(
+  await getPage().locator(selector).click()
+  await expect(getPage().locator(selector)).toHaveAttribute(
     'data-state',
     newState ? 'checked' : 'unchecked',
   )
 }
 
 async function maybeWaitForSettingsUpdate(
-  page: Page,
   isLoggedIn: boolean,
   tracker: RequestCounts,
 ): Promise<void> {
@@ -42,7 +38,6 @@ async function maybeWaitForSettingsUpdate(
 }
 
 async function setFieldConfig(
-  page: Page,
   isLoggedIn: boolean,
   tracker: RequestCounts,
   targetConfig: FieldConfig,
@@ -53,48 +48,44 @@ async function setFieldConfig(
     const visibleSel = Settings.FieldConfig.visibleCheckbox(field)
     const requiredSel = Settings.FieldConfig.requiredCheckbox(field)
 
-    const isVisible = await getCheckedState(page, visibleSel)
+    const isVisible = await getCheckedState(visibleSel)
     if (isVisible !== visible) {
-      await toggleState(page, visibleSel, visible)
-      await maybeWaitForSettingsUpdate(page, isLoggedIn, tracker)
+      await toggleState(visibleSel, visible)
+      await maybeWaitForSettingsUpdate(isLoggedIn, tracker)
     }
 
-    const isRequired = await getCheckedState(page, requiredSel)
+    const isRequired = await getCheckedState(requiredSel)
     if (isRequired !== required) {
-      await toggleState(page, requiredSel, required)
-      await maybeWaitForSettingsUpdate(page, isLoggedIn, tracker)
+      await toggleState(requiredSel, required)
+      await maybeWaitForSettingsUpdate(isLoggedIn, tracker)
     }
   }
 }
 
 export async function setSettings(
-  page: Page,
   isLoggedIn: boolean,
   tracker: RequestCounts,
   settings: Pick<UserSettings, 'fieldConfig'>,
 ): Promise<void> {
+  const page = getPage()
   await page.locator(Selectors.MENU_BTN).click()
   await page.locator(Menu.SETTINGS).click()
 
-  await setFieldConfig(page, isLoggedIn, tracker, settings.fieldConfig)
+  await setFieldConfig(isLoggedIn, tracker, settings.fieldConfig)
 
   if (isLoggedIn) {
-    const current = await getSettings(page)
+    const current = await getSettings()
     expect(current).toMatchObject(settings)
   }
 }
 
-export function getCheckedStateOf(
-  page: Page,
-  selector: string,
-): Promise<boolean> {
-  return getCheckedState(page, selector)
+export function getCheckedStateOf(selector: string): Promise<boolean> {
+  return getCheckedState(selector)
 }
 
 export function toggleStateOf(
-  page: Page,
   selector: string,
   newState: boolean,
 ): Promise<void> {
-  return toggleState(page, selector, newState)
+  return toggleState(selector, newState)
 }

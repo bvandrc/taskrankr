@@ -52,7 +52,7 @@ test.describe('Assign Subtasks', () => {
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
 
-    // STEP: Create orphan tasks
+    // STEP 1: Create orphan tasks
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), orphanTask)
     await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask] })
@@ -61,7 +61,7 @@ test.describe('Assign Subtasks', () => {
     await fillTaskForm(getTaskForm(0), orphanTask2)
     await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask2] })
 
-    // STEP 1: Create root task, create new subtask, assign sibling orphanTask
+    // STEP 2: Create root task, create new subtask, assign sibling orphanTask
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
@@ -85,7 +85,7 @@ test.describe('Assign Subtasks', () => {
     })
     checkNumCalls({ create: 4, update: 1 })
 
-    // STEP 2: Edit root task, assign second orphan
+    // STEP 3: Edit root task, assign second orphan
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [orphanTask, newSubtask])

@@ -1,8 +1,9 @@
-import { expect, type Page } from '@playwright/test'
+import { expect } from '@playwright/test'
 
 import type { Task } from '../../../shared/schema'
 import { Selectors } from '../constants'
-import { type RequestCounts, waitForCreate, waitForUpdate } from '../fixtures'
+import { waitForCreate, waitForUpdate } from '../fixtures'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &
@@ -15,31 +16,25 @@ export type SubmitBtnArgs = {
 }
 
 export async function maybeWaitForResponses(
-  page: Page,
-  isLoggedIn: boolean,
   type: 'create' | 'update',
   count: number,
-  expectedStatus: number,
+  _expectedStatus: number,
 ): Promise<void> {
-  if (!isLoggedIn || count === 0) return
-  const waiter =
-    type === 'create' ? waitForCreate(page, count) : waitForUpdate(page, count)
+  if (!getIsLoggedIn() || count === 0) return
+  const waiter = type === 'create' ? waitForCreate(count) : waitForUpdate(count)
   await waiter
-  await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+  await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 }
 
-export function checkNumCalls(
-  tracker: RequestCounts,
-  isLoggedIn: boolean,
-  expected: {
-    create?: number
-    update?: number
-    delete?: number
-    updateSettings?: number
-  },
-) {
+export function checkNumCalls(expected: {
+  create?: number
+  update?: number
+  delete?: number
+  updateSettings?: number
+}) {
+  const tracker = getRequestTracker()
   // In guest mode, no API calls are expected regardless of the passed values
-  const effectiveExpected = isLoggedIn
+  const effectiveExpected = getIsLoggedIn()
     ? expected
     : Object.fromEntries(
         Object.entries(expected).map(([k, v]) => [
@@ -61,28 +56,23 @@ export function checkNumCalls(
 }
 
 export async function waitForCreateAndVerify(
-  page: Page,
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(page, isLoggedIn, 'create', tasks.length, 201)
-  await checkTasksExist(page, isLoggedIn, tasks)
+  await maybeWaitForResponses('create', tasks.length, 201)
+  await checkTasksExist(tasks)
 }
 
 export async function waitForUpdateAndVerify(
-  page: Page,
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(page, isLoggedIn, 'update', tasks.length, 200)
-  await checkTasksExist(page, isLoggedIn, tasks)
+  await maybeWaitForResponses('update', tasks.length, 200)
+  await checkTasksExist(tasks)
 }
 
 export async function checkTasksDontExistAndAssertDontExist(
-  page: Page,
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
+  const page = getPage()
   tasks.forEach((task) => {
     // UI check: task name shouldn't appear anywhere
     void page
@@ -90,5 +80,5 @@ export async function checkTasksDontExistAndAssertDontExist(
       .waitFor({ state: 'detached', timeout: 500 })
       .catch(() => undefined)
   })
-  await checkTasksDontExist(page, isLoggedIn, tasks)
+  await checkTasksDontExist(tasks)
 }

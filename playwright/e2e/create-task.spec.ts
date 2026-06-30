@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
 import {
@@ -16,33 +17,26 @@ test.describe('Task Creation', () => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  test('create a task, check displays in main tree', async ({
-    page,
-    isLoggedIn,
-    taskName,
-    requestTracker,
-  }) => {
+  test('create a task, check displays in main tree', async ({ taskName }) => {
     const task = {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
     }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
 
-    await expandAndCheckTree(page, task)
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
+    await expandAndCheckTree(task)
+    checkNumCalls({ create: 1 })
   })
 
   test('change rank field visibility/required in settings, check form matches new settings, create task', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const fieldConfig = {
       priority: { visible: true, required: true },
@@ -59,18 +53,18 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     }
 
-    await setSettings(page, isLoggedIn, requestTracker, { fieldConfig })
-    checkNumCalls(requestTracker, isLoggedIn, { updateSettings: 3 })
+    await setSettings({ fieldConfig })
+    checkNumCalls({ updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task, {
+    await fillTaskForm(getTaskForm(0), task, {
       settings: fieldConfig,
     })
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
-    await expandAndCheckTree(page, task, { settings: fieldConfig })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
+    await expandAndCheckTree(task, { settings: fieldConfig })
+    checkNumCalls({ create: 1 })
   })
 })

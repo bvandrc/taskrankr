@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   clickSubmitBtnCreate,
@@ -24,9 +25,7 @@ test.describe('Scheduling', () => {
 
   test('create a task with a due date, verify due badge displays on task card', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const baseTask = {
       ...DefaultTaskFields,
@@ -41,30 +40,27 @@ test.describe('Scheduling', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, taskWithDueDate)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), taskWithDueDate)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [taskWithDueDate],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls({ create: 1, update: 0 })
 
-    await expandAndCheckTree(page, taskWithDueDate)
+    await expandAndCheckTree(taskWithDueDate)
 
-    await openTaskEditForm(page, taskWithDueDate)
-    await openMoreSection(getTaskForm(page, 0))
+    await openTaskEditForm(taskWithDueDate)
+    await openMoreSection(getTaskForm(0))
     await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [baseTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    checkNumCalls({ create: 1, update: 1 })
 
-    await expandAndCheckTree(page, baseTask)
+    await expandAndCheckTree(baseTask)
   })
 
   test('task with hideUntil in the future is hidden from home page', async ({
-    page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const baseTask = {
       ...DefaultTaskFields,
@@ -82,12 +78,12 @@ test.describe('Scheduling', () => {
       },
     }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, hiddenTask)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(0), hiddenTask)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [hiddenTask],
     })
 
-    await expect(page.getByText(hiddenTask.name)).not.toBeAttached()
+    await expect(getPage().getByText(hiddenTask.name)).not.toBeAttached()
   })
 })

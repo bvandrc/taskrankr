@@ -23,9 +23,7 @@ test.describe('Assign Subtasks', () => {
 
   test('assign an existing orphaned task as a subtask of a task', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -52,58 +50,56 @@ test.describe('Assign Subtasks', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, orphanTask)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), orphanTask)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [orphanTask],
     })
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, orphanTask2)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), orphanTask2)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [orphanTask2],
     })
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    const form0 = getTaskForm(page, 0)
-    await fillTaskForm(form0, page, isLoggedIn, rootTask)
-    await assignSubtask(form0, page, orphanTask)
+    const form0 = getTaskForm(0)
+    await fillTaskForm(form0, rootTask)
+    await assignSubtask(form0, orphanTask)
 
-    await checkTaskFormSubtasks(getTaskForm(page, 0), [orphanTask])
-    await getTaskForm(page, 0)
-      .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
-      .click()
-    await fillTaskForm(getTaskForm(page, 1), page, isLoggedIn, newSubtask)
-    await clickSubmitBtnCreate(getTaskForm(page, 1), page, isLoggedIn)
+    await checkTaskFormSubtasks(getTaskForm(0), [orphanTask])
+    await getTaskForm(0).locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+    await fillTaskForm(getTaskForm(1), newSubtask)
+    await clickSubmitBtnCreate(getTaskForm(1))
 
-    await checkTaskFormSubtasks(getTaskForm(page, 0), [orphanTask, newSubtask])
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await checkTaskFormSubtasks(getTaskForm(0), [orphanTask, newSubtask])
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [rootTask, newSubtask],
       updatedTasks: [orphanTask],
     })
 
-    await expandAndCheckTree(page, {
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [orphanTask, newSubtask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 4, update: 1 })
+    checkNumCalls({ create: 4, update: 1 })
 
-    await openTaskEditForm(page, rootTask)
-    const editForm0 = getTaskForm(page, 0)
+    await openTaskEditForm(rootTask)
+    const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [orphanTask, newSubtask])
-    await assignSubtask(editForm0, page, orphanTask2)
-    await checkTaskFormSubtasks(getTaskForm(page, 0), [
+    await assignSubtask(editForm0, orphanTask2)
+    await checkTaskFormSubtasks(getTaskForm(0), [
       orphanTask,
       orphanTask2,
       newSubtask,
     ])
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [rootTask, orphanTask2],
     })
 
-    await expandAndCheckTree(page, {
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [orphanTask, newSubtask, orphanTask2],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 4, update: 3 })
+    checkNumCalls({ create: 4, update: 3 })
   })
 })

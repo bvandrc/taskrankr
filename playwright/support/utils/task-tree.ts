@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test'
+import { expect, type Locator } from '@playwright/test'
 import { format } from 'date-fns'
 import type { PickDeep } from 'type-fest'
 
@@ -12,6 +12,7 @@ import {
 } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
+import { getIsLoggedIn, getPage } from '../page-context'
 import { checkTasksExist } from './api'
 import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
@@ -28,37 +29,34 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-export function getTaskCardTitle(
-  page: Page,
-  task: Pick<Task, 'name'>,
-): Locator {
-  return page
+export function getTaskCardTitle(task: Pick<Task, 'name'>): Locator {
+  return getPage()
     .locator(`${TaskCard.CARD} ${TaskCard.TITLE}`)
     .filter({ hasText: new RegExp(`^${task.name}$`) })
 }
 
-async function getTaskCard(page: Page, task: TaskTreeNode): Promise<Locator> {
-  const title = getTaskCardTitle(page, task)
+async function getTaskCard(task: TaskTreeNode): Promise<Locator> {
+  const title = getTaskCardTitle(task)
   await expect(title).toHaveCount(1)
   await title.scrollIntoViewIfNeeded()
   await expect(title).toBeVisible()
-  return page.locator(TaskCard.CARD).filter({ has: title })
+  return getPage().locator(TaskCard.CARD).filter({ has: title })
 }
 
 async function checkTitleAndSubtasks(
-  page: Page,
   task: TaskTreeNode,
   tier: number,
   settings: FieldConfig,
 ): Promise<void> {
-  const title = getTaskCardTitle(page, task)
+  const _page = getPage()
+  const title = getTaskCardTitle(task)
   if (tier > 0 && task.status === TaskStatus.COMPLETED) {
     await expect(title).toHaveClass(/line-through/)
   } else {
     await expect(title).not.toHaveClass(/line-through/)
   }
 
-  let card = await getTaskCard(page, task)
+  let card = await getTaskCard(task)
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
   await expect(taskInfo).toHaveAttribute('data-status', task.status)
 
@@ -98,36 +96,35 @@ async function checkTitleAndSubtasks(
     await expandBtn.click()
     await expect(card.locator(TaskCard.COLLAPSE_BTN).first()).toBeVisible()
     // Re-get card after expand (may re-render)
-    card = await getTaskCard(page, task)
+    card = await getTaskCard(task)
   }
 
   for (const subtask of task.subtasks) {
-    await checkTitleAndSubtasks(page, subtask, tier + 1, settings)
+    await checkTitleAndSubtasks(subtask, tier + 1, settings)
   }
 }
 
 export async function expandAndCheckTree(
-  page: Page,
   task: TaskTreeNode,
   { settings = DEFAULT_FIELD_CONFIG }: { settings?: FieldConfig } = {},
 ): Promise<void> {
-  await checkTitleAndSubtasks(page, task, 0, settings)
+  await checkTitleAndSubtasks(task, 0, settings)
 }
 
 export async function openTaskEditForm(
-  page: Page,
   task: Pick<Task, 'name'>,
 ): Promise<void> {
+  const page = getPage()
   await expect(page.locator(Selectors.TaskForm.FORM)).not.toBeAttached()
-  await getTaskCardTitle(page, task).click()
+  await getTaskCardTitle(task).click()
   await expect(page.locator(Selectors.TaskForm.FORM)).toBeVisible()
 }
 
 export async function openStatusChangeDialog(
-  page: Page,
   task: Pick<Task, 'name'>,
 ): Promise<void> {
-  const title = getTaskCardTitle(page, task)
+  const page = getPage()
+  const title = getTaskCardTitle(task)
   await page.clock.install()
   await title.dispatchEvent('mousedown')
   await page.clock.fastForward(900)
@@ -136,8 +133,6 @@ export async function openStatusChangeDialog(
 }
 
 export async function changeStatusViaStatusChangeDialog(
-  page: Page,
-  isLoggedIn: boolean,
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
   {
@@ -145,8 +140,9 @@ export async function changeStatusViaStatusChangeDialog(
     sideEffects = [],
   }: { hasIncompleteSubtasks?: boolean; sideEffects?: CreatedTask[] } = {},
 ): Promise<void> {
-  await openStatusChangeDialog(page, task)
+  await openStatusChangeDialog(task)
 
+  const page = getPage()
   const completeBtn = page.locator(Selectors.ChangeStatusDialog.COMPLETE_BTN)
   if (hasIncompleteSubtasks) {
     await expect(completeBtn).toBeDisabled()
@@ -157,31 +153,28 @@ export async function changeStatusViaStatusChangeDialog(
     { ...task, status: newStatus } as CreatedTask,
     ...sideEffects,
   ]
-  const updateWaiter = isLoggedIn
-    ? waitForUpdate(page, allUpdated.length)
-    : null
+  const updateWaiter = getIsLoggedIn() ? waitForUpdate(allUpdated.length) : null
 
   await expect(completeBtn).not.toBeDisabled()
   await completeBtn.click()
 
   if (updateWaiter) await updateWaiter
-  await checkTasksExist(page, isLoggedIn, allUpdated)
+  await checkTasksExist(allUpdated)
   await expect(
     page.locator(Selectors.ChangeStatusDialog.DIALOG),
   ).not.toBeAttached()
 }
 
 export async function checkCompletedPage(
-  page: Page,
   completedTasks: TaskTreeNode[],
 ): Promise<void> {
-  await checkIsAtHomePage(page)
+  await checkIsAtHomePage()
   for (const task of flattenTree(completedTasks)) {
-    await expect(getTaskCardTitle(page, task)).not.toBeAttached()
+    await expect(getTaskCardTitle(task)).not.toBeAttached()
   }
 
-  await goToCompletedPage(page)
+  await goToCompletedPage()
   for (const task of completedTasks) {
-    await expandAndCheckTree(page, task)
+    await expandAndCheckTree(task)
   }
 }

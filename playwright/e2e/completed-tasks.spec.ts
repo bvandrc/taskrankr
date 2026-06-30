@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   clickSubmitBtnCreate,
@@ -21,10 +22,7 @@ test.describe('Completed Tasks', () => {
   })
 
   test('complete task via New Task Form — not in main tree, is on completed page', async ({
-    page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const task = {
       ...DefaultTaskFields,
@@ -33,24 +31,21 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await getTaskForm(page, 0)
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(0), task)
+    await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [completedTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls({ create: 1, update: 0 })
 
-    await checkCompletedPage(page, isLoggedIn, [completedTask])
+    await checkCompletedPage([completedTask])
   })
 
   test('complete task via Edit Form — not in main tree, is on completed page', async ({
-    page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const task = {
       ...DefaultTaskFields,
@@ -59,30 +54,27 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [{ ...task, status: TaskStatus.PINNED }],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls({ create: 1, update: 0 })
 
-    await openTaskEditForm(page, task)
-    await getTaskForm(page, 0)
+    await openTaskEditForm(task)
+    await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnUpdate(getTaskForm(page, 0), page, isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [completedTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    checkNumCalls({ create: 1, update: 1 })
 
-    await checkCompletedPage(page, isLoggedIn, [completedTask])
+    await checkCompletedPage([completedTask])
   })
 
   test('complete task via Change Status Dialog — not in main tree, is on completed page', async ({
-    page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const task = {
       ...DefaultTaskFields,
@@ -91,21 +83,16 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(page, 0), page, isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(page, 0), page, isLoggedIn, {
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [{ ...task, status: TaskStatus.PINNED }],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls({ create: 1, update: 0 })
 
-    await changeStatusViaStatusChangeDialog(
-      page,
-      isLoggedIn,
-      task,
-      TaskStatus.COMPLETED,
-    )
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
+    checkNumCalls({ create: 1, update: 1 })
 
-    await checkCompletedPage(page, isLoggedIn, [completedTask])
+    await checkCompletedPage([completedTask])
   })
 })

@@ -45,6 +45,7 @@ import {
 import type { LocalTask } from '@/types'
 import {
   type CreateTask,
+  SCHEDULE_SEQUENCE,
   SubtaskSortMode,
   type Task,
   TaskStatus,
@@ -93,6 +94,17 @@ function topoSortForRecovery<T extends Task>(
   }
   for (const t of orphaned) visit(t)
   return sorted
+}
+
+/** Returns ms until the nearest future schedule date across all tasks, or null if none. */
+const getNextScheduleBoundaryMs = (tasks: LocalTask[]): number | null => {
+  const now = Date.now()
+  const future = tasks
+    .flatMap((t) => SCHEDULE_SEQUENCE.map((k) => t.schedule?.[k]))
+    .filter((d): d is Date => d instanceof Date)
+    .map((d) => d.getTime() - now)
+    .filter((ms) => ms > 0)
+  return future.length > 0 ? Math.min(...future) : null
 }
 
 /**
@@ -328,25 +340,12 @@ export const TasksProvider = ({
   }, [tasks])
 
   // Wake up at the next schedule boundary to fire time-based state changes
-  // (priority escalations, hideUntil transitions). Clears itself on cleanup so
-  // only one timer is live at a time; re-schedules whenever tasks change.
+  // (priority escalations, hideUntil transitions). Re-schedules whenever tasks change.
   useEffect(() => {
     if (!isInitialized) return
-    const now = Date.now()
-    let nextMs: number | null = null
-    for (const task of tasks) {
-      if (!task.schedule) continue
-      for (const val of Object.values(task.schedule)) {
-        if (val instanceof Date) {
-          const ms = val.getTime() - now
-          if (ms > 0 && (nextMs === null || ms < nextMs)) nextMs = ms
-        }
-      }
-    }
+    const nextMs = getNextScheduleBoundaryMs(tasks)
     if (nextMs === null) return
-    const id = setTimeout(() => {
-      reconcileAndSetTasks(tasksRef.current, 'timer')
-    }, nextMs)
+    const id = setTimeout(() => reconcileAndSetTasks(tasksRef.current, 'timer'), nextMs)
     return () => clearTimeout(id)
   }, [tasks, isInitialized, reconcileAndSetTasks])
 

@@ -56,6 +56,7 @@ for (const { contextName, isEdit } of [
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
@@ -113,11 +114,13 @@ for (const { contextName, isEdit } of [
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
       } as const satisfies CreatedTask
+
       const subtask2 = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 2'),
@@ -191,6 +194,7 @@ for (const { contextName, isEdit } of [
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),

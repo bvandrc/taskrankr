@@ -21,11 +21,13 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const openSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
+
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
@@ -64,13 +66,14 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
+
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
-    const form0 = getTaskForm(0)
 
+    const form0 = getTaskForm(0)
     await checkTaskFormSubtasks(form0, [openSubtask])
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
     await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
@@ -88,13 +91,14 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
+
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
-    const form0 = getTaskForm(0)
 
+    const form0 = getTaskForm(0)
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
     await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
@@ -114,13 +118,14 @@ test.describe('Hiding Subtasks', () => {
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
+
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
-    const form0 = getTaskForm(0)
 
+    const form0 = getTaskForm(0)
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
     await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])

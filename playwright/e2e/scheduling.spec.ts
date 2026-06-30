@@ -32,6 +32,7 @@ test.describe('Scheduling', () => {
       name: taskName('E2E Scheduled Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const taskWithDueDate = {
       ...baseTask,
       schedule: {
@@ -68,6 +69,7 @@ test.describe('Scheduling', () => {
       name: taskName('E2E Hidden Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const hiddenTask = {
       ...baseTask,
       schedule: {

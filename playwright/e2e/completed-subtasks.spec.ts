@@ -55,11 +55,13 @@ test.describe('Completed Subtasks', () => {
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
+
     const completedSubtask = {
       ...subtask,
       status: TaskStatus.COMPLETED,
@@ -99,12 +101,17 @@ test.describe('Completed Subtasks', () => {
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
-    const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+
+    const completedSubtask = {
+      ...subtask,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP: Create root task with uncompleted subtask
     await createRootWithUncompletedSubtask(rootTask, subtask)
@@ -139,12 +146,17 @@ test.describe('Completed Subtasks', () => {
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
-    const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+
+    const completedSubtask = {
+      ...subtask,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP: Create root task with uncompleted subtask
     await createRootWithUncompletedSubtask(rootTask, subtask)
@@ -174,15 +186,18 @@ test.describe('Completed Subtasks', () => {
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
       } as const satisfies CreatedTask
+
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
@@ -222,15 +237,18 @@ test.describe('Completed Subtasks', () => {
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
       } as const satisfies CreatedTask
+
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
@@ -277,24 +295,29 @@ test.describe('Completed Subtasks', () => {
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
       } as const satisfies CreatedTask
+
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
+
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
       } as const satisfies CreatedTask
+
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
+
       const subtask2 = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 2'),
         status: TaskStatus.OPEN,
       } as const satisfies CreatedTask
+
       const completedSubtask2 = {
         ...subtask2,
         status: TaskStatus.COMPLETED,
@@ -358,16 +381,19 @@ test.describe('Completed Subtasks', () => {
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
         } as const satisfies CreatedTask
+
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,
@@ -412,16 +438,19 @@ test.describe('Completed Subtasks', () => {
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
         } as const satisfies CreatedTask
+
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,
@@ -469,16 +498,19 @@ test.describe('Completed Subtasks', () => {
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
         } as const satisfies CreatedTask
+
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
         } as const satisfies CreatedTask
+
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,

@@ -29,6 +29,7 @@ test.describe('Completed Tasks', () => {
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,
@@ -54,6 +55,7 @@ test.describe('Completed Tasks', () => {
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,
@@ -88,6 +90,7 @@ test.describe('Completed Tasks', () => {
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
+
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,

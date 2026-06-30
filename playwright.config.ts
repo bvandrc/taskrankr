@@ -1,6 +1,12 @@
 import { existsSync } from 'node:fs'
 import { defineConfig, devices } from '@playwright/test'
 
+try {
+  process.loadEnvFile('.env.local')
+} catch {
+  // file is optional; missing is fine (e.g. CI provides env vars directly)
+}
+
 const CCR_CHROMIUM = '/opt/pw-browsers/chromium'
 
 const PORT = process.env.PORT || 5000

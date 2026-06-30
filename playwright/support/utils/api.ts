@@ -4,7 +4,7 @@ import type { Jsonify, PartialDeep } from 'type-fest'
 
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
-import { getIsLoggedIn, getPage } from '../test-globals'
+import { getApiContext, getIsLoggedIn, getPage } from '../test-globals'
 import type { CreatedTask } from './intercepts'
 
 const normalizeTask = <T extends PartialDeep<Task>>(task: T): Jsonify<T> =>
@@ -21,7 +21,7 @@ export function getLocalStateTasks(): Promise<Task[]> {
 }
 
 export async function getApiTasks(): Promise<Task[]> {
-  const res = await getPage().request.get(ApiPaths.GET_TASKS)
+  const res = await getApiContext().get(ApiPaths.GET_TASKS)
   return res.json()
 }
 
@@ -90,6 +90,6 @@ export async function checkTasksDontExistBackend(
 }
 
 export async function getSettings(): Promise<UserSettings> {
-  const res = await getPage().request.get(ApiPaths.GET_SETTINGS)
+  const res = await getApiContext().get(ApiPaths.GET_SETTINGS)
   return res.json()
 }

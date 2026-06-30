@@ -1,14 +1,21 @@
-import { test as baseTest, expect, type Response } from '@playwright/test'
+import {
+  test as baseTest,
+  expect,
+  request as playwrightRequest,
+  type Response,
+} from '@playwright/test'
 
 import { TestPaths } from '~/shared/constants'
 import type { Task } from '~/shared/schema'
 import { ApiPaths } from './constants'
 import {
   getPage,
+  setApiContext,
   setIsLoggedIn,
   setPage,
   setRequestTracker,
 } from './test-globals'
+import { getIdToken } from './utils/auth'
 
 export type UserMode = 'user' | 'guest'
 
@@ -102,7 +109,7 @@ export const test = baseTest.extend<Fixtures>({
   },
 
   _setup: [
-    async ({ page, isLoggedIn, testSuffix }, use) => {
+    async ({ page, isLoggedIn, testSuffix }, use, testInfo) => {
       setPage(page)
       setIsLoggedIn(isLoggedIn)
 
@@ -113,6 +120,17 @@ export const test = baseTest.extend<Fixtures>({
         updateSettings: 0,
       }
       setRequestTracker(counts)
+
+      // Authenticated suite: a request context carrying the test user's Bearer
+      // token, used for backend verification and cleanup. Guest mode has no
+      // backend, so the page's own (unauthenticated) context suffices.
+      const apiContext = isLoggedIn
+        ? await playwrightRequest.newContext({
+            baseURL: testInfo.project.use.baseURL,
+            extraHTTPHeaders: { Authorization: `Bearer ${await getIdToken()}` },
+          })
+        : page.request
+      setApiContext(apiContext)
 
       if (isLoggedIn) {
         page.on('response', (r) => {
@@ -134,7 +152,7 @@ export const test = baseTest.extend<Fixtures>({
       }
 
       if (isLoggedIn) {
-        await page.request.delete(TestPaths.TEST_RESET_SETTINGS)
+        await apiContext.delete(TestPaths.TEST_RESET_SETTINGS)
       }
 
       await use(undefined)
@@ -142,7 +160,7 @@ export const test = baseTest.extend<Fixtures>({
       // Clean up only tasks created by this test
       if (isLoggedIn) {
         try {
-          const res = await page.request.get(ApiPaths.GET_TASKS)
+          const res = await apiContext.get(ApiPaths.GET_TASKS)
           if (res.ok()) {
             const tasks: Task[] = await res.json()
             const myRoots = tasks.filter(
@@ -150,15 +168,14 @@ export const test = baseTest.extend<Fixtures>({
             )
             await Promise.all(
               myRoots.map((t) =>
-                page.request
-                  .delete(`/api/tasks/${t.id}`)
-                  .catch(() => undefined),
+                apiContext.delete(`/api/tasks/${t.id}`).catch(() => undefined),
               ),
             )
           }
         } catch {
           // best-effort
         }
+        await apiContext.dispose()
       }
     },
     { auto: true },

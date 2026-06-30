@@ -6,8 +6,8 @@ import { format, parse } from 'date-fns'
 import { TestPaths } from '~/shared/constants'
 import type { Task as AppTask } from '~/shared/schema'
 import { createEnvSchema } from '~/shared/schema'
-import { ApiPaths, Selectors } from './constants'
-import { getElementArrayText, isLoggedIn } from './utils'
+import { Selectors } from './constants'
+import { getElementArrayText } from './utils'
 
 const envVars = createEnvSchema([
   'FIREBASE_API_KEY',
@@ -45,7 +45,6 @@ declare global {
        */
       escapeWithin(): Chainable<JQuery<HTMLElement>>
       getElementArrayText(): Chainable<(string | null)[]>
-      selectOption(value: string): Chainable<void>
       getCheckedState(): Chainable<boolean>
       toggleState(newState: boolean): Chainable<JQuery<HTMLElement>>
       /** Asserts that a date picker button shows the given date. */
@@ -77,12 +76,6 @@ Cypress.Commands.add('authRequest', (method, url) =>
   ),
 )
 
-Cypress.Commands.add('getApiTasks', () =>
-  isLoggedIn()
-    ? cy.authRequest<AppTask[]>('GET', ApiPaths.GET_TASKS).its('body')
-    : cy.request<AppTask[]>('GET', TestPaths.TEST_TASKS).its('body'),
-)
-
 Cypress.Commands.add('clearTestUserTasks', () => {
   cy.request('DELETE', TestPaths.TEST_TASKS) //
     .should('have.property', 'status', 200)
@@ -98,18 +91,6 @@ Cypress.Commands.addQuery('escapeWithin', () => () => cy.$$('body'))
 Cypress.Commands.addQuery(
   'getElementArrayText',
   () => (subject: JQuery<HTMLElement>) => getElementArrayText(subject),
-)
-
-Cypress.Commands.add(
-  'selectOption',
-  { prevSubject: 'element' },
-  (subject, value) => {
-    cy.wrap(subject).click()
-    cy.escapeWithin()
-      .find('[role="listbox"]')
-      .contains(new RegExp(`^${value}$`))
-      .click()
-  },
 )
 
 Cypress.Commands.add(

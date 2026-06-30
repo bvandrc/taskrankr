@@ -43,7 +43,11 @@ export const fillTaskFormRankFields = (
     if (config.visible) {
       cy.get(RankSelect).should('be.visible')
       if (value !== null) {
-        cy.get(RankSelect).selectOption(value)
+        cy.wrap(RankSelect).click()
+        cy.escapeWithin()
+          .find('[role="listbox"]')
+          .contains(new RegExp(`^${value}$`))
+          .click()
         filled.add(field)
       }
       const allRequiredFilled = requiredFields.every((f) => filled.has(f))

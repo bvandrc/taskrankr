@@ -1,6 +1,7 @@
 import { cloneDeepWith } from 'es-toolkit'
 import type { Jsonify, PartialDeep, SetRequired } from 'type-fest'
 
+import { TestPaths } from '~/shared/constants'
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
 import { isLoggedIn } from './test-runner'
@@ -20,6 +21,11 @@ const getLocalStateTasks = (): Cypress.Chainable<Task[]> =>
 
     return JSON.parse(storedTasks)
   })
+
+export const getApiTasks = () =>
+  isLoggedIn()
+    ? cy.authRequest<Task[]>('GET', ApiPaths.GET_TASKS).its('body')
+    : cy.request<Task[]>('GET', TestPaths.TEST_TASKS).its('body')
 
 function checkTasksBackend(
   checkTasks: (givenTasks: Task[], message: string) => void,

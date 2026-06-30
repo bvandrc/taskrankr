@@ -44,8 +44,8 @@ const checkCancelWarningDialog = (count: number) =>
     .should('be.visible')
     .should('contain.text', `${count} unsaved subtask`)
 
-describe('Task Form Cancellation', () => {
-  beforeEach(() => {
+test.describe('Task Form Cancellation', () => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })
@@ -86,7 +86,7 @@ describe('Task Form Cancellation', () => {
     },
   ] as const) {
     context(contextName, () => {
-      beforeEach(beforeEachHook)
+      test.beforeEach(beforeEachHook)
 
       // after each, but we don't want failure to prevent other tests from running.
       const afterEachSafe = () => {

@@ -18,7 +18,7 @@ import {
 
 const { TaskForm } = Selectors
 
-describe('Assign Subtasks', () => {
+test.describe('Assign Subtasks', () => {
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Task',
@@ -46,7 +46,7 @@ describe('Assign Subtasks', () => {
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 

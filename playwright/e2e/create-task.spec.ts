@@ -10,14 +10,14 @@ import {
 } from '@test/support/utils/task-form'
 import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
-describe('Task Creation', () => {
+test.describe('Task Creation', () => {
   const task = {
     ...DefaultTaskFields,
     name: 'E2E Root Level Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })

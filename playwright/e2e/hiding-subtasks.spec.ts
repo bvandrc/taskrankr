@@ -14,7 +14,7 @@ import { openTaskEditForm } from '@test/support/utils/task-tree'
 
 const { TaskForm } = Selectors
 
-describe('Hiding Subtasks', () => {
+test.describe('Hiding Subtasks', () => {
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Task',
@@ -33,7 +33,7 @@ describe('Hiding Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 

@@ -19,7 +19,7 @@ import {
 
 const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
-describe('Create Subtasks', () => {
+test.describe('Create Subtasks', () => {
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Level Task',
@@ -52,7 +52,7 @@ describe('Create Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
@@ -211,7 +211,7 @@ describe('Create Subtasks', () => {
   })
 
   context('Adding subtasks to a completed task', () => {
-    beforeEach(async () => {
+    test.beforeEach(async () => {
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
       await clickSubmitBtnCreate({ newTasks: [completedRootTask] })
 

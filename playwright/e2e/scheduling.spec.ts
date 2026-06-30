@@ -16,7 +16,7 @@ import {
 
 const { TaskForm } = Selectors
 
-describe('Scheduling', () => {
+test.describe('Scheduling', () => {
   const today = new Date()
 
   const baseTask = {
@@ -25,7 +25,7 @@ describe('Scheduling', () => {
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })

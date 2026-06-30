@@ -25,8 +25,8 @@ const task = {
   name: 'E2E Test Task',
 }
 
-describe('Completed Tasks', () => {
-  beforeEach(() => {
+test.describe('Completed Tasks', () => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
     checkTasksDontExistBackend([task])

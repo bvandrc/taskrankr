@@ -22,7 +22,7 @@ import {
 
 const { TaskForm } = Selectors
 
-describe('Completed Subtasks', () => {
+test.describe('Completed Subtasks', () => {
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Task',
@@ -77,7 +77,7 @@ describe('Completed Subtasks', () => {
     checkNumCalls({ create: 2, update: 0 })
   }
 
-  beforeEach(() => {
+  test.beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })
@@ -275,7 +275,7 @@ describe('Completed Subtasks', () => {
 
   context('Auto-hide completed subtasks', () => {
     context('When creating a new root task', () => {
-      beforeEach(() => {
+      test.beforeEach(() => {
         // STEP: Create root task with one uncompleted subtask, enable auto-hide
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(async () => {

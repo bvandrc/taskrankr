@@ -7,7 +7,7 @@ import { interceptCreate, interceptUpdate } from './utils/intercepts'
 
 installLogsCollector()
 
-beforeEach(() => {
+test.beforeEach(() => {
   const loggedIn = isLoggedIn()
   if (loggedIn) {
     cy.loginAsTestUser()

@@ -37,9 +37,7 @@ test.describe('Completed Tasks', () => {
     await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [completedTask],
-    })
+    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [completedTask] })
     checkNumCalls({ create: 1, update: 0 })
 
     await checkCompletedPage([completedTask])

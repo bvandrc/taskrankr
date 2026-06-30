@@ -22,7 +22,7 @@ import { cn, handleKeyDown } from '@/lib/utils'
 import { useTasks } from '@/providers/TasksProvider'
 import { type Task, TaskStatus } from '~/shared/schema'
 
-const LAYER_CLASS = 'z-[200]'
+const LAYER_CLASS = 'z-200'
 
 interface AssignSubtaskDialogProps {
   open: boolean

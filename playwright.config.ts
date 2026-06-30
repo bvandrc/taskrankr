@@ -21,7 +21,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0, // process.env.CI ? 2 : 0,
-  reporter: [['html', { outputFolder: 'playwright/results/html' }]],
+  // open: 'never' — don't auto-serve the report on failure (it blocks the run)
+  reporter: [
+    ['html', { outputFolder: 'playwright/results/html', open: 'never' }],
+  ],
   use: {
     baseURL: BASE_URL,
     trace: 'on-first-retry',

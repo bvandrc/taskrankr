@@ -2,9 +2,9 @@
  * @fileoverview Application entry point and React root initialization
  */
 
+import { registerSW } from 'virtual:pwa-register'
 import { createRoot } from 'react-dom/client'
 
-import { registerSW } from 'virtual:pwa-register'
 import App from './App'
 import './index.css'
 import { hoursToMilliseconds } from 'date-fns'

@@ -119,11 +119,12 @@ test.describe('Completed Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
 
     // STEP: Edit subtask, mark as completed
+    // Editing a subtask renders its form at tier 1 (parent chain length 1).
     await openTaskEditForm(subtask)
-    await getTaskForm(0)
+    await getTaskForm(1)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnUpdate(getTaskForm(0), {
+    await clickSubmitBtnUpdate(getTaskForm(1), {
       updatedTasks: [completedSubtask],
     })
     checkNumCalls({ create: 2, update: 1 })

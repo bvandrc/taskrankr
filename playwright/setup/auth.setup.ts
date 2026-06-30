@@ -59,5 +59,15 @@ setup('authenticate as test user', async ({ page }) => {
   await page.reload()
   await page.locator(Selectors.Pages.HOME).waitFor({ state: 'visible' })
 
+  // Keep only the Firebase session (IndexedDB) in the saved state. The app seeds
+  // demo tasks (negative ids) into localStorage on first load; baking those into
+  // storageState makes every test re-enqueue them as creates on init, so with a
+  // shared backend the parallel workers pile up duplicate-named demo tasks.
+  await page.evaluate(() => {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith('taskrankr-')) localStorage.removeItem(key)
+    }
+  })
+
   await page.context().storageState({ path: authFile, indexedDB: true })
 })

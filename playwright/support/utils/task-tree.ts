@@ -1,4 +1,4 @@
-import { expect, type Locator } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { format } from 'date-fns'
 import { escapeRegExp } from 'es-toolkit'
 import type { PickDeep } from 'type-fest'
@@ -30,9 +30,16 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-export function getTaskCardTitle(task: Pick<Task, 'name'>): Locator {
+// `scope` constrains the search to a parent card's subtree. Pinned/in-progress
+// subtasks render both hoisted at the top *and* nested under their parent, so a
+// page-wide lookup of a subtask title matches twice; scoping to the parent card
+// resolves the single nested instance.
+export function getTaskCardTitle(
+  task: Pick<Task, 'name'>,
+  scope: Locator | Page = getPage(),
+): Locator {
   return (
-    getPage()
+    scope
       .locator(`${TaskCard.CARD} ${TaskCard.TITLE}`)
       // Escape: task names carry a `[wN-xxxxx]` suffix that is otherwise parsed
       // as a regex character class (and `N-x` as an invalid range).
@@ -40,8 +47,11 @@ export function getTaskCardTitle(task: Pick<Task, 'name'>): Locator {
   )
 }
 
-async function getTaskCard(task: TaskTreeNode): Promise<Locator> {
-  const title = getTaskCardTitle(task)
+async function getTaskCard(
+  task: TaskTreeNode,
+  scope?: Locator | Page,
+): Promise<Locator> {
+  const title = getTaskCardTitle(task, scope)
   await expect(title).toHaveCount(1)
   await title.scrollIntoViewIfNeeded()
   await expect(title).toBeVisible()
@@ -58,16 +68,17 @@ async function checkTitleAndSubtasks(
   task: TaskTreeNode,
   tier: number,
   settings: FieldConfig,
+  scope?: Locator | Page,
 ): Promise<void> {
   const _page = getPage()
-  const title = getTaskCardTitle(task)
+  const title = getTaskCardTitle(task, scope)
   if (tier > 0 && task.status === TaskStatus.COMPLETED) {
     await expect(title).toHaveClass(/line-through/)
   } else {
     await expect(title).not.toHaveClass(/line-through/)
   }
 
-  let card = await getTaskCard(task)
+  let card = await getTaskCard(task, scope)
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
   await expect(taskInfo).toHaveAttribute('data-status', task.status)
 
@@ -87,8 +98,11 @@ async function checkTitleAndSubtasks(
     if (!settings[field].visible) {
       await expect(badge).not.toBeAttached()
     } else if (expVal == null) {
+      // Visible field with no value renders an empty, transparent placeholder
+      // badge (kept for column layout). opacity:0 still counts as "visible" to
+      // Playwright, so assert transparency rather than not-visible.
       await expect(badge).toHaveText('')
-      await expect(badge).not.toBeVisible()
+      await expect(badge).toHaveCSS('opacity', '0')
     } else {
       await expect(badge).toHaveText(expVal)
     }
@@ -107,11 +121,11 @@ async function checkTitleAndSubtasks(
     await expandBtn.click()
     await expect(card.locator(TaskCard.COLLAPSE_BTN).first()).toBeVisible()
     // Re-get card after expand (may re-render)
-    card = await getTaskCard(task)
+    card = await getTaskCard(task, scope)
   }
 
   for (const subtask of task.subtasks) {
-    await checkTitleAndSubtasks(subtask, tier + 1, settings)
+    await checkTitleAndSubtasks(subtask, tier + 1, settings, card)
   }
 }
 

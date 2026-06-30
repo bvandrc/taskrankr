@@ -91,7 +91,7 @@ export const Selectors = {
     DEFAULT: testId('toast-default'),
   },
   DatePicker: {
-    MONTH_YEAR: testId('[data-radix-popper-content-wrapper][role="status"]'),
+    MONTH_YEAR: '[data-radix-popper-content-wrapper][role="status"]',
     PREV_MONTH_BTN: `[aria-label="Go to the Previous Month"]`,
     NEXT_MONTH_BTN: `[aria-label="Go to the Next Month"]`,
   },

@@ -8,22 +8,6 @@ import { isLoggedIn } from './test-runner'
 
 const { Menu, Settings } = Selectors
 
-export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
-  const loggedIn = isLoggedIn()
-
-  cy.get(Selectors.MENU_BTN).click()
-  cy.get(Menu.SETTINGS).click()
-
-  cy.intercept('PATCH', ApiPaths.UPDATE_SETTINGS).as('updateSettings')
-
-  setFieldConfig(settings.fieldConfig)
-
-  loggedIn &&
-    getSettings().then((currentSettings) => {
-      expect(currentSettings).to.deep.include(settings)
-    })
-}
-
 const setFieldConfig = (targetConfig: FieldConfig) => {
   for (const [field, { visible, required }] of Object.entries(
     targetConfig,
@@ -48,4 +32,20 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
         }
       })
   }
+}
+
+export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
+  const loggedIn = isLoggedIn()
+
+  cy.get(Selectors.MENU_BTN).click()
+  cy.get(Menu.SETTINGS).click()
+
+  cy.intercept('PATCH', ApiPaths.UPDATE_SETTINGS).as('updateSettings')
+
+  setFieldConfig(settings.fieldConfig)
+
+  loggedIn &&
+    getSettings().then((currentSettings) => {
+      expect(currentSettings).to.deep.include(settings)
+    })
 }

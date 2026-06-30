@@ -56,7 +56,7 @@ test.describe('Create Subtasks', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
-    // STEP: Open new task form and fill root task
+    // STEP 1: Open new task form and fill root task
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(async () => {
       await fillTaskForm(rootTask)
@@ -64,7 +64,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create a subtask, check appears in tree', async () => {
-    // STEP 1: Add subtask and create
+    // STEP 2: Add subtask and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -82,7 +82,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
-    // STEP 2: Edit root task, add a second subtask
+    // STEP 3: Edit root task, add a second subtask
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask])
@@ -107,7 +107,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create multiple subtasks, check appear in tree', async () => {
-    // STEP 1: Add two subtasks and create
+    // STEP 2: Add two subtasks and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -135,7 +135,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 0 })
 
-    // STEP 2: Edit root task, add a third subtask
+    // STEP 3: Edit root task, add a third subtask
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask, subtask2])
@@ -163,7 +163,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create nested subtasks, ensure appear in tree', async () => {
-    // STEP 1: Add subtask with two nested children
+    // STEP 2: Add subtask with two nested children
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -193,7 +193,7 @@ test.describe('Create Subtasks', () => {
       await clickSubmitBtnCreate()
     })
 
-    // STEP 2: Submit root task and verify nested tree
+    // STEP 3: Submit root task and verify nested tree
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask, subtask2, subtask3])
       await clickSubmitBtnCreate({

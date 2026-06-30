@@ -45,15 +45,15 @@ export default defineConfig({
         ? `https://${process.env.REPLIT_DEV_DOMAIN}`
         : `http://localhost:${process.env.PORT || 5000}`),
     specPattern: [
-      'cypress/e2e/create-task.cy.ts',
-      'cypress/e2e/create-subtasks.cy.ts',
-      'cypress/e2e/assign-subtasks.cy.ts',
-      'cypress/e2e/cancel-task-form.cy.ts',
-      'cypress/e2e/completed-tasks.cy.ts',
-      'cypress/e2e/completed-subtasks.cy.ts',
-      'cypress/e2e/hiding-subtasks.cy.ts',
-      'cypress/e2e/edit-task.cy.ts',
-      'cypress/e2e/scheduling.cy.ts',
+      'cypress/e2e/create-task.spec.ts',
+      'cypress/e2e/create-subtasks.spec.ts',
+      'cypress/e2e/assign-subtasks.spec.ts',
+      'cypress/e2e/cancel-task-form.spec.ts',
+      'cypress/e2e/completed-tasks.spec.ts',
+      'cypress/e2e/completed-subtasks.spec.ts',
+      'cypress/e2e/hiding-subtasks.spec.ts',
+      'cypress/e2e/edit-task.spec.ts',
+      'cypress/e2e/scheduling.spec.ts',
     ],
     setupNodeEvents(on, config) {
       if (getApps().length === 0) {

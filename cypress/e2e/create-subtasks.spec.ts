@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
 import { DefaultTask, Selectors } from '@cypress/support/constants'
 import { isLoggedIn } from '@cypress/support/utils'
 import {
@@ -21,8 +22,6 @@ import {
   expandAndCheckTree,
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
-
-import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 

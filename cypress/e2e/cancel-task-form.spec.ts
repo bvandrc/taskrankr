@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
 import { DefaultTask, Selectors } from '@cypress/support/constants'
 import { checkTasksDontExistBackend } from '@cypress/support/utils/api'
 import {
@@ -13,8 +14,6 @@ import {
 } from '@cypress/support/utils/task-form'
 import { openTaskEditForm } from '@cypress/support/utils/task-tree'
 import { isLoggedIn } from '@cypress/support/utils/test-runner'
-
-import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm, ConfirmDialog } = Selectors
 

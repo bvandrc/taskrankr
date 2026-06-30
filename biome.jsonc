@@ -8,9 +8,9 @@
           "options": {
             "groups": [
               [":NODE:", "react"],
-              [":PACKAGE:", "!~/shared/**"],
+              [":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:", "!@cypress/**"],
               ":BLANK_LINE:",
-              ["~/shared/**", ":ALIAS:"]
+              [":ALIAS:", ":PATH:"]
             ]
           }
         }

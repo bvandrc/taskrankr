@@ -1,9 +1,14 @@
 import { cloneDeepWith } from 'es-toolkit'
-import type { SetRequired } from 'type-fest'
+import type { Jsonify, PartialDeep, SetRequired } from 'type-fest'
 
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
 import { isLoggedIn } from './test-runner'
+
+const normalizeTask = <T extends PartialDeep<Task>>(task: T): Jsonify<T> =>
+  cloneDeepWith(task, (v) =>
+    v instanceof Date ? v.toISOString() : undefined,
+  ) as Jsonify<T>
 
 const getLocalStateTasks = (): Cypress.Chainable<Task[]> =>
   cy.window().then<Task[]>((win) => {
@@ -42,9 +47,7 @@ export const checkTasksExistBackend = (
     )
     for (const expectedTask of tasks) {
       const givenTask = givenTasks.find((t) => t.name === expectedTask.name)
-      const normalized = cloneDeepWith(expectedTask, (v) =>
-        v instanceof Date ? v.toISOString() : undefined,
-      )
+      const normalized = normalizeTask(expectedTask)
       expect(
         givenTask,
         `Task "${expectedTask.name}" exists in ${message} with correct props`,

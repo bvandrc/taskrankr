@@ -105,18 +105,10 @@ const checkTitleAndSubtasks = (
       return cy.wrap($card)
     })
     .within(() => {
-      checkSubtasksInCard(task, tier + 1, { settings })
+      task.subtasks?.forEach((subtask) => {
+        checkTitleAndSubtasks(subtask, tier, { settings })
+      })
     })
-}
-
-const checkSubtasksInCard = (
-  task: TaskTreeNode,
-  tier: number,
-  options: SettingsOptions = {},
-) => {
-  task.subtasks?.forEach((subtask) => {
-    checkTitleAndSubtasks(subtask, tier, options)
-  })
 }
 
 export const expandAndCheckTree = (

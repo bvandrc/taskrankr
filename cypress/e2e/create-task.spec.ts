@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { DefaultTask, Selectors } from '@cypress/support/constants'
 import { isLoggedIn } from '@cypress/support/utils'
 import {
@@ -11,8 +12,6 @@ import {
   fillTaskForm,
 } from '@cypress/support/utils/task-form'
 import { expandAndCheckTree } from '@cypress/support/utils/task-tree'
-
-import { type FieldConfig, TaskStatus } from '~/shared/schema'
 
 describe('Task Creation', () => {
   const task = {

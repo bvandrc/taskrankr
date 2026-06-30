@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test'
-import { cloneDeepWith } from 'es-toolkit'
+import { cloneDeepWith, uniq } from 'es-toolkit'
 import type { Jsonify, PartialDeep } from 'type-fest'
 
 import type { Task, UserSettings } from '~/shared/schema'
@@ -33,13 +33,13 @@ export async function checkTasksExistBackend(
     const expectedNames = tasks.map((t) => t.name)
     expect(
       localTasks.map((t) => t.name),
-      'local state task names',
+      'local state contains task names',
     ).toEqual(expect.arrayContaining(expectedNames))
 
-    // Isolated browser context means no cross-test contamination in local state
+    // Double check no cross-contamination of tasks between tests.
     const names = localTasks.map((t) => t.name)
     expect(names, 'no duplicate tasks in local state').toHaveLength(
-      Array.from(new Set(names)).length,
+      uniq(names).length,
     )
 
     for (const expectedTask of tasks) {

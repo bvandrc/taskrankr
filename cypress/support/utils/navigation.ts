@@ -1,5 +1,4 @@
-import { Routes } from '@client/lib/constants'
-
+import { Routes } from '~/client/lib/constants'
 import { Selectors } from '../constants'
 
 export const checkIsAtHomePage = () => {

@@ -1,11 +1,9 @@
-import { Routes } from '@client/lib/constants'
-import { DefaultTask, Selectors } from '@cypress/support/constants'
-import { checkTasksExistBackend, isLoggedIn } from '@cypress/support/utils'
-import {
-  type CreatedTask,
-  checkNumCalls,
-} from '@cypress/support/utils/intercepts'
-import { goToCompletedPage } from '@cypress/support/utils/navigation'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
+import { DefaultTask, Selectors } from '@test/support/constants'
+import { checkTasksExistBackend, isLoggedIn } from '@test/support/utils'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { goToCompletedPage } from '@test/support/utils/navigation'
 import {
   checkTaskFormSubtaskSettings,
   checkTaskFormSubtasks,
@@ -14,15 +12,13 @@ import {
   fillTaskForm,
   getTaskForm,
   setTaskFormSubtaskSettings,
-} from '@cypress/support/utils/task-form'
+} from '@test/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
   checkCompletedPage,
   expandAndCheckTree,
   openTaskEditForm,
-} from '@cypress/support/utils/task-tree'
-
-import { TaskStatus } from '~/shared/schema'
+} from '@test/support/utils/task-tree'
 
 const { TaskForm } = Selectors
 

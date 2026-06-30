@@ -1,20 +1,16 @@
-import { Routes } from '@client/lib/constants'
-import { DefaultTask, Selectors } from '@cypress/support/constants'
-import { checkTasksDontExistBackend } from '@cypress/support/utils/api'
-import {
-  type CreatedTask,
-  checkNumCalls,
-} from '@cypress/support/utils/intercepts'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
+import { DefaultTask, Selectors } from '@test/support/constants'
+import { checkTasksDontExistBackend } from '@test/support/utils/api'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
   fillTaskForm,
   getTaskForm,
-} from '@cypress/support/utils/task-form'
-import { openTaskEditForm } from '@cypress/support/utils/task-tree'
-import { isLoggedIn } from '@cypress/support/utils/test-runner'
-
-import { TaskStatus } from '~/shared/schema'
+} from '@test/support/utils/task-form'
+import { openTaskEditForm } from '@test/support/utils/task-tree'
+import { isLoggedIn } from '@test/support/utils/test-runner'
 
 const { TaskForm, ConfirmDialog } = Selectors
 

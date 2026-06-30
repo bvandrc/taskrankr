@@ -60,7 +60,7 @@ async function checkTitleAndSubtasks(
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
   await expect(taskInfo).toHaveAttribute('data-status', task.status)
 
-  const dueAt = (task as CreatedTask).schedule?.dueAt
+  const dueAt = task.schedule?.dueAt
   if (dueAt) {
     await expect(taskInfo.locator(TaskCard.DUE_BADGE)).toBeVisible()
     await expect(taskInfo.locator(TaskCard.DUE_BADGE)).toHaveText(
@@ -72,14 +72,14 @@ async function checkTitleAndSubtasks(
 
   for (const field of RankFields) {
     const badge = taskInfo.locator(TaskCard.RankFieldBadge(field))
-    const expVal = (task as Record<string, unknown>)[field]
+    const expVal = task[field]
     if (!settings[field].visible) {
       await expect(badge).not.toBeAttached()
     } else if (expVal == null) {
       await expect(badge).toHaveText('')
       await expect(badge).not.toBeVisible()
     } else {
-      await expect(badge).toHaveText(expVal as string)
+      await expect(badge).toHaveText(expVal)
     }
   }
 

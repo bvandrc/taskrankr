@@ -4,12 +4,15 @@
  */
 
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react'
-import { type ChevronProps, DayPicker } from 'react-day-picker'
+import {
+  type ChevronProps,
+  DayPicker as ReactDayPicker,
+} from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '../Button'
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type DayPickerProps = React.ComponentProps<typeof ReactDayPicker>
 
 const ORIENTATION_ICONS = {
   left: ChevronLeft,
@@ -23,13 +26,13 @@ const Chevron = ({ className, orientation, ...props }: ChevronProps) => {
   return <Icon {...props} className={cn('size-4', className)} />
 }
 
-export const Calendar = ({
+export const DayPicker = ({
   className,
   classNames,
   showOutsideDays = true,
   ...props
-}: CalendarProps) => (
-  <DayPicker
+}: DayPickerProps) => (
+  <ReactDayPicker
     showOutsideDays={showOutsideDays}
     className={cn('p-3', className)}
     classNames={{

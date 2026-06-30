@@ -101,7 +101,7 @@ migrations/      Drizzle migration files
 - **Test IDs**: Use `data-testid` as the HTML attribute and as the prop name in component interfaces (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
 - **Icon sizing**: Use `size-X` Tailwind class, not `w-X h-X`.
 - **es-toolkit**: Use `omit`/`pick` from `es-toolkit` to avoid enumerating large object spreads by hand.
-- **Formatting**: Run `npm run format` before every commit.
+- **Formatting**: Run `npm run format` after making edits and before every commit.
 
 ## Gotchas
 

@@ -5,7 +5,7 @@ import type { Matcher } from 'react-day-picker'
 import { cn } from '@/lib/utils'
 import { Button } from '../Button'
 import { Popover, PopoverContent, PopoverTrigger } from '../overlays/Popover'
-import { Calendar } from './Calendar'
+import { DayPicker } from './DayPicker'
 import { FormControl, FormItem, FormLabel, FormMessage } from './Form'
 
 interface DateInputProps {
@@ -62,11 +62,11 @@ export const DateInput = ({
             align="end"
           >
             {popoverHeader && (
-              <div className="p-3 border-b border-white/5 bg-secondary/50 text-[10px] uppercase tracking-wider text-muted-foreground text-center">
+              <div className="p-3 border-b border-white/5 bg-secondary/50 text-xs uppercase tracking-wider text-muted-foreground text-center">
                 {popoverHeader}
               </div>
             )}
-            <Calendar
+            <DayPicker
               mode="single"
               selected={value}
               onSelect={onChange}

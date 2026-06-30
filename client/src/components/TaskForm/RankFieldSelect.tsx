@@ -89,7 +89,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
           ))}
         </SelectContent>
       </Select>
-      {hasError && <p className="text-[10px] text-danger mt-1">Required</p>}
+      {hasError && <p className="text-xs text-danger mt-1">Required</p>}
     </FormItem>
   )
 }

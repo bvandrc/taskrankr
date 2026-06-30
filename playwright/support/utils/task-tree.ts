@@ -1,5 +1,6 @@
 import { expect, type Locator } from '@playwright/test'
 import { format } from 'date-fns'
+import { escapeRegExp } from 'es-toolkit'
 import type { PickDeep } from 'type-fest'
 
 import {
@@ -30,9 +31,13 @@ const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
 export function getTaskCardTitle(task: Pick<Task, 'name'>): Locator {
-  return getPage()
-    .locator(`${TaskCard.CARD} ${TaskCard.TITLE}`)
-    .filter({ hasText: new RegExp(`^${task.name}$`) })
+  return (
+    getPage()
+      .locator(`${TaskCard.CARD} ${TaskCard.TITLE}`)
+      // Escape: task names carry a `[wN-xxxxx]` suffix that is otherwise parsed
+      // as a regex character class (and `N-x` as an invalid range).
+      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) })
+  )
 }
 
 async function getTaskCard(task: TaskTreeNode): Promise<Locator> {

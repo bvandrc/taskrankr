@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
@@ -20,7 +20,7 @@ describe('Scheduling', () => {
   const today = new Date()
 
   const baseTask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 

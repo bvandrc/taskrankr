@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import {
   checkTasksDontExistBackend,
   checkTasksExistBackend,
@@ -20,11 +20,16 @@ import {
 
 const { TaskForm } = Selectors
 
+const task = {
+  ...DefaultTaskFields,
+  name: 'E2E Test Task',
+}
+
 describe('Completed Tasks', () => {
   beforeEach(() => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-    checkTasksDontExistBackend([DefaultTask])
+    checkTasksDontExistBackend([task])
   })
 
   for (const { testTitle, setupTask } of [
@@ -33,10 +38,10 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task already marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(DefaultTask)
+        fillTaskForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnCreate({
-          newTasks: [{ ...DefaultTask, status: TaskStatus.COMPLETED }],
+          newTasks: [{ ...task, status: TaskStatus.COMPLETED }],
         })
         checkNumCalls({ create: 1, update: 0 })
       },
@@ -46,17 +51,17 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(DefaultTask)
+        fillTaskForm(task)
         clickSubmitBtnCreate({
-          newTasks: [{ ...DefaultTask, status: TaskStatus.PINNED }],
+          newTasks: [{ ...task, status: TaskStatus.PINNED }],
         })
         checkNumCalls({ create: 1, update: 0 })
 
         cy.log('Step 2: Edit task, mark as completed')
-        openTaskEditForm(DefaultTask)
+        openTaskEditForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnUpdate({
-          updatedTasks: [{ ...DefaultTask, status: TaskStatus.COMPLETED }],
+          updatedTasks: [{ ...task, status: TaskStatus.COMPLETED }],
         })
         checkNumCalls({ create: 1, update: 1 })
       },
@@ -66,21 +71,24 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(DefaultTask)
+        fillTaskForm(task)
         clickSubmitBtnCreate({
-          newTasks: [{ ...DefaultTask, status: TaskStatus.PINNED }],
+          newTasks: [{ ...task, status: TaskStatus.PINNED }],
         })
         checkNumCalls({ create: 1, update: 0 })
 
         cy.log('Step 2: Complete task via status change dialog')
-        changeStatusViaStatusChangeDialog(DefaultTask, TaskStatus.COMPLETED)
+        changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
         checkNumCalls({ create: 1, update: 1 })
       },
     },
   ] as const) {
     it(`${testTitle} — not in main tree, is on completed page`, () => {
       setupTask()
-      const completedTask = { ...DefaultTask, status: TaskStatus.COMPLETED }
+      const completedTask = {
+        ...task,
+        status: TaskStatus.COMPLETED,
+      }
 
       checkTasksExistBackend([completedTask])
       checkCompletedPage([completedTask])

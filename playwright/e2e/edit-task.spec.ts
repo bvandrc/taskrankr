@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
@@ -14,7 +14,7 @@ const { TaskForm } = Selectors
 
 describe('Edit Task', () => {
   const task = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Edit Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask

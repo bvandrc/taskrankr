@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { checkTasksDontExistBackend } from '@test/support/utils/api'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
@@ -15,13 +15,13 @@ import { isLoggedIn } from '@test/support/utils/test-runner'
 const { TaskForm, ConfirmDialog } = Selectors
 
 const rootTask = {
-  ...DefaultTask,
+  ...DefaultTaskFields,
   name: 'E2E Root Task',
   status: TaskStatus.PINNED,
 } as const satisfies CreatedTask
 
 const subtask = {
-  ...DefaultTask,
+  ...DefaultTaskFields,
   name: 'E2E Subtask 1',
   status: TaskStatus.OPEN,
 } as const satisfies CreatedTask

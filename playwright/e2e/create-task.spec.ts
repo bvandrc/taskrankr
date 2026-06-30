@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
@@ -12,7 +12,7 @@ import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
 describe('Task Creation', () => {
   const task = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Root Level Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask

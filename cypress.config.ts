@@ -7,7 +7,7 @@ import { getVitePrebuilder } from 'cypress-vite'
 import * as admin from 'firebase-admin'
 import { cert, getApps, initializeApp } from 'firebase-admin/app'
 
-import { checkUserMode } from './cypress/support/utils/test-runner'
+import { checkUserMode } from './playwright/support/utils/test-runner'
 import {
   createEnvSchema,
   firebaseClientEnvSchema,

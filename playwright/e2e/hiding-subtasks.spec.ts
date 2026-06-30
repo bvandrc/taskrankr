@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
@@ -16,19 +16,19 @@ const { TaskForm } = Selectors
 
 describe('Hiding Subtasks', () => {
   const rootTask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Root Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const openSubtask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Open Subtask',
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
 
   const completedSubtask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Completed Subtask',
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask

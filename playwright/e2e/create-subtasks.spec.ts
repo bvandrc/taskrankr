@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage, goToHomePage } from '@test/support/utils/navigation'
@@ -21,13 +21,13 @@ const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
 describe('Create Subtasks', () => {
   const rootTask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Root Level Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
   const subtask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     status: TaskStatus.OPEN,
     name: 'E2E Subtask 1',
   } as const satisfies CreatedTask

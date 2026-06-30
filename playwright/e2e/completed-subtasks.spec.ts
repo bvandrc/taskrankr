@@ -1,6 +1,6 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTask, Selectors } from '@test/support/constants'
+import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { checkTasksExistBackend, isLoggedIn } from '@test/support/utils'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage } from '@test/support/utils/navigation'
@@ -24,7 +24,7 @@ const { TaskForm } = Selectors
 
 describe('Completed Subtasks', () => {
   const rootTask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Root Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
@@ -35,7 +35,7 @@ describe('Completed Subtasks', () => {
   } as const satisfies CreatedTask
 
   const subtask = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Subtask',
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
@@ -46,7 +46,7 @@ describe('Completed Subtasks', () => {
   } as const satisfies CreatedTask
 
   const subtask2 = {
-    ...DefaultTask,
+    ...DefaultTaskFields,
     name: 'E2E Subtask 2',
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask

@@ -1,4 +1,6 @@
 import { expect } from '@playwright/test'
+import { mapValues } from 'es-toolkit'
+import type { Entries } from 'type-fest'
 
 import type { Task } from '~/shared/schema'
 import { Selectors } from '../constants'
@@ -58,21 +60,14 @@ export function checkNumCalls(expected: {
   // In guest mode, no API calls are expected regardless of the passed values
   const effectiveExpected = getIsLoggedIn()
     ? expected
-    : Object.fromEntries(
-        Object.entries(expected).map(([k, v]) => [
-          k,
-          v !== undefined ? 0 : undefined,
-        ]),
-      )
+    : mapValues(expected, (value) => (value !== undefined ? 0 : undefined))
 
-  if (effectiveExpected.create !== undefined)
-    expect(tracker.create, 'create call count').toBe(effectiveExpected.create)
-  if (effectiveExpected.update !== undefined)
-    expect(tracker.update, 'update call count').toBe(effectiveExpected.update)
-  if (effectiveExpected.delete !== undefined)
-    expect(tracker.delete, 'delete call count').toBe(effectiveExpected.delete)
-  if (effectiveExpected.updateSettings !== undefined)
-    expect(tracker.updateSettings, 'updateSettings call count').toBe(
-      effectiveExpected.updateSettings,
-    )
+  for (const [key, value] of Object.entries(effectiveExpected) as Entries<
+    typeof effectiveExpected
+  >) {
+    if (value !== undefined) {
+      // TODO: check the whole object at once
+      expect(tracker[key], `${key} call count`).toBe(value)
+    }
+  }
 }

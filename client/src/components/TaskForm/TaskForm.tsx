@@ -172,13 +172,9 @@ export const TaskForm = ({
                   <Textarea
                     placeholder="Task name"
                     data-testid="task-name-input"
-                    className="bg-secondary/20 border-white/5 min-h-0 py-2 text-lg focus-visible:ring-primary/50 resize-none overflow-hidden leading-snug"
+                    className="bg-secondary/20 border-white/5 min-h-0 py-2 text-lg focus-visible:ring-primary/50 resize-none leading-snug"
                     rows={1}
-                    onInput={(e) => {
-                      const target = e.target as HTMLTextAreaElement
-                      target.style.height = 'auto'
-                      target.style.height = `${target.scrollHeight}px`
-                    }}
+                    style={{ fieldSizing: 'content' }}
                     {...field}
                   />
                 </FormControl>

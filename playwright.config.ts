@@ -23,7 +23,13 @@ export default defineConfig({
   retries: 0, // process.env.CI ? 2 : 0,
   reporter: [
     ['list', { printFailuresInline: true, printSteps: false }], // is default, but `dot` reported is default on CI, override that
-    ['html', { outputFolder: 'playwright/results/html' }],
+    [
+      'html',
+      {
+        outputFolder: 'playwright/results/html',
+        open: process.env.CI ? 'never' : 'on-failure',
+      },
+    ],
   ],
   use: {
     baseURL: BASE_URL,

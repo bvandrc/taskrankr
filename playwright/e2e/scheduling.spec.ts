@@ -3,7 +3,7 @@ import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -78,7 +78,7 @@ test.describe('Scheduling', () => {
           today.getDate() + 1,
         ),
       },
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Create task with hideUntil = tomorrow
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()

@@ -35,7 +35,7 @@ describe('Completed Tasks', () => {
   for (const { testTitle, setupTask } of [
     {
       testTitle: 'complete task via New Task Form',
-      setupTask: () => {
+      setupTask: async () => {
         cy.log('Step 1: Create task already marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
@@ -48,7 +48,7 @@ describe('Completed Tasks', () => {
     },
     {
       testTitle: 'complete task via Edit Form',
-      setupTask: () => {
+      setupTask: async () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
@@ -60,7 +60,7 @@ describe('Completed Tasks', () => {
         cy.log('Step 2: Edit task, mark as completed')
         await openTaskEditForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        clickSubmitBtnUpdate({
+        await clickSubmitBtnUpdate({
           updatedTasks: [{ ...task, status: TaskStatus.COMPLETED }],
         })
         checkNumCalls({ create: 1, update: 1 })
@@ -68,7 +68,7 @@ describe('Completed Tasks', () => {
     },
     {
       testTitle: 'complete task via Change Status Dialog',
-      setupTask: () => {
+      setupTask: async () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
@@ -83,7 +83,7 @@ describe('Completed Tasks', () => {
       },
     },
   ] as const) {
-    it(`${testTitle} — not in main tree, is on completed page`, () => {
+    it(`${testTitle} — not in main tree, is on completed page`, async () => {
       setupTask()
       const completedTask = {
         ...task,
@@ -91,7 +91,7 @@ describe('Completed Tasks', () => {
       }
 
       checkTasksExistBackend([completedTask])
-      checkCompletedPage([completedTask])
+      await checkCompletedPage([completedTask])
     })
   }
 })

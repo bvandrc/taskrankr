@@ -56,7 +56,7 @@ describe('Task Form Cancellation', () => {
       beforeEachHook: () => {
         cy.log('Open new task form and fill')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        getTaskForm(0).within(() => {
+        getTaskForm(0).within(async () => {
           await fillTaskForm(rootTask)
         })
       },
@@ -67,10 +67,10 @@ describe('Task Form Cancellation', () => {
     },
     {
       contextName: 'Edit Task',
-      beforeEachHook: () => {
+      beforeEachHook: async () => {
         cy.log('Create root task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        getTaskForm(0).within(() => {
+        getTaskForm(0).within(async () => {
           await fillTaskForm(rootTask)
           await clickSubmitBtnCreate({ newTasks: [rootTask] })
         })
@@ -110,14 +110,14 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
-        getTaskForm(1).within(() => {
+        getTaskForm(1).within(async () => {
           await fillTaskForm(subtask)
           await clickSubmitBtnCreate()
         })
 
         cy.log('Step 2: Cancel parent form — expect confirmation dialog')
-        getTaskForm(0).within(() => {
-          checkTaskFormSubtasks([subtask])
+        getTaskForm(0).within(async () => {
+          await checkTaskFormSubtasks([subtask])
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
@@ -132,17 +132,17 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
-        getTaskForm(1).within(() => {
+        getTaskForm(1).within(async () => {
           await fillTaskForm(subtask)
           await clickSubmitBtnCreate()
         })
 
-        getTaskForm(0).within(() => {
-          checkTaskFormSubtasks([subtask])
+        getTaskForm(0).within(async () => {
+          await checkTaskFormSubtasks([subtask])
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
-        getTaskForm(1).within(() => {
+        getTaskForm(1).within(async () => {
           await fillTaskForm(subtask2)
           await clickSubmitBtnCreate()
         })
@@ -150,17 +150,17 @@ describe('Task Form Cancellation', () => {
         cy.log(
           'Step 2: Cancel parent form — deny discard, verify form preserved',
         )
-        getTaskForm(0).within(() => {
-          checkTaskFormSubtasks([subtask, subtask2])
+        getTaskForm(0).within(async () => {
+          await checkTaskFormSubtasks([subtask, subtask2])
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
         checkCancelWarningDialog(2)
         cy.get(ConfirmDialog.DENY_BTN).click()
 
-        getTaskForm(0).within(() => {
+        getTaskForm(0).within(async () => {
           cy.get(TaskForm.NAME_INPUT).should('have.value', rootTask.name)
-          checkTaskFormSubtasks([subtask, subtask2])
+          await checkTaskFormSubtasks([subtask, subtask2])
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 

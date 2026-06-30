@@ -160,7 +160,7 @@ export const changeStatusViaStatusChangeDialog = (
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }
 
-export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
+export const checkCompletedPage = async (completedTasks: TaskTreeNode[]) => {
   cy.log('Check task is not in main tree')
   checkIsAtHomePage()
   flattenTree(completedTasks).forEach((task) => {

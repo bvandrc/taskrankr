@@ -46,7 +46,7 @@ describe('Assign Subtasks', () => {
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
@@ -60,44 +60,47 @@ describe('Assign Subtasks', () => {
     await clickSubmitBtnCreate({ newTasks: [orphanTask2] })
   })
 
-  it('assign an existing orphaned task as a subtask of a task', () => {
+  it('assign an existing orphaned task as a subtask of a task', async () => {
     cy.log(
       'Step 1: Create root task, create new subtask, assign sibling orphanTask',
     )
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    getTaskForm(0).within(() => {
+    getTaskForm(0).within(async () => {
       await fillTaskForm(rootTask)
-      assignSubtask(orphanTask)
+      await assignSubtask(orphanTask)
     })
     // task form re-renders TODO: debug?
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([orphanTask])
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([orphanTask])
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
-    getTaskForm(1).within(() => {
+    getTaskForm(1).within(async () => {
       await fillTaskForm(newSubtask)
       await clickSubmitBtnCreate()
     })
 
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([orphanTask, newSubtask])
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([orphanTask, newSubtask])
       await clickSubmitBtnCreate({
         newTasks: [rootTask, newSubtask],
         updatedTasks: [orphanTask],
       })
     })
 
-    await expandAndCheckTree({ ...rootTask, subtasks: [orphanTask, newSubtask] })
+    await expandAndCheckTree({
+      ...rootTask,
+      subtasks: [orphanTask, newSubtask],
+    })
     checkNumCalls({ create: 4, update: 1 })
 
     cy.log('Step 2: Edit root task, assign second orphan')
     await openTaskEditForm(rootTask)
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([orphanTask, newSubtask])
-      assignSubtask(orphanTask2)
-      checkTaskFormSubtasks([orphanTask, orphanTask2, newSubtask]) // all at same level, so we don't care about orde really.
-      clickSubmitBtnUpdate({ updatedTasks: [rootTask, orphanTask2] })
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([orphanTask, newSubtask])
+      await assignSubtask(orphanTask2)
+      await checkTaskFormSubtasks([orphanTask, orphanTask2, newSubtask]) // all at same level, so we don't care about orde really.
+      await clickSubmitBtnUpdate({ updatedTasks: [rootTask, orphanTask2] })
     })
 
     await expandAndCheckTree({

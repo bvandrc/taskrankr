@@ -19,7 +19,7 @@ describe('Edit Task', () => {
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
@@ -29,7 +29,7 @@ describe('Edit Task', () => {
     await clickSubmitBtnCreate({ newTasks: [task] })
   })
 
-  it('date created shows today and can be changed via the date picker', () => {
+  it('date created shows today and can be changed via the date picker', async () => {
     const today = new Date()
 
     // Pick a day in the same month that isn't today
@@ -44,7 +44,7 @@ describe('Edit Task', () => {
     cy.get(TaskForm.DATE_CREATED_PICKER).selectDate(newDate)
 
     cy.log('Step 4: Save and verify update count')
-    clickSubmitBtnUpdate({ updatedTasks: [task] })
+    await clickSubmitBtnUpdate({ updatedTasks: [task] })
     checkNumCalls({ create: 1, update: 1 })
 
     cy.log('Step 5: Re-open edit form, verify date was persisted')

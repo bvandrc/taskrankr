@@ -33,7 +33,7 @@ describe('Hiding Subtasks', () => {
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
@@ -45,12 +45,12 @@ describe('Hiding Subtasks', () => {
 
     cy.get(Selectors.CREATE_TASK_BTN).click()
 
-    getTaskForm(0).within(() => {
+    getTaskForm(0).within(async () => {
       await fillTaskForm(rootTask)
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
-    getTaskForm(1).within(() => {
+    getTaskForm(1).within(async () => {
       await fillTaskForm(openSubtask)
       await clickSubmitBtnCreate()
     })
@@ -59,14 +59,14 @@ describe('Hiding Subtasks', () => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
-    getTaskForm(1).within(() => {
+    getTaskForm(1).within(async () => {
       await fillTaskForm(completedSubtask)
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
       await clickSubmitBtnCreate()
     })
 
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([openSubtask]) // completed subtask is hidden by default
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([openSubtask]) // completed subtask is hidden by default
       await clickSubmitBtnCreate({
         newTasks: [rootTask, openSubtask, completedSubtask],
       })
@@ -78,31 +78,31 @@ describe('Hiding Subtasks', () => {
   })
 
   it('shows and hides hidden subtasks via the toggle button', () => {
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([openSubtask])
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([openSubtask])
 
       cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
+      await checkTaskFormSubtasks([openSubtask, completedSubtask])
 
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
-      checkTaskFormSubtasks([openSubtask])
+      await checkTaskFormSubtasks([openSubtask])
     })
   })
 
   const showHiddenAndEditSubtask = () => {
-    getTaskForm(0).within(() => {
+    getTaskForm(0).within(async () => {
       cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
       cy.get(TaskForm.SHOW_HIDDEN_BTN).click()
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
+      await checkTaskFormSubtasks([openSubtask, completedSubtask])
 
       cy.get(TaskForm.EDIT_SUBTASK_BTN).first().click()
     })
   }
 
   const checkAllVisible = () => {
-    getTaskForm(0).within(() => {
-      checkTaskFormSubtasks([openSubtask, completedSubtask])
+    getTaskForm(0).within(async () => {
+      await checkTaskFormSubtasks([openSubtask, completedSubtask])
     })
   }
 
@@ -110,8 +110,8 @@ describe('Hiding Subtasks', () => {
     showHiddenAndEditSubtask()
 
     // Save the subtask form without changes — pops back to the parent form
-    getTaskForm(1).within(() => {
-      clickSubmitBtnUpdate()
+    getTaskForm(1).within(async () => {
+      await clickSubmitBtnUpdate()
     })
 
     // The parent form should still have show-hidden on

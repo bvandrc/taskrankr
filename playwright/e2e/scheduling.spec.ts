@@ -21,6 +21,7 @@ describe('Scheduling', () => {
 
   const baseTask = {
     ...DefaultTaskFields,
+    name: 'E2E Test Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
 
@@ -52,14 +53,14 @@ describe('Scheduling', () => {
     openMoreSection()
     cy.get(TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
 
-    clickSubmitBtnUpdate({ updatedTasks: [baseTask] })
+    await clickSubmitBtnUpdate({ updatedTasks: [baseTask] })
     checkNumCalls({ create: 1, update: 1 })
 
     cy.log('Step 4: Verify due badge is gone')
     await expandAndCheckTree(baseTask)
   })
 
-  it('task with hideUntil in the future is hidden from home page', () => {
+  it('task with hideUntil in the future is hidden from home page', async () => {
     const hiddenTask = {
       ...baseTask,
       schedule: {

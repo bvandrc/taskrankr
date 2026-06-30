@@ -37,11 +37,8 @@ test.describe('Hiding Subtasks', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
-    /**
-     * Create rootTask with one open subtask and one completed subtask, with
-     * auto-hide completed enabled. The completed subtask will be hidden in the
-     * form and tree until "Show Hidden" is toggled.
-     */
+    // STEP 1: Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
+    // so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.
 
     cy.get(Selectors.CREATE_TASK_BTN).click()
 

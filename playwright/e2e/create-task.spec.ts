@@ -29,13 +29,13 @@ test.describe('Task Creation', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
 
     await expandAndCheckTree(task)
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
+    checkNumCalls(requestTracker, { create: 1 })
   })
 
   test('change rank field visibility/required in settings, check form matches new settings, create task', async ({
@@ -59,18 +59,18 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     }
 
-    await setSettings(isLoggedIn, requestTracker, { fieldConfig })
-    checkNumCalls(requestTracker, isLoggedIn, { updateSettings: 3 })
+    await setSettings(requestTracker, { fieldConfig })
+    checkNumCalls(requestTracker, { updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task, {
+    await fillTaskForm(getTaskForm(0), task, {
       settings: fieldConfig,
     })
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
     await expandAndCheckTree(task, { settings: fieldConfig })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1 })
+    checkNumCalls(requestTracker, { create: 1 })
   })
 })

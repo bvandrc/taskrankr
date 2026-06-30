@@ -12,7 +12,7 @@ import {
 } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
-import { getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../page-context'
 import { checkTasksExist } from './api'
 import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
@@ -133,7 +133,6 @@ export async function openStatusChangeDialog(
 }
 
 export async function changeStatusViaStatusChangeDialog(
-  isLoggedIn: boolean,
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
   {
@@ -154,13 +153,13 @@ export async function changeStatusViaStatusChangeDialog(
     { ...task, status: newStatus } as CreatedTask,
     ...sideEffects,
   ]
-  const updateWaiter = isLoggedIn ? waitForUpdate(allUpdated.length) : null
+  const updateWaiter = getIsLoggedIn() ? waitForUpdate(allUpdated.length) : null
 
   await expect(completeBtn).not.toBeDisabled()
   await completeBtn.click()
 
   if (updateWaiter) await updateWaiter
-  await checkTasksExist(isLoggedIn, allUpdated)
+  await checkTasksExist(allUpdated)
   await expect(
     page.locator(Selectors.ChangeStatusDialog.DIALOG),
   ).not.toBeAttached()

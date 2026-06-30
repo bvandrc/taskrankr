@@ -35,8 +35,8 @@ test.describe('Edit Task', () => {
     const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
 
@@ -50,10 +50,10 @@ test.describe('Edit Task', () => {
       newDate,
     )
 
-    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [task],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    checkNumCalls(requestTracker, { create: 1, update: 1 })
 
     await openTaskEditForm(task)
     await checkDate(

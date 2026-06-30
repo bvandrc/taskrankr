@@ -3,7 +3,7 @@ import { test as baseTest, expect, type Response } from '@playwright/test'
 import { TestPaths } from '~/shared/constants'
 import type { Task } from '~/shared/schema'
 import { ApiPaths } from './constants'
-import { getPage, setPage } from './page-context'
+import { getPage, setIsLoggedIn, setPage } from './page-context'
 
 export type UserMode = 'user' | 'guest'
 
@@ -128,6 +128,7 @@ export const test = baseTest.extend<Fixtures>({
   _setup: [
     async ({ page, isLoggedIn, testSuffix }, use) => {
       setPage(page)
+      setIsLoggedIn(isLoggedIn)
 
       if (isLoggedIn) {
         await page.request.delete(TestPaths.TEST_RESET_SETTINGS)

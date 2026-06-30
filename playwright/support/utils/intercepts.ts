@@ -3,7 +3,7 @@ import { expect } from '@playwright/test'
 import type { Task } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { type RequestCounts, waitForCreate, waitForUpdate } from '../fixtures'
-import { getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &
@@ -16,12 +16,11 @@ export type SubmitBtnArgs = {
 }
 
 export async function maybeWaitForResponses(
-  isLoggedIn: boolean,
   type: 'create' | 'update',
   count: number,
   expectedStatus: number,
 ): Promise<void> {
-  if (!isLoggedIn || count === 0) return
+  if (!getIsLoggedIn() || count === 0) return
   const waiter = type === 'create' ? waitForCreate(count) : waitForUpdate(count)
   await waiter
   await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
@@ -29,7 +28,6 @@ export async function maybeWaitForResponses(
 
 export function checkNumCalls(
   tracker: RequestCounts,
-  isLoggedIn: boolean,
   expected: {
     create?: number
     update?: number
@@ -38,7 +36,7 @@ export function checkNumCalls(
   },
 ) {
   // In guest mode, no API calls are expected regardless of the passed values
-  const effectiveExpected = isLoggedIn
+  const effectiveExpected = getIsLoggedIn()
     ? expected
     : Object.fromEntries(
         Object.entries(expected).map(([k, v]) => [
@@ -60,23 +58,20 @@ export function checkNumCalls(
 }
 
 export async function waitForCreateAndVerify(
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(isLoggedIn, 'create', tasks.length, 201)
-  await checkTasksExist(isLoggedIn, tasks)
+  await maybeWaitForResponses('create', tasks.length, 201)
+  await checkTasksExist(tasks)
 }
 
 export async function waitForUpdateAndVerify(
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
-  await maybeWaitForResponses(isLoggedIn, 'update', tasks.length, 200)
-  await checkTasksExist(isLoggedIn, tasks)
+  await maybeWaitForResponses('update', tasks.length, 200)
+  await checkTasksExist(tasks)
 }
 
 export async function checkTasksDontExistAndAssertDontExist(
-  isLoggedIn: boolean,
   tasks: CreatedTask[],
 ): Promise<void> {
   const page = getPage()
@@ -87,5 +82,5 @@ export async function checkTasksDontExistAndAssertDontExist(
       .waitFor({ state: 'detached', timeout: 500 })
       .catch(() => undefined)
   })
-  await checkTasksDontExist(isLoggedIn, tasks)
+  await checkTasksDontExist(tasks)
 }

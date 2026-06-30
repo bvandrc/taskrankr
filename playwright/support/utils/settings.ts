@@ -4,7 +4,7 @@ import type { Entries } from 'type-fest'
 import type { FieldConfig, UserSettings } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import type { RequestCounts } from '../fixtures'
-import { getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../page-context'
 import { getSettings } from './api'
 
 const { Menu, Settings } = Selectors
@@ -27,10 +27,9 @@ async function toggleState(selector: string, newState: boolean): Promise<void> {
 }
 
 async function maybeWaitForSettingsUpdate(
-  isLoggedIn: boolean,
   tracker: RequestCounts,
 ): Promise<void> {
-  if (!isLoggedIn) return
+  if (!getIsLoggedIn()) return
   const expected = tracker.updateSettings + 1
   await expect(() => {
     expect(tracker.updateSettings).toBeGreaterThanOrEqual(expected)
@@ -38,7 +37,6 @@ async function maybeWaitForSettingsUpdate(
 }
 
 async function setFieldConfig(
-  isLoggedIn: boolean,
   tracker: RequestCounts,
   targetConfig: FieldConfig,
 ): Promise<void> {
@@ -51,19 +49,18 @@ async function setFieldConfig(
     const isVisible = await getCheckedState(visibleSel)
     if (isVisible !== visible) {
       await toggleState(visibleSel, visible)
-      await maybeWaitForSettingsUpdate(isLoggedIn, tracker)
+      await maybeWaitForSettingsUpdate(tracker)
     }
 
     const isRequired = await getCheckedState(requiredSel)
     if (isRequired !== required) {
       await toggleState(requiredSel, required)
-      await maybeWaitForSettingsUpdate(isLoggedIn, tracker)
+      await maybeWaitForSettingsUpdate(tracker)
     }
   }
 }
 
 export async function setSettings(
-  isLoggedIn: boolean,
   tracker: RequestCounts,
   settings: Pick<UserSettings, 'fieldConfig'>,
 ): Promise<void> {
@@ -71,9 +68,9 @@ export async function setSettings(
   await page.locator(Selectors.MENU_BTN).click()
   await page.locator(Menu.SETTINGS).click()
 
-  await setFieldConfig(isLoggedIn, tracker, settings.fieldConfig)
+  await setFieldConfig(tracker, settings.fieldConfig)
 
-  if (isLoggedIn) {
+  if (getIsLoggedIn()) {
     const current = await getSettings()
     expect(current).toMatchObject(settings)
   }

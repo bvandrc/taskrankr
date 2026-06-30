@@ -41,21 +41,21 @@ test.describe('Scheduling', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, taskWithDueDate)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), taskWithDueDate)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [taskWithDueDate],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls(requestTracker, { create: 1, update: 0 })
 
     await expandAndCheckTree(taskWithDueDate)
 
     await openTaskEditForm(taskWithDueDate)
     await openMoreSection(getTaskForm(0))
     await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [baseTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    checkNumCalls(requestTracker, { create: 1, update: 1 })
 
     await expandAndCheckTree(baseTask)
   })
@@ -83,8 +83,8 @@ test.describe('Scheduling', () => {
     }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, hiddenTask)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), hiddenTask)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [hiddenTask],
     })
 

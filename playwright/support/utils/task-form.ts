@@ -13,7 +13,7 @@ import {
 } from '../../../shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
-import { getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 import type { CreatedTask, SubmitBtnArgs } from './intercepts'
 import { getCheckedStateOf, toggleStateOf } from './settings'
@@ -74,7 +74,6 @@ export async function fillTaskFormRankFields(
 
 export async function fillTaskForm(
   form: Locator,
-  isLoggedIn: boolean,
   task: TaskFormData,
   {
     settings = DEFAULT_FIELD_CONFIG,
@@ -84,7 +83,7 @@ export async function fillTaskForm(
     hasIncompleteSubtasks?: boolean
   } = {},
 ): Promise<void> {
-  await checkTasksDontExist(isLoggedIn, [task])
+  await checkTasksDontExist([task])
 
   await expect(form.locator(TaskForm.SUBMIT_BTN)).toBeDisabled()
   await expect(form.locator(TaskForm.ADD_SUBTASK_BTN)).toBeDisabled()
@@ -119,15 +118,15 @@ export async function fillTaskForm(
 
 async function clickSubmitBtn(
   form: Locator,
-  isLoggedIn: boolean,
   submitBtnText: string,
   { newTasks = [], updatedTasks = [], confirmDialog }: SubmitBtnArgs = {},
 ): Promise<void> {
   if (newTasks.length > 0) {
-    await checkTasksDontExist(isLoggedIn, newTasks)
+    await checkTasksDontExist(newTasks)
   }
 
   // Set up waiters BEFORE clicking to capture all responses
+  const isLoggedIn = getIsLoggedIn()
   const createWaiter =
     isLoggedIn && newTasks.length > 0 ? waitForCreate(newTasks.length) : null
   const updateWaiter =
@@ -153,7 +152,7 @@ async function clickSubmitBtn(
   await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 
   if (newTasks.length > 0 || updatedTasks.length > 0) {
-    await checkTasksExist(isLoggedIn, [...newTasks, ...updatedTasks])
+    await checkTasksExist([...newTasks, ...updatedTasks])
     // Form should disappear after root-level submit
     await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
   }
@@ -161,18 +160,16 @@ async function clickSubmitBtn(
 
 export function clickSubmitBtnCreate(
   form: Locator,
-  isLoggedIn: boolean,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
-  return clickSubmitBtn(form, isLoggedIn, 'Create', args)
+  return clickSubmitBtn(form, 'Create', args)
 }
 
 export function clickSubmitBtnUpdate(
   form: Locator,
-  isLoggedIn: boolean,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
-  return clickSubmitBtn(form, isLoggedIn, 'Save', args)
+  return clickSubmitBtn(form, 'Save', args)
 }
 
 export async function assignSubtask(

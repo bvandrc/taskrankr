@@ -3,11 +3,11 @@ import { cloneDeepWith } from 'es-toolkit'
 
 import type { Task, UserSettings } from '../../../shared/schema'
 import { ApiPaths } from '../constants'
-import { getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../page-context'
 import type { CreatedTask } from './intercepts'
 
-export function getLocalStateTasks(isLoggedIn: boolean): Promise<Task[]> {
-  const key = `taskrankr-${isLoggedIn ? 'auth' : 'guest'}-tasks`
+export function getLocalStateTasks(): Promise<Task[]> {
+  const key = `taskrankr-${getIsLoggedIn() ? 'auth' : 'guest'}-tasks`
   return getPage().evaluate((storageKey) => {
     const raw = localStorage.getItem(storageKey)
     return raw ? (JSON.parse(raw) as Task[]) : []
@@ -30,12 +30,9 @@ function normalizeTask(task: CreatedTask): Record<string, unknown> {
   ) as Record<string, unknown>
 }
 
-export async function checkTasksExist(
-  isLoggedIn: boolean,
-  tasks: CreatedTask[],
-): Promise<void> {
+export async function checkTasksExist(tasks: CreatedTask[]): Promise<void> {
   await expect(async () => {
-    const localTasks = await getLocalStateTasks(isLoggedIn)
+    const localTasks = await getLocalStateTasks()
     const expectedNames = tasks.map((t) => t.name)
     expect(
       localTasks.map((t) => t.name),
@@ -55,7 +52,7 @@ export async function checkTasksExist(
     }
   }).toPass({ timeout: 8000 })
 
-  if (isLoggedIn) {
+  if (getIsLoggedIn()) {
     await expect(async () => {
       const apiTasks = await getApiTasks()
       for (const expectedTask of tasks) {
@@ -68,11 +65,10 @@ export async function checkTasksExist(
 }
 
 export async function checkTasksDontExist(
-  isLoggedIn: boolean,
   tasks: Pick<Task, 'name'>[],
 ): Promise<void> {
   await expect(async () => {
-    const localTasks = await getLocalStateTasks(isLoggedIn)
+    const localTasks = await getLocalStateTasks()
     const localNames = new Set(localTasks.map((t) => t.name))
     for (const task of tasks) {
       expect(
@@ -82,7 +78,7 @@ export async function checkTasksDontExist(
     }
   }).toPass({ timeout: 5000 })
 
-  if (isLoggedIn) {
+  if (getIsLoggedIn()) {
     await expect(async () => {
       const apiTasks = await getApiTasks()
       const apiNames = new Set(apiTasks.map((t) => t.name))

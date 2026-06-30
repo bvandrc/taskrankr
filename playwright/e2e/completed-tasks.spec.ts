@@ -34,14 +34,14 @@ test.describe('Completed Tasks', () => {
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
+    await fillTaskForm(getTaskForm(0), task)
     await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [completedTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls(requestTracker, { create: 1, update: 0 })
 
     await checkCompletedPage([completedTask])
   })
@@ -60,20 +60,20 @@ test.describe('Completed Tasks', () => {
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [{ ...task, status: TaskStatus.PINNED }],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls(requestTracker, { create: 1, update: 0 })
 
     await openTaskEditForm(task)
     await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
       .click()
-    await clickSubmitBtnUpdate(getTaskForm(0), isLoggedIn, {
+    await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [completedTask],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    checkNumCalls(requestTracker, { create: 1, update: 1 })
 
     await checkCompletedPage([completedTask])
   })
@@ -92,18 +92,14 @@ test.describe('Completed Tasks', () => {
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), isLoggedIn, task)
-    await clickSubmitBtnCreate(getTaskForm(0), isLoggedIn, {
+    await fillTaskForm(getTaskForm(0), task)
+    await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [{ ...task, status: TaskStatus.PINNED }],
     })
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 0 })
+    checkNumCalls(requestTracker, { create: 1, update: 0 })
 
-    await changeStatusViaStatusChangeDialog(
-      isLoggedIn,
-      task,
-      TaskStatus.COMPLETED,
-    )
-    checkNumCalls(requestTracker, isLoggedIn, { create: 1, update: 1 })
+    await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
+    checkNumCalls(requestTracker, { create: 1, update: 1 })
 
     await checkCompletedPage([completedTask])
   })

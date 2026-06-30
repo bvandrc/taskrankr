@@ -25,8 +25,8 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-export const getTaskCardTitle = async (task: Pick<Task, 'name'>) =>
-  cy
+export async function getTaskCardTitle(task: Pick<Task, 'name'>) {
+  return cy
     .contains(
       `${TaskCard.CARD} ${TaskCard.TITLE}`,
       new RegExp(`^${task.name}$`),
@@ -34,15 +34,16 @@ export const getTaskCardTitle = async (task: Pick<Task, 'name'>) =>
     .should('have.length', 1)
     .scrollIntoView()
     .should('be.visible')
+}
 
 // biome-ignore lint/suspicious/useAwait: <explanation>
-const checkTitleAndSubtasks = async (
+async function checkTitleAndSubtasks(
   task: TaskTreeNode,
   tier: number,
   { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
-) => {
-  const getTaskCard = async () =>
-    await getTaskCardTitle(task)
+) {
+  async function getTaskCard() {
+    return await getTaskCardTitle(task)
       .should(
         tier > 0 && task.status === TaskStatus.COMPLETED
           ? 'have.class'
@@ -78,6 +79,7 @@ const checkTitleAndSubtasks = async (
           })
         return cy.wrap($card)
       })
+  }
 
   const taskCard = getTaskCard()
 
@@ -112,18 +114,20 @@ const checkTitleAndSubtasks = async (
     })
 }
 
-export const expandAndCheckTree = async (
+export async function expandAndCheckTree(
   task: TaskTreeNode,
   { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
-) => checkTitleAndSubtasks(task, 0, { settings })
+) {
+  return checkTitleAndSubtasks(task, 0, { settings })
+}
 
-export const openTaskEditForm = async (task: Pick<Task, 'name'>) => {
+export async function openTaskEditForm(task: Pick<Task, 'name'>) {
   cy.get(Selectors.TaskForm.FORM).should('not.exist')
   await (await getTaskCardTitle(task)).click()
   cy.get(Selectors.TaskForm.FORM).should('be.visible')
 }
 
-export const openStatusChangeDialog = async (task: Pick<Task, 'name'>) => {
+export async function openStatusChangeDialog(task: Pick<Task, 'name'>) {
   const title = await getTaskCardTitle(task)
   cy.clock()
   title.trigger('mousedown')
@@ -132,14 +136,14 @@ export const openStatusChangeDialog = async (task: Pick<Task, 'name'>) => {
   cy.clock().invoke('restore')
 }
 
-export const changeStatusViaStatusChangeDialog = async (
+export async function changeStatusViaStatusChangeDialog(
   task: Omit<CreatedTask, 'status'>,
   newStatus: TaskStatus.COMPLETED,
   {
     hasIncompleteSubtasks = false,
     sideEffects = [],
   }: { hasIncompleteSubtasks?: boolean; sideEffects?: CreatedTask[] } = {},
-) => {
+) {
   await openStatusChangeDialog(task)
 
   if (hasIncompleteSubtasks) {
@@ -153,7 +157,7 @@ export const changeStatusViaStatusChangeDialog = async (
   cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
 }
 
-export const checkCompletedPage = async (completedTasks: TaskTreeNode[]) => {
+export async function checkCompletedPage(completedTasks: TaskTreeNode[]) {
   // STEP: Check task is not in main tree
   checkIsAtHomePage()
   flattenTree(completedTasks).forEach((task) => {

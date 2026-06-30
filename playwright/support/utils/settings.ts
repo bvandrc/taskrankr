@@ -8,7 +8,7 @@ import { isLoggedIn } from './test-runner'
 
 const { Menu, Settings } = Selectors
 
-const setFieldConfig = (targetConfig: FieldConfig) => {
+function setFieldConfig(targetConfig: FieldConfig) {
   for (const [field, { visible, required }] of Object.entries(
     targetConfig,
   ) as Entries<FieldConfig>) {
@@ -35,7 +35,7 @@ const setFieldConfig = (targetConfig: FieldConfig) => {
   }
 }
 
-export const setSettings = (settings: Pick<UserSettings, 'fieldConfig'>) => {
+export function setSettings(settings: Pick<UserSettings, 'fieldConfig'>) {
   const loggedIn = isLoggedIn()
 
   cy.get(Selectors.MENU_BTN).click()

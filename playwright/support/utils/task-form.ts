@@ -24,10 +24,10 @@ type TaskFormData = PickDeep<
 export const getTaskForm = (tier = 0) =>
   cy.get(`${TaskForm.FORM}[data-tier="${tier}"]`).should('be.visible')
 
-export const fillTaskFormRankFields = (
+export function fillTaskFormRankFields(
   task: TaskFormData,
   settings: FieldConfig,
-) => {
+) {
   const requiredFields = RankFields.filter(
     (field) => settings[field].visible && settings[field].required,
   )
@@ -62,7 +62,7 @@ export const fillTaskFormRankFields = (
 /**
  * Fills form.
  */
-export const fillTaskForm = async (
+export async function fillTaskForm(
   task: TaskFormData,
   {
     settings = DEFAULT_FIELD_CONFIG,
@@ -73,7 +73,7 @@ export const fillTaskForm = async (
      */
     hasIncompleteSubtasks?: boolean
   } = {},
-) => {
+) {
   // STEP: **filling task form... (task: ${task.name})**
   checkTasksDontExistBackend([task])
 
@@ -107,10 +107,10 @@ type SubmitBtnArgs = {
   confirmDialog?: string
 }
 
-const clickSubmitBtn = (
+function clickSubmitBtn(
   submitBtnText: string,
   { newTasks, updatedTasks, confirmDialog }: SubmitBtnArgs = {},
-) => {
+) {
   if (newTasks) {
     checkTasksDontExistBackend(newTasks)
   }
@@ -142,12 +142,12 @@ export const clickSubmitBtnCreate = (args: SubmitBtnArgs = {}) =>
 export const clickSubmitBtnUpdate = (args: SubmitBtnArgs = {}) =>
   clickSubmitBtn('Save', args)
 
-export const assignSubtask = (
+export function assignSubtask(
   /**
    * the orphan task to assign as subtask.
    */
   task: CreatedTask,
-) => {
+) {
   cy.get(TaskForm.ASSIGN_SUBTASK_BTN).click()
   cy.escapeWithin()
     .find(AssignSubtaskDialog.DIALOG)
@@ -158,9 +158,9 @@ export const assignSubtask = (
     })
 }
 
-export const checkTaskFormSubtasks = (
+export function checkTaskFormSubtasks(
   subtasks: Pick<Task, 'name' | 'status'>[],
-) => {
+) {
   // TODO: test how they are nested
   cy.get(TaskForm.SUBTASKS_CARD).scrollIntoView()
   cy.get(TaskForm.SUBTASK_ROW)
@@ -182,10 +182,10 @@ export const checkTaskFormSubtasks = (
     )
 }
 
-export const setTaskFormSubtaskSettings = ({
+export function setTaskFormSubtaskSettings({
   autoHideCompleted,
   inheritCompletionState,
-}: Partial<TaskSubtaskSettings> = {}) => {
+}: Partial<TaskSubtaskSettings> = {}) {
   cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(
@@ -197,10 +197,10 @@ export const setTaskFormSubtaskSettings = ({
   }
 }
 
-export const checkTaskFormSubtaskSettings = ({
+export function checkTaskFormSubtaskSettings({
   autoHideCompleted,
   inheritCompletionState,
-}: Partial<TaskSubtaskSettings> = {}) => {
+}: Partial<TaskSubtaskSettings> = {}) {
   cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
     cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
@@ -215,6 +215,6 @@ export const checkTaskFormSubtaskSettings = ({
 }
 
 // biome-ignore lint/suspicious/useAwait: <explanation>
-export const openMoreSection = async () => {
+export async function openMoreSection() {
   cy.get(TaskForm.MORE_SECTION).scrollIntoView().click()
 }

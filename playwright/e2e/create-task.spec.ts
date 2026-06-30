@@ -21,7 +21,7 @@ test.describe('Task Creation', () => {
   test('create a task, check displays in main tree', async ({ taskName }) => {
     const task = {
       ...DefaultTaskFields,
-      name: taskName('E2E Root Level Task'),
+      name: taskName('Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
 

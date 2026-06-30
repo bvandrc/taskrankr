@@ -24,7 +24,7 @@ test.describe('Edit Task', () => {
   }) => {
     const task = {
       ...DefaultTaskFields,
-      name: taskName('E2E Edit Task'),
+      name: taskName('Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
 

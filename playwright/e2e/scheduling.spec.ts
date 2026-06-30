@@ -29,7 +29,7 @@ test.describe('Scheduling', () => {
   }) => {
     const baseTask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Test Task'),
+      name: taskName('Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
 
@@ -66,7 +66,7 @@ test.describe('Scheduling', () => {
   }) => {
     const baseTask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Hidden Task'),
+      name: taskName('Hidden Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
 

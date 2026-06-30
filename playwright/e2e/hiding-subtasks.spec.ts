@@ -18,19 +18,19 @@ test.describe('Hiding Subtasks', () => {
 
     const rootTask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Root Task'),
+      name: taskName('Root Task'),
       status: TaskStatus.PINNED,
     } as const satisfies CreatedTask
 
     const openSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Open Subtask'),
+      name: taskName('Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
 
     const completedSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Completed Subtask'),
+      name: taskName('Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
@@ -63,13 +63,13 @@ test.describe('Hiding Subtasks', () => {
   }) => {
     const openSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Open Subtask'),
+      name: taskName('Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
 
     const completedSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Completed Subtask'),
+      name: taskName('Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
@@ -88,13 +88,13 @@ test.describe('Hiding Subtasks', () => {
   }) => {
     const openSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Open Subtask'),
+      name: taskName('Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
 
     const completedSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Completed Subtask'),
+      name: taskName('Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
@@ -115,13 +115,13 @@ test.describe('Hiding Subtasks', () => {
   }) => {
     const openSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Open Subtask'),
+      name: taskName('Open Subtask'),
       status: TaskStatus.OPEN,
     } as const satisfies CreatedTask
 
     const completedSubtask = {
       ...DefaultTaskFields,
-      name: taskName('E2E Completed Subtask'),
+      name: taskName('Completed Subtask'),
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 

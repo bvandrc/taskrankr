@@ -42,10 +42,10 @@ describe('Edit Task', () => {
 
     cy.log('Step 2: Open edit form, verify Date Created shows today')
     openTaskEditForm(task)
-    cy.checkDate(TaskForm.DATE_CREATED_PICKER, today)
+    cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(today)
 
     cy.log('Step 3: Open calendar and pick a different day')
-    cy.selectDate(TaskForm.DATE_CREATED_PICKER, newDate)
+    cy.get(TaskForm.DATE_CREATED_PICKER).selectDate(newDate)
 
     cy.log('Step 4: Save and verify update count')
     clickSubmitBtnUpdate({ updatedTasks: [task] })
@@ -53,6 +53,6 @@ describe('Edit Task', () => {
 
     cy.log('Step 5: Re-open edit form, verify date was persisted')
     openTaskEditForm(task)
-    cy.checkDate(TaskForm.DATE_CREATED_PICKER, newDate)
+    cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(newDate)
   })
 })

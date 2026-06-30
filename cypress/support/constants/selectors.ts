@@ -90,4 +90,9 @@ export const Selectors = {
     ERROR: testId('toast-danger'),
     DEFAULT: testId('toast-default'),
   },
+  DatePicker: {
+    MONTH_YEAR: testId('[data-radix-popper-content-wrapper][role="status"]'),
+    PREV_MONTH_BTN: `[aria-label="Go to the Previous Month"]`,
+    NEXT_MONTH_BTN: `[aria-label="Go to the Next Month"]`,
+  },
 } as const

@@ -6,7 +6,7 @@ import { format, parse } from 'date-fns'
 import { TestPaths } from '~/shared/constants'
 import type { Task as AppTask } from '~/shared/schema'
 import { createEnvSchema } from '~/shared/schema'
-import { ApiPaths } from './constants'
+import { ApiPaths, Selectors } from './constants'
 import { getElementArrayText, isLoggedIn } from './utils'
 
 const envVars = createEnvSchema([
@@ -49,9 +49,9 @@ declare global {
       getCheckedState(): Chainable<boolean>
       toggleState(newState: boolean): Chainable<JQuery<HTMLElement>>
       /** Asserts that a date picker button shows the given date. */
-      checkDate(pickerSelector: string, date: Date): Chainable<void>
+      checkDate(date: Date): Chainable<JQuery<HTMLElement>>
       /** Opens a date picker and selects the given date. */
-      selectDate(pickerSelector: string, date: Date): Chainable<void>
+      selectDate(date: Date): Chainable<JQuery<HTMLElement>>
     }
   }
 }
@@ -133,31 +133,36 @@ Cypress.Commands.add(
   },
 )
 
-Cypress.Commands.add('checkDate', (pickerSelector, date) => {
-  cy.get(pickerSelector)
-    .scrollIntoView()
-    .should('contain.text', format(date, 'PPP'))
-})
+Cypress.Commands.add('checkDate', { prevSubject: 'element' }, (subject, date) =>
+  cy.wrap(subject).scrollIntoView().should('contain.text', format(date, 'PPP')),
+)
 
-Cypress.Commands.add('selectDate', (pickerSelector, date) => {
-  cy.get(pickerSelector).click()
+Cypress.Commands.add(
+  'selectDate',
+  { prevSubject: 'element' },
+  (subject, date) => {
+    cy.wrap(subject).click()
 
-  cy.get('[role="status"]')
-    .invoke('text')
-    .then((captionText) => {
-      const displayed = parse(captionText.trim(), 'MMMM yyyy', new Date())
-      const monthDiff =
-        (date.getFullYear() - displayed.getFullYear()) * 12 +
-        (date.getMonth() - displayed.getMonth())
+    cy.get(Selectors.DatePicker.MONTH_YEAR)
+      .invoke('text')
+      .then((captionText) => {
+        const displayed = parse(captionText.trim(), 'MMMM yyyy', new Date())
+        const monthDiff =
+          (date.getFullYear() - displayed.getFullYear()) * 12 +
+          (date.getMonth() - displayed.getMonth())
 
-      if (monthDiff !== 0) {
-        const navLabel =
-          monthDiff > 0 ? 'Go to the Next Month' : 'Go to the Previous Month'
-        for (let i = 0; i < Math.abs(monthDiff); i++) {
-          cy.get(`[aria-label="${navLabel}"]`).click()
+        if (monthDiff !== 0) {
+          const navLabel =
+            monthDiff > 0
+              ? Selectors.DatePicker.NEXT_MONTH_BTN
+              : Selectors.DatePicker.PREV_MONTH_BTN
+          for (let i = 0; i < Math.abs(monthDiff); i++) {
+            cy.get(navLabel).click()
+          }
         }
-      }
-    })
+      })
 
-  cy.get(`[data-day="${format(date, 'yyyy-MM-dd')}"] button`).click()
-})
+    cy.get(`[data-day="${format(date, 'yyyy-MM-dd')}"] button`).click()
+    return cy.wrap(subject).checkDate(date)
+  },
+)

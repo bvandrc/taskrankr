@@ -105,7 +105,7 @@ test.describe('Task Form Cancellation', () => {
       }
 
       test('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', () => {
-        // STEP: Step 1: Add a subtask
+        // STEP 1: Add a subtask
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -115,7 +115,7 @@ test.describe('Task Form Cancellation', () => {
           await clickSubmitBtnCreate()
         })
 
-        // STEP: Step 2: Cancel parent form — expect confirmation dialog
+        // STEP 2: Cancel parent form — expect confirmation dialog
         getTaskForm(0).within(async () => {
           await checkTaskFormSubtasks([subtask])
           cy.get(TaskForm.CANCEL_BTN).click()
@@ -127,7 +127,7 @@ test.describe('Task Form Cancellation', () => {
       })
 
       test('cancel on parent form after multiple subtasks were added — confirmation shows correct count, discard removes all', () => {
-        // STEP: Step 1: Add two subtasks
+        // STEP 1: Add two subtasks
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -147,7 +147,7 @@ test.describe('Task Form Cancellation', () => {
           await clickSubmitBtnCreate()
         })
 
-        // STEP: Step 2: Cancel parent form — deny discard, verify form preserved
+        // STEP 2: Cancel parent form — deny discard, verify form preserved
         getTaskForm(0).within(async () => {
           await checkTaskFormSubtasks([subtask, subtask2])
           cy.get(TaskForm.CANCEL_BTN).click()
@@ -162,14 +162,14 @@ test.describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        // STEP: Step 3: Cancel parent form — confirm discard, verify all removed
+        // STEP 3: Cancel parent form — confirm discard, verify all removed
         checkCancelWarningDialog(2)
         cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })
 
       test('cancel on subtask form navigates back to parent, then cancel on parent discards all without confirmation', () => {
-        // STEP: Step 1: Open subtask form, cancel — returns to parent
+        // STEP 1: Open subtask form, cancel — returns to parent
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -179,7 +179,7 @@ test.describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        // STEP: Step 2: Cancel parent form — no confirmation needed
+        // STEP 2: Cancel parent form — no confirmation needed
         getTaskForm(0).within(() => {
           cy.get(TaskForm.NAME_INPUT).should('have.value', rootTask.name)
           cy.get(TaskForm.CANCEL_BTN).click()

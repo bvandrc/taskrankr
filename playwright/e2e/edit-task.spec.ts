@@ -23,7 +23,7 @@ test.describe('Edit Task', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
-    // STEP: Step 1: Create task
+    // STEP 1: Create task
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(task)
     await clickSubmitBtnCreate({ newTasks: [task] })
@@ -36,18 +36,18 @@ test.describe('Edit Task', () => {
     const newDay = today.getDate() === 1 ? 2 : 1
     const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
 
-    // STEP: Step 2: Open edit form, verify Date Created shows today
+    // STEP 2: Open edit form, verify Date Created shows today
     await openTaskEditForm(task)
     cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(today)
 
-    // STEP: Step 3: Open calendar and pick a different day
+    // STEP 3: Open calendar and pick a different day
     cy.get(TaskForm.DATE_CREATED_PICKER).selectDate(newDate)
 
-    // STEP: Step 4: Save and verify update count
+    // STEP 4: Save and verify update count
     await clickSubmitBtnUpdate({ updatedTasks: [task] })
     checkNumCalls({ create: 1, update: 1 })
 
-    // STEP: Step 5: Re-open edit form, verify date was persisted
+    // STEP 5: Re-open edit form, verify date was persisted
     await openTaskEditForm(task)
     cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(newDate)
   })

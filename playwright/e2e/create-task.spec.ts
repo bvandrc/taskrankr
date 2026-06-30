@@ -46,12 +46,12 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     } satisfies CreatedTask
 
-    // STEP: Step 1: Update rank field settings
+    // STEP 1: Update rank field settings
     setSettings({ fieldConfig })
     checkNumCalls({ updateSettings: 3 })
     cy.get(Selectors.BACK_BTN).click()
 
-    // STEP: Step 2: Create task using new field config, verify in tree
+    // STEP 2: Create task using new field config, verify in tree
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(newTask, { settings: fieldConfig })
     await clickSubmitBtnCreate({ newTasks: [newTask] })

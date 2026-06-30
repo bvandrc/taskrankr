@@ -64,7 +64,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create a subtask, check appears in tree', async () => {
-    // STEP: Step 1: Add subtask and create
+    // STEP 1: Add subtask and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -82,7 +82,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
-    // STEP: Step 2: Edit root task, add a second subtask
+    // STEP 2: Edit root task, add a second subtask
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask])
@@ -107,7 +107,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create multiple subtasks, check appear in tree', async () => {
-    // STEP: Step 1: Add two subtasks and create
+    // STEP 1: Add two subtasks and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -135,7 +135,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 0 })
 
-    // STEP: Step 2: Edit root task, add a third subtask
+    // STEP 2: Edit root task, add a third subtask
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask, subtask2])
@@ -163,7 +163,7 @@ test.describe('Create Subtasks', () => {
   })
 
   test('create nested subtasks, ensure appear in tree', async () => {
-    // STEP: Step 1: Add subtask with two nested children
+    // STEP 1: Add subtask with two nested children
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
@@ -193,7 +193,7 @@ test.describe('Create Subtasks', () => {
       await clickSubmitBtnCreate()
     })
 
-    // STEP: Step 2: Submit root task and verify nested tree
+    // STEP 2: Submit root task and verify nested tree
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([subtask, subtask2, subtask3])
       await clickSubmitBtnCreate({

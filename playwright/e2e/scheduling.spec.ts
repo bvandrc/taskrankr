@@ -39,16 +39,16 @@ test.describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    // STEP: Step 1: Create task with due date
+    // STEP 1: Create task with due date
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(taskWithDueDate)
     await clickSubmitBtnCreate({ newTasks: [taskWithDueDate] })
     checkNumCalls({ create: 1, update: 0 })
 
-    // STEP: Step 2: Verify due badge displays on task card with correct text
+    // STEP 2: Verify due badge displays on task card with correct text
     await expandAndCheckTree(taskWithDueDate)
 
-    // STEP: Step 3: Edit task again, clear the due date
+    // STEP 3: Edit task again, clear the due date
     await openTaskEditForm(taskWithDueDate)
     openMoreSection()
     cy.get(TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
@@ -56,7 +56,7 @@ test.describe('Scheduling', () => {
     await clickSubmitBtnUpdate({ updatedTasks: [baseTask] })
     checkNumCalls({ create: 1, update: 1 })
 
-    // STEP: Step 4: Verify due badge is gone
+    // STEP 4: Verify due badge is gone
     await expandAndCheckTree(baseTask)
   })
 
@@ -73,12 +73,12 @@ test.describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    // STEP: Step 1: Create task with hideUntil = tomorrow
+    // STEP 1: Create task with hideUntil = tomorrow
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(hiddenTask)
     await clickSubmitBtnCreate({ newTasks: [hiddenTask] })
 
-    // STEP: Step 2: Task should not be visible in the home page list
+    // STEP 2: Task should not be visible in the home page list
     cy.contains(hiddenTask.name).should('not.exist')
   })
 

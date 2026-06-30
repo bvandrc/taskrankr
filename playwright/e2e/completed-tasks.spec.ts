@@ -36,7 +36,7 @@ test.describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via New Task Form',
       setupTask: async () => {
-        // STEP: Step 1: Create task already marked as completed
+        // STEP 1: Create task already marked as completed
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
@@ -49,7 +49,7 @@ test.describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via Edit Form',
       setupTask: async () => {
-        // STEP: Step 1: Create task
+        // STEP 1: Create task
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
         await clickSubmitBtnCreate({
@@ -57,7 +57,7 @@ test.describe('Completed Tasks', () => {
         })
         checkNumCalls({ create: 1, update: 0 })
 
-        // STEP: Step 2: Edit task, mark as completed
+        // STEP 2: Edit task, mark as completed
         await openTaskEditForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         await clickSubmitBtnUpdate({
@@ -69,7 +69,7 @@ test.describe('Completed Tasks', () => {
     {
       testTitle: 'complete task via Change Status Dialog',
       setupTask: async () => {
-        // STEP: Step 1: Create task
+        // STEP 1: Create task
         cy.get(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(task)
         await clickSubmitBtnCreate({
@@ -77,7 +77,7 @@ test.describe('Completed Tasks', () => {
         })
         checkNumCalls({ create: 1, update: 0 })
 
-        // STEP: Step 2: Complete task via status change dialog
+        // STEP 2: Complete task via status change dialog
         changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
         checkNumCalls({ create: 1, update: 1 })
       },

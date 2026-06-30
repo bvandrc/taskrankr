@@ -61,7 +61,7 @@ test.describe('Assign Subtasks', () => {
   })
 
   test('assign an existing orphaned task as a subtask of a task', async () => {
-    // STEP: Step 1: Create root task, create new subtask, assign sibling orphanTask
+    // STEP 1: Create root task, create new subtask, assign sibling orphanTask
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(async () => {
       await fillTaskForm(rootTask)
@@ -92,7 +92,7 @@ test.describe('Assign Subtasks', () => {
     })
     checkNumCalls({ create: 4, update: 1 })
 
-    // STEP: Step 2: Edit root task, assign second orphan
+    // STEP 2: Edit root task, assign second orphan
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([orphanTask, newSubtask])

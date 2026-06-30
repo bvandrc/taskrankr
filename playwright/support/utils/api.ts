@@ -4,7 +4,7 @@ import type { Jsonify, PartialDeep } from 'type-fest'
 
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
-import { getIsLoggedIn, getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../test-globals'
 import type { CreatedTask } from './intercepts'
 
 const normalizeTask = <T extends PartialDeep<Task>>(task: T): Jsonify<T> =>

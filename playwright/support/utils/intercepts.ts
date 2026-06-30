@@ -3,7 +3,7 @@ import { expect } from '@playwright/test'
 import type { Task } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
-import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
 import { checkTasksDontExist, checkTasksExist } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &

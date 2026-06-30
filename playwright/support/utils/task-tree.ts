@@ -12,7 +12,7 @@ import {
 } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
-import { getIsLoggedIn, getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksExist } from './api'
 import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'

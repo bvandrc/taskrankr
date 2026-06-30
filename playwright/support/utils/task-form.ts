@@ -13,7 +13,7 @@ import {
 } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
-import { getIsLoggedIn, getPage } from '../page-context'
+import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksDontExist, checkTasksExist } from './api'
 import { getCheckedState, toggleState } from './index'
 import type { CreatedTask, SubmitBtnArgs } from './intercepts'

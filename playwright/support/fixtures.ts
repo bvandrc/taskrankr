@@ -8,7 +8,7 @@ import {
   setIsLoggedIn,
   setPage,
   setRequestTracker,
-} from './page-context'
+} from './test-globals'
 
 export type UserMode = 'user' | 'guest'
 

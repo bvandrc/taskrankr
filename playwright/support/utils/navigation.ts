@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 
 import { Routes } from '~/client/lib/constants'
 import { Selectors } from '../constants'
-import { getPage } from '../page-context'
+import { getPage } from '../test-globals'
 
 export async function checkIsAtHomePage(): Promise<void> {
   const page = getPage()

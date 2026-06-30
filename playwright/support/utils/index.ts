@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 
-import { getPage } from '../page-context'
+import { getPage } from '../test-globals'
 
 export async function getCheckedState(selector: string): Promise<boolean> {
   const state = await getPage().locator(selector).getAttribute('data-state')

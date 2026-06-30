@@ -3,7 +3,7 @@ import type { Entries } from 'type-fest'
 
 import type { FieldConfig, UserSettings } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
 import { getSettings } from './api'
 import { getCheckedState, toggleState } from './index'
 

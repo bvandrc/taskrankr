@@ -71,6 +71,13 @@
       "when": 1782757310625,
       "tag": "0009_autohide_default_true",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1782771710961,
+      "tag": "0010_add_task_schedule",
+      "breakpoints": true
     }
   ]
 }

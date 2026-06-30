@@ -15,8 +15,8 @@
 
 import { type AppError, ERRORS } from '../constants'
 import type { InsertTask, Task, UserSettings } from '../schema'
-import { TaskStatus } from '../schema'
-import { getHasIncomplete } from '../utils/task-utils'
+import { Priority, TaskStatus } from '../schema'
+import { getHasIncomplete, getLevelWeight } from '../utils/task-utils'
 
 const getChildrenLatestCompletedAt = (children: Task[]): Date | null =>
   children.reduce<Date | null>((latest, c) => {
@@ -107,6 +107,53 @@ export class TaskMutationService {
       getSettings(): MaybePromise<Pick<UserSettings, 'fieldConfig'>>
     },
   ) {}
+
+  /**
+   * Finds tasks whose `schedule` priority escalation dates have passed, updates
+   * `priority` to the highest triggered level, and clears the fired entries.
+   * Modeled after `reconcileInheritCompletionState` — call after loading tasks.
+   */
+  static reconcileScheduledPriority<T extends Task>(
+    tasks: T[],
+    now = new Date(),
+  ): { tasks: T[]; patches: MutationPatch[] } {
+    const patches: MutationPatch[] = []
+    let updated = tasks
+
+    for (const task of tasks) {
+      if (!task.schedule || !task.priority) continue
+      const baseWeight = getLevelWeight(task.priority)
+      let newPriority = task.priority
+      const newSchedule = { ...task.schedule }
+      let changed = false
+
+      for (const level of Object.values(Priority)) {
+        const date = task.schedule[level]
+        if (!date) continue
+        if (getLevelWeight(level) <= baseWeight) continue
+        if (date <= now) {
+          if (getLevelWeight(level) > getLevelWeight(newPriority)) {
+            newPriority = level
+          }
+          delete newSchedule[level]
+          changed = true
+        }
+      }
+
+      if (changed) {
+        const patch: Partial<Task> = {
+          priority: newPriority,
+          schedule: Object.keys(newSchedule).length > 0 ? newSchedule : null,
+        }
+        patches.push({ id: task.id, patch })
+        updated = updated.map((t) =>
+          t.id === task.id ? { ...t, ...patch } : t,
+        )
+      }
+    }
+
+    return { tasks: updated, patches }
+  }
 
   /**
    * Fixes up `inheritCompletionState` parents to a fixed point — auto-completing

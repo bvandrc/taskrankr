@@ -51,6 +51,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -69,6 +70,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -87,6 +89,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -105,6 +108,30 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
+    },
+    {
+      id: getNextId(),
+      userId: 'local',
+      name: 'Task with Due Date',
+      description: 'This task has a due date set 3 days from now.',
+      priority: Priority.MEDIUM,
+      ease: Ease.MEDIUM,
+      enjoyment: Enjoyment.MEDIUM,
+      time: Time.LOW,
+      parentId: null,
+      status: TaskStatus.OPEN,
+      createdAt: new Date(now.getTime() - 150_000),
+      completedAt: null,
+      subtaskSortMode: SubtaskSortMode.INHERIT,
+      subtaskOrder: [],
+      autoHideCompleted: false,
+      inheritCompletionState: false,
+      schedule: {
+        high: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000),
+        highest: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
+        dueAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+      },
     },
     {
       id: getNextId(),
@@ -123,11 +150,12 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedParentId,
       userId: 'local',
-      name: 'Demo task with numbered subtasks',
+      name: 'Demo task with ordered subtasks',
       description:
         'This task uses manual ordering with numbered subtasks to show step-by-step breakdowns.',
       priority: Priority.MEDIUM,
@@ -147,6 +175,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       ],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedResearchId,
@@ -165,6 +194,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -183,6 +213,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -201,6 +232,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedDraftId,
@@ -219,6 +251,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [numberedDraftOutlineId, numberedDraftTimelineId],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedDraftOutlineId,
@@ -237,6 +270,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedDraftTimelineId,
@@ -255,6 +289,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedReviewId,
@@ -273,6 +308,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: numberedCompletedId,
@@ -292,11 +328,12 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: miscParentId,
       userId: 'local',
-      name: 'Demo task with misc. subtasks',
+      name: 'Demo task with unordered subtasks',
       description:
         'This task uses inherited sorting so subtasks follow the main list sort order.',
       priority: Priority.MEDIUM,
@@ -311,6 +348,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -329,6 +367,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: miscBuildPrototypeId,
@@ -347,6 +386,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -365,6 +405,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -383,6 +424,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -401,6 +443,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -420,6 +463,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -438,6 +482,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: completedWithSubtaskId,
@@ -456,6 +501,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
     {
       id: getNextId(),
@@ -474,6 +520,7 @@ export const createDemoTasks = (nextIdRef: { current: number }): Task[] => {
       subtaskOrder: [],
       autoHideCompleted: false,
       inheritCompletionState: false,
+      schedule: null,
     },
   ]
 

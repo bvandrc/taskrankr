@@ -25,6 +25,7 @@ import {
   taskSchema,
 } from '~/shared/schema'
 import { Button } from '../primitives/Button'
+import { CollapsibleCard } from '../primitives/CollapsibleCard'
 import { Checkbox } from '../primitives/forms/Checkbox'
 import { DateInput } from '../primitives/forms/DateInput'
 import {
@@ -40,6 +41,7 @@ import { Textarea } from '../primitives/forms/Textarea'
 import { TagChain } from '../primitives/TagChain'
 import { SubtaskBlockedTooltip } from '../SubtaskBlockedTooltip'
 import { RankFieldSelect } from './RankFieldSelect'
+import { ScheduleSection } from './ScheduleSection'
 import { SubtasksCard } from './SubtasksCard'
 import { useTaskFormParentChain } from './useTaskFormParentChain'
 
@@ -250,6 +252,7 @@ export const TaskForm = ({
                   onChange={field.onChange}
                   popoverHeader="Select Creation Date"
                   buttonClassName="w-auto"
+                  canClear={false}
                   data-testid="date-created-picker"
                 />
               )}
@@ -294,6 +297,22 @@ export const TaskForm = ({
                 />
               </label>
             </SubtaskBlockedTooltip>
+
+            {/* MORE section */}
+            <CollapsibleCard
+              data-testid="more-section"
+              noCard
+              title={
+                <h3 className="font-semibold text-sm text-muted-foreground">
+                  More
+                </h3>
+              }
+              defaultOpen={false}
+            >
+              <div className="flex flex-col gap-6">
+                <ScheduleSection />
+              </div>
+            </CollapsibleCard>
           </div>
         </div>
 

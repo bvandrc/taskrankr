@@ -86,6 +86,7 @@ const router = s.router(contract, {
             ease: rest.ease ?? null,
             enjoyment: rest.enjoyment ?? null,
             time: rest.time ?? null,
+            schedule: rest.schedule ?? null,
             userId,
             parentId: null,
             status: rest.status ?? TaskStatus.OPEN,

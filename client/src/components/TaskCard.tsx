@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronDown, ChevronRight, Pin } from 'lucide-react'
 
@@ -18,6 +19,7 @@ import { useTaskMutations } from '@/providers/TasksProvider'
 import type { TaskWithSubtasks } from '@/types'
 import {
   type FieldConfig,
+  Priority,
   type RankField,
   SubtaskSortMode,
   type Task,
@@ -141,6 +143,29 @@ const RankBadges = ({
     })}
   </div>
 )
+
+const DueText = ({
+  schedule,
+  priority,
+}: Pick<Task, 'schedule' | 'priority'>) => {
+  const due = schedule?.dueAt
+  if (!due) return null
+  const isOverdue = due < new Date()
+
+  const textColorClass = (() => {
+    if (isOverdue || priority === Priority.HIGHEST)
+      return 'text-red-700 font-bold'
+    if (priority === Priority.HIGH) return 'text-red-400'
+    if (priority === Priority.MEDIUM) return 'text-yellow-400'
+    return 'text-muted-foreground text-[12px]'
+  })()
+
+  return (
+    <span className={cn('text-[12px]', textColorClass)} data-testid="badge-due">
+      Due {format(due, 'MMM d')}
+    </span>
+  )
+}
 
 const CollapseCaret = ({
   taskId,
@@ -297,6 +322,7 @@ export const TaskCard = ({
               <InProgressBadge setShowConfirm={setShowConfirm} />
             )}
             {isPinned && <PinIcon setShowConfirm={setShowConfirm} />}
+            <DueText schedule={task.schedule} priority={task.priority} />
           </div>
           <div className="flex flex-col items-end shrink-0 md:w-67 md:pr-0">
             <RankBadges

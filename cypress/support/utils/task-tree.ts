@@ -1,3 +1,6 @@
+import { format } from 'date-fns'
+import type { PickDeep } from 'type-fest'
+
 import {
   DEFAULT_FIELD_CONFIG,
   type RankField,
@@ -12,7 +15,10 @@ import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
-type TaskTreeNode = Pick<CreatedTask, 'name' | 'status' | RankField> & {
+type TaskTreeNode = PickDeep<
+  CreatedTask,
+  'name' | 'status' | 'schedule.dueAt' | RankField
+> & {
   subtasks?: TaskTreeNode[]
 }
 
@@ -49,6 +55,14 @@ const checkTitleAndSubtasks = (
           .first()
           .should('have.attr', 'data-status', task.status)
           .within(() => {
+            if (task.schedule?.dueAt) {
+              cy.get(TaskCard.DUE_BADGE)
+                .should('be.visible')
+                .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
+            } else {
+              cy.get(TaskCard.DUE_BADGE).should('not.exist')
+            }
+
             for (const field of RankFields) {
               const badge = cy.get(TaskCard.RankFieldBadge(field))
               const expVal = task[field]

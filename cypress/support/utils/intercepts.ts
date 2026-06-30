@@ -1,3 +1,5 @@
+import type { SetOptional } from 'type-fest'
+
 import type { RankField, Task } from '~/shared/schema'
 import { ApiPaths, Selectors } from '../constants'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
@@ -27,7 +29,10 @@ export function maybeWaitForIntercept(
   cy.get(Selectors.Toasts.ERROR).should('not.exist')
 }
 
-export type CreatedTask = Pick<Task, 'name' | 'status' | RankField>
+export type CreatedTask = SetOptional<
+  Pick<Task, 'name' | 'status' | 'schedule' | RankField>,
+  'schedule'
+>
 
 let _createTaskWaitCount = 0
 

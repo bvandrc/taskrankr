@@ -1,4 +1,27 @@
-import { type Task, TaskStatus } from '../schema'
+import {
+  type Ease,
+  type Enjoyment,
+  type Priority,
+  type Task,
+  TaskStatus,
+  type Time,
+} from '../schema'
+
+export const LEVEL_WEIGHTS = {
+  highest: 5,
+  hardest: 5,
+  high: 4,
+  hard: 4,
+  medium: 3,
+  low: 2,
+  easy: 2,
+  lowest: 1,
+  easiest: 1,
+} as const satisfies Record<Priority | Ease | Enjoyment | Time, number>
+
+export const getLevelWeight = (
+  level: keyof typeof LEVEL_WEIGHTS | null | undefined,
+): number => (level ? (LEVEL_WEIGHTS[level] ?? 0) : 0)
 
 export * from './id-list-utils'
 export * from './zod-utils'

@@ -43,11 +43,11 @@ const checkTitleAndSubtasks = (
         'line-through',
       )
       .closest(TaskCard.CARD)
-      .should('have.attr', 'data-status', task.status)
       .then(($card) => {
         cy.wrap($card)
           .find(TaskCard.THIS_TASK_INFO)
           .first()
+          .should('have.attr', 'data-status', task.status)
           .within(() => {
             for (const field of RankFields) {
               const badge = cy.get(TaskCard.RankFieldBadge(field))
@@ -73,22 +73,26 @@ const checkTitleAndSubtasks = (
     return
   }
 
-  taskCard.then(($card) => {
-    const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
-    if (expandBtn.length > 0) {
-      cy.log('expanding collapsed card...')
-      cy.wrap(expandBtn).click()
-      cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
-      cy.wrap($card).find(TaskCard.CARD).should('exist')
-      cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
-      cy.log('...done expanding collapsed card...')
-    }
-  })
+  taskCard
+    .then(($card) => {
+      const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
+      if (expandBtn.length > 0) {
+        cy.log('expanding collapsed card...')
+        cy.wrap(expandBtn).click()
+        cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
+        cy.wrap($card).find(TaskCard.CARD).should('exist')
+        cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
+        cy.log('...done expanding collapsed card...')
 
-  // re-renders on expand, reduce flake by re-getting
-  getTaskCard().within(() => {
-    checkSubtasksInCard(task, tier + 1, { settings })
-  })
+        // re-renders on expand, reduce flake by re-getting
+        return getTaskCard()
+      }
+
+      return cy.wrap($card)
+    })
+    .within(() => {
+      checkSubtasksInCard(task, tier + 1, { settings })
+    })
 }
 
 const checkSubtasksInCard = (

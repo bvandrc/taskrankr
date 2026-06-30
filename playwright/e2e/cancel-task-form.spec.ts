@@ -63,22 +63,27 @@ for (const { contextName, isEdit } of [
       }
 
       if (isEdit) {
+        // STEP: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
         await clickSubmitBtnCreate(getTaskForm(0), {
           newTasks: [rootTask],
         })
+        // STEP: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
       } else {
+        // STEP: Open new task form and fill
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
       }
 
+      // STEP: Add a subtask
       await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
       await fillTaskForm(getTaskForm(1), subtask)
       await clickSubmitBtnCreate(getTaskForm(1))
 
+      // STEP: Cancel parent form — expect confirmation dialog
       await checkTaskFormSubtasks(getTaskForm(0), [subtask])
       await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
@@ -122,18 +127,22 @@ for (const { contextName, isEdit } of [
       }
 
       if (isEdit) {
+        // STEP: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
         await clickSubmitBtnCreate(getTaskForm(0), {
           newTasks: [rootTask],
         })
+        // STEP: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
       } else {
+        // STEP: Open new task form and fill
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
       }
 
+      // STEP: Add two subtasks
       await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
       await fillTaskForm(getTaskForm(1), subtask)
       await clickSubmitBtnCreate(getTaskForm(1))
@@ -193,18 +202,22 @@ for (const { contextName, isEdit } of [
       }
 
       if (isEdit) {
+        // STEP: Create root task
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
         await clickSubmitBtnCreate(getTaskForm(0), {
           newTasks: [rootTask],
         })
+        // STEP: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
       } else {
+        // STEP: Open new task form and fill
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
       }
 
+      // STEP: Open subtask form, cancel — returns to parent
       await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
       await getTaskForm(1).locator(TaskForm.NAME_INPUT).fill(subtask.name)
       await getTaskForm(1).locator(TaskForm.CANCEL_BTN).click()

@@ -29,30 +29,37 @@ test.describe('Edit Task', () => {
     }
 
     const today = new Date()
+    // Pick a day in the same month that isn't today
     const newDay = today.getDate() === 1 ? 2 : 1
     const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
 
+    // STEP: Create task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
     await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
 
+    // STEP: Open edit form, verify Date Created shows today
     await openTaskEditForm(task)
     await checkDate(
       getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
       today,
     )
+
+    // STEP: Open calendar and pick a different day
     await selectDate(
       getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),
       newDate,
     )
 
+    // STEP: Save and verify update count
     await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [task],
     })
     checkNumCalls({ create: 1, update: 1 })
 
+    // STEP: Re-open edit form, verify date was persisted
     await openTaskEditForm(task)
     await checkDate(
       getTaskForm(0).locator(Selectors.TaskForm.DATE_CREATED_PICKER),

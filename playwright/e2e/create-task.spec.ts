@@ -53,10 +53,12 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     }
 
+    // STEP: Update rank field settings
     await setSettings({ fieldConfig })
     checkNumCalls({ updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
+    // STEP: Create task using new field config, verify in tree
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task, {
       settings: fieldConfig,

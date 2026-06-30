@@ -42,10 +42,12 @@ test.describe('Create Subtasks', () => {
       status: TaskStatus.OPEN,
     }
 
+    // STEP: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
 
+    // STEP: Add subtask and create
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
     await fillTaskForm(getTaskForm(1), subtask)
     await clickSubmitBtnCreate(getTaskForm(1))
@@ -58,6 +60,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
+    // STEP: Edit root task, add a second subtask
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [subtask])
@@ -104,10 +107,12 @@ test.describe('Create Subtasks', () => {
       status: TaskStatus.OPEN,
     }
 
+    // STEP: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
 
+    // STEP: Add two subtasks and create
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
     await fillTaskForm(getTaskForm(1), subtask)
     await clickSubmitBtnCreate(getTaskForm(1))
@@ -128,6 +133,7 @@ test.describe('Create Subtasks', () => {
     })
     checkNumCalls({ create: 3, update: 0 })
 
+    // STEP: Edit root task, add a third subtask
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [subtask, subtask2])
@@ -173,9 +179,12 @@ test.describe('Create Subtasks', () => {
       status: TaskStatus.OPEN,
     }
 
+    // STEP: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
+
+    // STEP: Add subtask with two nested children
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
 
     const form1 = getTaskForm(1)
@@ -193,6 +202,7 @@ test.describe('Create Subtasks', () => {
     await checkTaskFormSubtasks(form1, [subtask2, subtask3])
     await clickSubmitBtnCreate(form1)
 
+    // STEP: Submit root task and verify nested tree
     await checkTaskFormSubtasks(form0, [subtask, subtask2, subtask3])
     await clickSubmitBtnCreate(form0, {
       newTasks: [rootTask, subtask, subtask2, subtask3],
@@ -203,6 +213,8 @@ test.describe('Create Subtasks', () => {
       subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
     })
     checkNumCalls({ create: 4, update: 0 })
+
+    // TODO: test EDIT
   })
 
   test.describe('Adding subtasks to a completed task', () => {
@@ -230,14 +242,17 @@ test.describe('Create Subtasks', () => {
         newTasks: [completedRootTask],
       })
 
+      // STEP: Navigate to completed page and open the edit form
       await goToCompletedPage()
       await openTaskEditForm(completedRootTask)
 
+      // STEP: Add an open subtask
       const editForm0 = getTaskForm(0)
       await editForm0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       await fillTaskForm(getTaskForm(1), subtask)
       await clickSubmitBtnCreate(getTaskForm(1))
 
+      // STEP: Click Save — dialog warns that the parent will be re-opened
       const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
       await clickSubmitBtnUpdate(editForm0, {
         newTasks: [subtask],
@@ -245,6 +260,7 @@ test.describe('Create Subtasks', () => {
         confirmDialog: Selectors.SaveOpenSubtasksConfirmDialog.DIALOG,
       })
 
+      // STEP: Parent task is now visible on home page with the new open subtask, no longer on completed page
       await expect(page.getByText(rootTask.name)).not.toBeAttached()
       await expect(page.getByText(subtask.name)).not.toBeAttached()
       await goToHomePage()
@@ -279,6 +295,7 @@ test.describe('Create Subtasks', () => {
       await goToCompletedPage()
       await openTaskEditForm(completedRootTask)
 
+      // STEP: Add a completed subtask
       const editForm0 = getTaskForm(0)
       await editForm0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const form1 = getTaskForm(1)
@@ -294,6 +311,7 @@ test.describe('Create Subtasks', () => {
         newTasks: [completedSubtask],
       })
 
+      // STEP: Completed page still shows parent task with its new completed subtask
       await expandAndCheckTree({
         ...completedRootTask,
         subtasks: [completedSubtask],

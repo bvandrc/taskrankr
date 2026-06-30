@@ -150,9 +150,9 @@ export async function changeStatusViaStatusChangeDialog(
   }
 
   const allUpdated = [
-    { ...task, status: newStatus } as CreatedTask,
+    { ...task, status: newStatus },
     ...sideEffects,
-  ]
+  ] satisfies CreatedTask[]
   const updateWaiter = getIsLoggedIn() ? waitForUpdate(allUpdated.length) : null
 
   await expect(completeBtn).not.toBeDisabled()

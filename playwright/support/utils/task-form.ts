@@ -100,7 +100,7 @@ export async function fillTaskForm(
     await expect(completedCheckbox).not.toBeDisabled()
   }
 
-  const { schedule } = task as CreatedTask
+  const { schedule } = task
   if (schedule) {
     await openMoreSection(form)
     if (schedule.hideUntil)

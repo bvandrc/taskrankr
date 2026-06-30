@@ -8,7 +8,7 @@
     "moduleResolution": "bundler",
     "strict": true,
     "paths": {
-      "@playwright/support/*": ["./support/*"],
+      "@test/support/*": ["./support/*"],
       "@client/*": ["../client/src/*"],
       "~/shared/*": ["../shared/*"],
       "@/*": ["../client/src/*"]

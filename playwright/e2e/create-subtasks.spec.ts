@@ -42,12 +42,12 @@ test.describe('Create Subtasks', () => {
       status: TaskStatus.OPEN,
     }
 
-    // STEP 0.1: Open new task form and fill root task
+    // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
 
-    // STEP 1: Add subtask and create
+    // STEP 2: Add subtask and create
     await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
     await fillTaskForm(getTaskForm(1), subtask)
     await clickSubmitBtnCreate(getTaskForm(1))

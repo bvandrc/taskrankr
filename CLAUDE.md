@@ -98,7 +98,7 @@ migrations/      Drizzle migration files
 - **Icons**: Use `Icon` component from `LucideIcon.tsx` only for conditional/dynamic icons — not for single static icons.
 - **Comments/JSDoc**: Describe *what* and *why* from the caller's perspective. Don't restate implementation. Keep to 1–2 lines. No hedge prefixes. Don't repeat what the type signature conveys.
 - **Terminology**: "Rank fields" = the 4 sortable badge fields: priority, ease, enjoyment, time.
-- **Test IDs**: Use `data-testid` (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
+- **Test IDs**: Use `data-testid` as the HTML attribute and as the prop name in component interfaces (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
 - **Icon sizing**: Use `size-X` Tailwind class, not `w-X h-X`.
 - **es-toolkit**: Use `omit`/`pick` from `es-toolkit` to avoid enumerating large object spreads by hand.
 - **Formatting**: Run `npm run format` before every commit.

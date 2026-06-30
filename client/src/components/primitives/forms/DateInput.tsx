@@ -9,25 +9,25 @@ import { Calendar } from './Calendar'
 import { FormControl, FormItem, FormLabel, FormMessage } from './Form'
 
 interface DateInputProps {
+  'data-testid'?: string
   label: string
   labelClassName?: string
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   minDate?: Date
   maxDate?: Date
-  testId?: string
   popoverHeader?: string
   buttonClassName?: string
 }
 
 export const DateInput = ({
+  'data-testid': testId,
   label,
   labelClassName,
   value,
   onChange,
   minDate,
   maxDate,
-  testId,
   popoverHeader,
   buttonClassName,
 }: DateInputProps) => {
@@ -36,9 +36,9 @@ export const DateInput = ({
   if (maxDate) disabledMatcher.push({ after: maxDate })
 
   return (
-    <FormItem className="flex items-center justify-between gap-4 space-y-0">
-      <FormLabel className={labelClassName}>{label}</FormLabel>
-      <div className="flex items-center gap-1">
+    <FormItem className="space-y-0">
+      <div className="flex items-center justify-between gap-4">
+        <FormLabel className={labelClassName}>{label}</FormLabel>
         <Popover>
           <PopoverTrigger asChild>
             <FormControl>
@@ -58,7 +58,7 @@ export const DateInput = ({
             </FormControl>
           </PopoverTrigger>
           <PopoverContent
-            className="w-auto p-0 bg-card border-white/10 z-[300]"
+            className="w-auto p-0 bg-card border-white/10 z-300"
             align="end"
           >
             {popoverHeader && (

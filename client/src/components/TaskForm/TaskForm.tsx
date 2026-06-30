@@ -254,6 +254,7 @@ export const TaskForm = ({
                   onChange={field.onChange}
                   popoverHeader="Select Creation Date"
                   buttonClassName="w-auto"
+                  data-testid="date-created-picker"
                 />
               )}
             />

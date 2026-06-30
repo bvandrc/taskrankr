@@ -32,6 +32,8 @@ test.describe('Hiding Subtasks', () => {
       status: TaskStatus.COMPLETED,
     }
 
+    // Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
+    // so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
@@ -100,6 +102,7 @@ test.describe('Hiding Subtasks', () => {
 
     // Save without changes — returns to parent with show-hidden preserved
     await clickSubmitBtnUpdate(getTaskForm(1))
+    // The parent form should still have show-hidden on
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
   })
 
@@ -124,6 +127,7 @@ test.describe('Hiding Subtasks', () => {
     await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).first().click()
 
     await getTaskForm(1).locator(Selectors.TaskForm.CANCEL_BTN).click()
+    // The parent form should still have show-hidden on
     await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
   })
 })

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 
-import { Routes } from '../../../client/src/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { Selectors } from '../constants'
 import { getPage } from '../page-context'
 

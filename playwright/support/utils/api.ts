@@ -2,7 +2,7 @@ import { expect } from '@playwright/test'
 import { cloneDeepWith } from 'es-toolkit'
 import type { Jsonify, PartialDeep } from 'type-fest'
 
-import type { Task, UserSettings } from '../../../shared/schema'
+import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
 import { getIsLoggedIn, getPage } from '../page-context'
 import type { CreatedTask } from './intercepts'

@@ -1,4 +1,4 @@
-import { contract } from '../../../shared/contract'
+import { contract } from '~/shared/contract'
 import {
   Ease,
   Enjoyment,
@@ -6,7 +6,7 @@ import {
   Priority,
   type Task,
   Time,
-} from '../../../shared/schema'
+} from '~/shared/schema'
 
 export * from './selectors'
 

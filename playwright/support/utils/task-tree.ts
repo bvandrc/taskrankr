@@ -9,7 +9,7 @@ import {
   RankFields,
   type Task,
   TaskStatus,
-} from '../../../shared/schema'
+} from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../page-context'

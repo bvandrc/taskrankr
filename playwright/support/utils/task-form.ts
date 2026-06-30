@@ -10,7 +10,7 @@ import {
   type Task,
   TaskStatus,
   type TaskSubtaskSettings,
-} from '../../../shared/schema'
+} from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../page-context'

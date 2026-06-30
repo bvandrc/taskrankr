@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 
-import type { Task } from '../../../shared/schema'
+import type { Task } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'

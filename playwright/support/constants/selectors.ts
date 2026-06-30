@@ -1,4 +1,4 @@
-import type { FieldConfig, RankField } from '../../../shared/schema'
+import type { FieldConfig, RankField } from '~/shared/schema'
 
 const testId = <S extends string>(testid: S) =>
   `[data-testid="${testid}"]` as const

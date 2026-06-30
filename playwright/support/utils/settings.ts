@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import type { Entries } from 'type-fest'
 
-import type { FieldConfig, UserSettings } from '../../../shared/schema'
+import type { FieldConfig, UserSettings } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
 import { getSettings } from './api'

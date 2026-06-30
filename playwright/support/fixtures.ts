@@ -82,7 +82,8 @@ export const waitForUpdate = (n: number) =>
   waitForNResponses(isUpdateResponse, n)
 
 export const test = baseTest.extend<Fixtures>({
-  userMode: async (_fixtures, use, testInfo) => {
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright requires destructuring for the fixtures arg
+  userMode: async ({}, use, testInfo) => {
     await use(testInfo.project.name as UserMode)
   },
 
@@ -90,7 +91,8 @@ export const test = baseTest.extend<Fixtures>({
     await use(userMode === 'user')
   },
 
-  testSuffix: async (_fixtures, use, testInfo) => {
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright requires destructuring for the fixtures arg
+  testSuffix: async ({}, use, testInfo) => {
     const suffix = `w${testInfo.workerIndex}-${Date.now().toString(36).slice(-5)}`
     await use(suffix)
   },

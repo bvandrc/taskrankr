@@ -110,6 +110,8 @@
       "!!**/dev-dist",
       "!**/node_modules",
       "!!**/cypress/results",
+      "!!**/playwright/results",
+      "!!**/test-results",
       "!!**/client/public/*.svg",
       "!.cache",
       "!.config",

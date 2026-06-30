@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.6.0",
+    "date": "PENDING",
+    "title": "PENDING",
+    "changes": [
+      "cleanup task form layout",
+      "cleanup text sizing and datepicker layout"
+    ]
+  },
+  {
     "version": "0.5.0",
     "date": "2026-06-26",
     "title": "Change to Firebase Auth",

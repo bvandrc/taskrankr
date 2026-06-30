@@ -52,6 +52,7 @@ export default defineConfig({
       'cypress/e2e/completed-tasks.cy.ts',
       'cypress/e2e/completed-subtasks.cy.ts',
       'cypress/e2e/hiding-subtasks.cy.ts',
+      'cypress/e2e/edit-task.cy.ts',
     ],
     setupNodeEvents(on, config) {
       if (getApps().length === 0) {

@@ -42,12 +42,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
 
   return (
     <FormItem>
-      <FormLabel
-        className="text-[10px] uppercase tracking-wider text-muted-foreground"
-        isRequired={isRequired}
-      >
-        {label}
-      </FormLabel>
+      <FormLabel isRequired={isRequired}>{label}</FormLabel>
       <Select
         onValueChange={(v) =>
           field.onChange(
@@ -68,7 +63,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
             <SelectValue placeholder="Select..." />
           </SelectTrigger>
         </FormControl>
-        <SelectContent className="bg-card border-white/10 z-[200]">
+        <SelectContent className="bg-card border-white/10 z-200">
           {showNoneOption && (
             <SelectItem
               value={NONE_VALUE}
@@ -94,7 +89,7 @@ export const RankFieldSelect = <FieldName extends RankField>({
           ))}
         </SelectContent>
       </Select>
-      {hasError && <p className="text-[10px] text-danger mt-1">Required</p>}
+      {hasError && <p className="text-xs text-danger mt-1">Required</p>}
     </FormItem>
   )
 }

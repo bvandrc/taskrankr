@@ -60,7 +60,7 @@ test.describe('Create Subtasks', () => {
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
-    // STEP 2: Edit root task, add a second subtask
+    // STEP 3: Edit root task, add a second subtask
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [subtask])

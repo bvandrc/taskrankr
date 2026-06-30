@@ -31,7 +31,7 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    // STEP: Create task already marked as completed
+    // STEP 1: Create task already marked as completed
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
     await getTaskForm(0)
@@ -55,7 +55,7 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    // STEP: Create task
+    // STEP 1: Create task
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
     await clickSubmitBtnCreate(getTaskForm(0), {
@@ -63,7 +63,7 @@ test.describe('Completed Tasks', () => {
     })
     checkNumCalls({ create: 1, update: 0 })
 
-    // STEP: Edit task, mark as completed
+    // STEP 2: Edit task, mark as completed
     await openTaskEditForm(task)
     await getTaskForm(0)
       .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
@@ -86,7 +86,7 @@ test.describe('Completed Tasks', () => {
     }
     const completedTask = { ...task, status: TaskStatus.COMPLETED }
 
-    // STEP: Create task
+    // STEP 1: Create task
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
     await clickSubmitBtnCreate(getTaskForm(0), {
@@ -94,7 +94,7 @@ test.describe('Completed Tasks', () => {
     })
     checkNumCalls({ create: 1, update: 0 })
 
-    // STEP: Complete task via status change dialog
+    // STEP 2: Complete task via status change dialog
     await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
     checkNumCalls({ create: 1, update: 1 })
 

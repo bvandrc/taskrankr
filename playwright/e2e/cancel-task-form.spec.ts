@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { checkTasksDontExist } from '@test/support/utils/api'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
@@ -25,10 +26,7 @@ for (const { contextName, isEdit } of [
 
     if (!isEdit) {
       test('cancel on create form before adding any subtask — dialog closes, no task created', async ({
-        page,
-        isLoggedIn,
         taskName,
-        requestTracker,
       }) => {
         const rootTask = {
           ...DefaultTaskFields,
@@ -36,24 +34,22 @@ for (const { contextName, isEdit } of [
           status: TaskStatus.PINNED,
         }
 
-        await page.locator(Selectors.CREATE_TASK_BTN).click()
+        await getPage().locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
         await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
 
         await expect(
-          page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
+          getPage().locator(TaskForm.CANCEL_CONFIRM_DIALOG),
         ).not.toBeAttached()
-        await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
+        await expect(getPage().locator(TaskForm.FORM)).not.toBeAttached()
         await checkTasksDontExist([rootTask])
-        checkNumCalls(requestTracker, { create: 0, update: 0 })
+        checkNumCalls({ create: 0, update: 0 })
       })
     }
 
     test('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -73,7 +69,7 @@ for (const { contextName, isEdit } of [
           newTasks: [rootTask],
         })
         await openTaskEditForm(rootTask)
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
@@ -98,18 +94,16 @@ for (const { contextName, isEdit } of [
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
       await checkTasksDontExist([subtask])
       if (isEdit) {
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await checkTasksDontExist([rootTask])
-        checkNumCalls(requestTracker, { create: 0, update: 0 })
+        checkNumCalls({ create: 0, update: 0 })
       }
     })
 
     test('cancel on parent form after multiple subtasks — correct count in dialog, deny/confirm flows', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -134,7 +128,7 @@ for (const { contextName, isEdit } of [
           newTasks: [rootTask],
         })
         await openTaskEditForm(rootTask)
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
@@ -176,18 +170,16 @@ for (const { contextName, isEdit } of [
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
       await checkTasksDontExist([subtask, subtask2])
       if (isEdit) {
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await checkTasksDontExist([rootTask])
-        checkNumCalls(requestTracker, { create: 0, update: 0 })
+        checkNumCalls({ create: 0, update: 0 })
       }
     })
 
     test('cancel on subtask form navigates back to parent, then cancel parent discards without confirmation', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -207,7 +199,7 @@ for (const { contextName, isEdit } of [
           newTasks: [rootTask],
         })
         await openTaskEditForm(rootTask)
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
@@ -228,10 +220,10 @@ for (const { contextName, isEdit } of [
       ).not.toBeAttached()
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
       if (isEdit) {
-        checkNumCalls(requestTracker, { create: 1, update: 0 })
+        checkNumCalls({ create: 1, update: 0 })
       } else {
         await checkTasksDontExist([rootTask, subtask])
-        checkNumCalls(requestTracker, { create: 0, update: 0 })
+        checkNumCalls({ create: 0, update: 0 })
       }
     })
   })

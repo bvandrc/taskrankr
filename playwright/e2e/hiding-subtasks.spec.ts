@@ -13,7 +13,7 @@ import {
 import { openTaskEditForm } from '@test/support/utils/task-tree'
 
 test.describe('Hiding Subtasks', () => {
-  test.beforeEach(async ({ page, isLoggedIn, taskName, requestTracker }) => {
+  test.beforeEach(async ({ page, isLoggedIn, taskName }) => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
 
     const rootTask = {
@@ -49,14 +49,12 @@ test.describe('Hiding Subtasks', () => {
     await clickSubmitBtnCreate(form0, {
       newTasks: [rootTask, openSubtask, completedSubtask],
     })
-    checkNumCalls(requestTracker, { create: 3, update: 0 })
+    checkNumCalls({ create: 3, update: 0 })
 
     await openTaskEditForm(rootTask)
   })
 
   test('shows and hides hidden subtasks via the toggle button', async ({
-    page,
-    isLoggedIn,
     taskName,
   }) => {
     const openSubtask = {
@@ -81,8 +79,6 @@ test.describe('Hiding Subtasks', () => {
   })
 
   test('preserves show-hidden state after saving a subtask form and returning to parent', async ({
-    page,
-    isLoggedIn,
     taskName,
   }) => {
     const openSubtask = {
@@ -108,8 +104,6 @@ test.describe('Hiding Subtasks', () => {
   })
 
   test('preserves show-hidden state after cancelling a subtask form and returning to parent', async ({
-    page,
-    isLoggedIn,
     taskName,
   }) => {
     const openSubtask = {

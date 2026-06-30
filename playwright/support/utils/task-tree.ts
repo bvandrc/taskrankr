@@ -48,7 +48,7 @@ async function checkTitleAndSubtasks(
   tier: number,
   settings: FieldConfig,
 ): Promise<void> {
-  const page = getPage()
+  const _page = getPage()
   const title = getTaskCardTitle(task)
   if (tier > 0 && task.status === TaskStatus.COMPLETED) {
     await expect(title).toHaveClass(/line-through/)

@@ -24,9 +24,7 @@ test.describe('Create Subtasks', () => {
 
   test('create a subtask, check appears in tree', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -58,7 +56,7 @@ test.describe('Create Subtasks', () => {
     })
 
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
-    checkNumCalls(requestTracker, { create: 2, update: 0 })
+    checkNumCalls({ create: 2, update: 0 })
 
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
@@ -78,14 +76,12 @@ test.describe('Create Subtasks', () => {
       ...rootTask,
       subtasks: [subtask, subtask2],
     })
-    checkNumCalls(requestTracker, { create: 3, update: 1 })
+    checkNumCalls({ create: 3, update: 1 })
   })
 
   test('create multiple subtasks, check appear in tree', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -130,7 +126,7 @@ test.describe('Create Subtasks', () => {
       ...rootTask,
       subtasks: [subtask, subtask2],
     })
-    checkNumCalls(requestTracker, { create: 3, update: 0 })
+    checkNumCalls({ create: 3, update: 0 })
 
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
@@ -149,14 +145,12 @@ test.describe('Create Subtasks', () => {
       ...rootTask,
       subtasks: [subtask, subtask2, subtask3],
     })
-    checkNumCalls(requestTracker, { create: 4, update: 1 })
+    checkNumCalls({ create: 4, update: 1 })
   })
 
   test('create nested subtasks, ensure appear in tree', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -208,15 +202,13 @@ test.describe('Create Subtasks', () => {
       ...rootTask,
       subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
     })
-    checkNumCalls(requestTracker, { create: 4, update: 0 })
+    checkNumCalls({ create: 4, update: 0 })
   })
 
   test.describe('Adding subtasks to a completed task', () => {
     test('adding open subtask — save dialog appears, parent re-opens on home page', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -261,7 +253,6 @@ test.describe('Create Subtasks', () => {
 
     test('adding completed subtask — no dialog, parent stays on completed page', async ({
       page,
-      isLoggedIn,
       taskName,
     }) => {
       const rootTask = {

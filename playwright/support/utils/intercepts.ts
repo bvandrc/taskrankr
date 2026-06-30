@@ -2,8 +2,8 @@ import { expect } from '@playwright/test'
 
 import type { Task } from '../../../shared/schema'
 import { Selectors } from '../constants'
-import { type RequestCounts, waitForCreate, waitForUpdate } from '../fixtures'
-import { getIsLoggedIn, getPage } from '../page-context'
+import { waitForCreate, waitForUpdate } from '../fixtures'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &
@@ -18,7 +18,7 @@ export type SubmitBtnArgs = {
 export async function maybeWaitForResponses(
   type: 'create' | 'update',
   count: number,
-  expectedStatus: number,
+  _expectedStatus: number,
 ): Promise<void> {
   if (!getIsLoggedIn() || count === 0) return
   const waiter = type === 'create' ? waitForCreate(count) : waitForUpdate(count)
@@ -26,15 +26,13 @@ export async function maybeWaitForResponses(
   await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 }
 
-export function checkNumCalls(
-  tracker: RequestCounts,
-  expected: {
-    create?: number
-    update?: number
-    delete?: number
-    updateSettings?: number
-  },
-) {
+export function checkNumCalls(expected: {
+  create?: number
+  update?: number
+  delete?: number
+  updateSettings?: number
+}) {
+  const tracker = getRequestTracker()
   // In guest mode, no API calls are expected regardless of the passed values
   const effectiveExpected = getIsLoggedIn()
     ? expected

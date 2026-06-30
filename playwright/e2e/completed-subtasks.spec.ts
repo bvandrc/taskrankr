@@ -48,9 +48,7 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via New Task Form - present in main tree as crossed out, not in completed page', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -77,7 +75,7 @@ test.describe('Completed Subtasks', () => {
     await clickSubmitBtnCreate(form0, {
       newTasks: [rootTask, completedSubtask],
     })
-    checkNumCalls(requestTracker, { create: 2, update: 0 })
+    checkNumCalls({ create: 2, update: 0 })
 
     await expandAndCheckTree({
       ...rootTask,
@@ -90,9 +88,7 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via Edit Form - present in main tree as crossed out, not in completed page', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -107,7 +103,7 @@ test.describe('Completed Subtasks', () => {
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
     await createRootWithUncompletedSubtask(rootTask, subtask)
-    checkNumCalls(requestTracker, { create: 2, update: 0 })
+    checkNumCalls({ create: 2, update: 0 })
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
     await openTaskEditForm(subtask)
@@ -117,7 +113,7 @@ test.describe('Completed Subtasks', () => {
     await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [completedSubtask],
     })
-    checkNumCalls(requestTracker, { create: 2, update: 1 })
+    checkNumCalls({ create: 2, update: 1 })
 
     await expandAndCheckTree({
       ...rootTask,
@@ -130,9 +126,7 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via Change Status Dialog - present in main tree as crossed out, not in completed page', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -147,11 +141,11 @@ test.describe('Completed Subtasks', () => {
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
     await createRootWithUncompletedSubtask(rootTask, subtask)
-    checkNumCalls(requestTracker, { create: 2, update: 0 })
+    checkNumCalls({ create: 2, update: 0 })
     await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
     await changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
-    checkNumCalls(requestTracker, { create: 2, update: 1 })
+    checkNumCalls({ create: 2, update: 1 })
 
     await expandAndCheckTree({
       ...rootTask,
@@ -165,9 +159,7 @@ test.describe('Completed Subtasks', () => {
   test.describe('Auto-complete parent when all subtasks completed', () => {
     test('auto-completes parent when inheritCompletionState is enabled first, then last subtask becomes completed', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -195,13 +187,13 @@ test.describe('Completed Subtasks', () => {
       await clickSubmitBtnCreate(form0, {
         newTasks: [rootTask, subtask],
       })
-      checkNumCalls(requestTracker, { create: 2, update: 0 })
+      checkNumCalls({ create: 2, update: 0 })
       await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       await changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
         sideEffects: [completedRootTask],
       })
-      checkNumCalls(requestTracker, { create: 2, update: 2 })
+      checkNumCalls({ create: 2, update: 2 })
       await checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
@@ -209,9 +201,7 @@ test.describe('Completed Subtasks', () => {
 
     test('auto-completes parent when inheritCompletionState becomes enabled after all subtasks already completed', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -252,7 +242,7 @@ test.describe('Completed Subtasks', () => {
       await clickSubmitBtnUpdate(getTaskForm(0), {
         updatedTasks: [completedRootTask],
       })
-      checkNumCalls(requestTracker, { create: 2, update: 1 })
+      checkNumCalls({ create: 2, update: 1 })
       await checkCompletedPage([
         { ...completedRootTask, subtasks: [completedSubtask] },
       ])
@@ -260,9 +250,7 @@ test.describe('Completed Subtasks', () => {
 
     test('auto-completes grandparent chain when completing the last subtask', async ({
       page,
-      isLoggedIn,
       taskName,
-      requestTracker,
     }) => {
       const rootTask = {
         ...DefaultTaskFields,
@@ -296,7 +284,7 @@ test.describe('Completed Subtasks', () => {
       await clickSubmitBtnCreate(form0, {
         newTasks: [rootTask, subtask],
       })
-      checkNumCalls(requestTracker, { create: 2, update: 0 })
+      checkNumCalls({ create: 2, update: 0 })
       await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       await openTaskEditForm(subtask)
@@ -311,7 +299,7 @@ test.describe('Completed Subtasks', () => {
       await clickSubmitBtnUpdate(editForm1, {
         updatedTasks: [subtask],
       })
-      checkNumCalls(requestTracker, { create: 3, update: 1 })
+      checkNumCalls({ create: 3, update: 1 })
       await expandAndCheckTree({
         ...rootTask,
         subtasks: [{ ...subtask, subtasks: [subtask2] }],
@@ -320,7 +308,7 @@ test.describe('Completed Subtasks', () => {
       await changeStatusViaStatusChangeDialog(subtask2, TaskStatus.COMPLETED, {
         sideEffects: [completedSubtask, completedRootTask],
       })
-      checkNumCalls(requestTracker, { create: 3, update: 4 })
+      checkNumCalls({ create: 3, update: 4 })
       await checkCompletedPage([
         {
           ...completedRootTask,
@@ -334,9 +322,7 @@ test.describe('Completed Subtasks', () => {
     test.describe('When creating a new root task', () => {
       test('via completion checkbox in new subtask form', async ({
         page,
-        isLoggedIn,
         taskName,
-        requestTracker,
       }) => {
         const rootTask = {
           ...DefaultTaskFields,
@@ -380,15 +366,13 @@ test.describe('Completed Subtasks', () => {
         await clickSubmitBtnCreate(form0, {
           newTasks: [rootTask, subtask, completedSubtask2],
         })
-        checkNumCalls(requestTracker, { create: 3, update: 0 })
+        checkNumCalls({ create: 3, update: 0 })
         await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
 
       test('via completion checkbox in edit subtask form', async ({
         page,
-        isLoggedIn,
         taskName,
-        requestTracker,
       }) => {
         const rootTask = {
           ...DefaultTaskFields,
@@ -435,18 +419,13 @@ test.describe('Completed Subtasks', () => {
         await clickSubmitBtnCreate(form0, {
           newTasks: [rootTask, subtask, completedSubtask2],
         })
-        checkNumCalls(requestTracker, { create: 3, update: 0 })
+        checkNumCalls({ create: 3, update: 0 })
         await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
     })
 
     test.describe('When editing an existing root task', () => {
-      test('with subtasks already completed', async ({
-        page,
-        isLoggedIn,
-        taskName,
-        requestTracker,
-      }) => {
+      test('with subtasks already completed', async ({ page, taskName }) => {
         const rootTask = {
           ...DefaultTaskFields,
           name: taskName('E2E Root Task'),
@@ -487,7 +466,7 @@ test.describe('Completed Subtasks', () => {
           ...rootTask,
           subtasks: [subtask, completedSubtask2],
         })
-        checkNumCalls(requestTracker, { create: 3, update: 0 })
+        checkNumCalls({ create: 3, update: 0 })
 
         await openTaskEditForm(rootTask)
         const editForm0 = getTaskForm(0)
@@ -499,7 +478,7 @@ test.describe('Completed Subtasks', () => {
         await clickSubmitBtnUpdate(editForm0, {
           updatedTasks: [rootTask],
         })
-        checkNumCalls(requestTracker, { create: 3, update: 1 })
+        checkNumCalls({ create: 3, update: 1 })
         await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
     })

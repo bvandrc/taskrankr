@@ -23,9 +23,7 @@ test.describe('Assign Subtasks', () => {
 
   test('assign an existing orphaned task as a subtask of a task', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const rootTask = {
       ...DefaultTaskFields,
@@ -83,7 +81,7 @@ test.describe('Assign Subtasks', () => {
       ...rootTask,
       subtasks: [orphanTask, newSubtask],
     })
-    checkNumCalls(requestTracker, { create: 4, update: 1 })
+    checkNumCalls({ create: 4, update: 1 })
 
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
@@ -102,6 +100,6 @@ test.describe('Assign Subtasks', () => {
       ...rootTask,
       subtasks: [orphanTask, newSubtask, orphanTask2],
     })
-    checkNumCalls(requestTracker, { create: 4, update: 3 })
+    checkNumCalls({ create: 4, update: 3 })
   })
 })

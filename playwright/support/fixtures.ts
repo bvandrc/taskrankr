@@ -3,7 +3,12 @@ import { test as baseTest, expect, type Response } from '@playwright/test'
 import { TestPaths } from '~/shared/constants'
 import type { Task } from '~/shared/schema'
 import { ApiPaths } from './constants'
-import { getPage, setIsLoggedIn, setPage } from './page-context'
+import {
+  getPage,
+  setIsLoggedIn,
+  setPage,
+  setRequestTracker,
+} from './page-context'
 
 export type UserMode = 'user' | 'guest'
 
@@ -19,8 +24,7 @@ type Fixtures = {
   isLoggedIn: boolean
   testSuffix: string
   taskName: (baseName: string) => string
-  requestTracker: RequestCounts
-  _setup: void
+  _setup: undefined
 }
 
 function isCreateResponse(r: Response) {
@@ -95,46 +99,43 @@ export const test = baseTest.extend<Fixtures>({
     await use((baseName: string) => `${baseName} [${testSuffix}]`)
   },
 
-  requestTracker: async ({ page, isLoggedIn }, use) => {
-    const counts: RequestCounts = {
-      create: 0,
-      update: 0,
-      delete: 0,
-      updateSettings: 0,
-    }
-
-    if (isLoggedIn) {
-      page.on('response', (r) => {
-        const url = r.url()
-        const method = r.request().method()
-        if (
-          url.includes(ApiPaths.GET_TASKS) &&
-          method === 'POST' &&
-          !url.includes('/import')
-        )
-          counts.create++
-        if (ApiPaths.UPDATE_TASK.test(url) && method === 'PATCH')
-          counts.update++
-        if (ApiPaths.DELETE_TASK.test(url) && method === 'DELETE')
-          counts.delete++
-        if (url.includes(ApiPaths.UPDATE_SETTINGS) && method === 'PATCH')
-          counts.updateSettings++
-      })
-    }
-
-    await use(counts)
-  },
-
   _setup: [
     async ({ page, isLoggedIn, testSuffix }, use) => {
       setPage(page)
       setIsLoggedIn(isLoggedIn)
 
+      const counts: RequestCounts = {
+        create: 0,
+        update: 0,
+        delete: 0,
+        updateSettings: 0,
+      }
+      setRequestTracker(counts)
+
+      if (isLoggedIn) {
+        page.on('response', (r) => {
+          const url = r.url()
+          const method = r.request().method()
+          if (
+            url.includes(ApiPaths.GET_TASKS) &&
+            method === 'POST' &&
+            !url.includes('/import')
+          )
+            counts.create++
+          if (ApiPaths.UPDATE_TASK.test(url) && method === 'PATCH')
+            counts.update++
+          if (ApiPaths.DELETE_TASK.test(url) && method === 'DELETE')
+            counts.delete++
+          if (url.includes(ApiPaths.UPDATE_SETTINGS) && method === 'PATCH')
+            counts.updateSettings++
+        })
+      }
+
       if (isLoggedIn) {
         await page.request.delete(TestPaths.TEST_RESET_SETTINGS)
       }
 
-      await use()
+      await use(undefined)
 
       // Clean up only tasks created by this test
       if (isLoggedIn) {

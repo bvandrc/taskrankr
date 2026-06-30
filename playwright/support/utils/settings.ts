@@ -3,8 +3,7 @@ import type { Entries } from 'type-fest'
 
 import type { FieldConfig, UserSettings } from '../../../shared/schema'
 import { Selectors } from '../constants'
-import type { RequestCounts } from '../fixtures'
-import { getIsLoggedIn, getPage } from '../page-context'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
 import { getSettings } from './api'
 
 const { Menu, Settings } = Selectors
@@ -26,20 +25,16 @@ async function toggleState(selector: string, newState: boolean): Promise<void> {
   )
 }
 
-async function maybeWaitForSettingsUpdate(
-  tracker: RequestCounts,
-): Promise<void> {
+async function maybeWaitForSettingsUpdate(): Promise<void> {
   if (!getIsLoggedIn()) return
+  const tracker = getRequestTracker()
   const expected = tracker.updateSettings + 1
   await expect(() => {
     expect(tracker.updateSettings).toBeGreaterThanOrEqual(expected)
   }).toPass({ timeout: 5000 })
 }
 
-async function setFieldConfig(
-  tracker: RequestCounts,
-  targetConfig: FieldConfig,
-): Promise<void> {
+async function setFieldConfig(targetConfig: FieldConfig): Promise<void> {
   for (const [field, { visible, required }] of Object.entries(
     targetConfig,
   ) as Entries<FieldConfig>) {
@@ -49,26 +44,25 @@ async function setFieldConfig(
     const isVisible = await getCheckedState(visibleSel)
     if (isVisible !== visible) {
       await toggleState(visibleSel, visible)
-      await maybeWaitForSettingsUpdate(tracker)
+      await maybeWaitForSettingsUpdate()
     }
 
     const isRequired = await getCheckedState(requiredSel)
     if (isRequired !== required) {
       await toggleState(requiredSel, required)
-      await maybeWaitForSettingsUpdate(tracker)
+      await maybeWaitForSettingsUpdate()
     }
   }
 }
 
 export async function setSettings(
-  tracker: RequestCounts,
   settings: Pick<UserSettings, 'fieldConfig'>,
 ): Promise<void> {
   const page = getPage()
   await page.locator(Selectors.MENU_BTN).click()
   await page.locator(Menu.SETTINGS).click()
 
-  await setFieldConfig(tracker, settings.fieldConfig)
+  await setFieldConfig(settings.fieldConfig)
 
   if (getIsLoggedIn()) {
     const current = await getSettings()

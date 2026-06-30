@@ -2,6 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
+import { getPage } from '@test/support/page-context'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
 import {
@@ -16,33 +17,26 @@ test.describe('Task Creation', () => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  test('create a task, check displays in main tree', async ({
-    page,
-    isLoggedIn,
-    taskName,
-    requestTracker,
-  }) => {
+  test('create a task, check displays in main tree', async ({ taskName }) => {
     const task = {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
     }
 
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
     await clickSubmitBtnCreate(getTaskForm(0), {
       newTasks: [task],
     })
 
     await expandAndCheckTree(task)
-    checkNumCalls(requestTracker, { create: 1 })
+    checkNumCalls({ create: 1 })
   })
 
   test('change rank field visibility/required in settings, check form matches new settings, create task', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const fieldConfig = {
       priority: { visible: true, required: true },
@@ -59,8 +53,8 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     }
 
-    await setSettings(requestTracker, { fieldConfig })
-    checkNumCalls(requestTracker, { updateSettings: 3 })
+    await setSettings({ fieldConfig })
+    checkNumCalls({ updateSettings: 3 })
     await page.locator(Selectors.BACK_BTN).click()
 
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -71,6 +65,6 @@ test.describe('Task Creation', () => {
       newTasks: [task],
     })
     await expandAndCheckTree(task, { settings: fieldConfig })
-    checkNumCalls(requestTracker, { create: 1 })
+    checkNumCalls({ create: 1 })
   })
 })

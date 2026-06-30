@@ -20,9 +20,7 @@ test.describe('Edit Task', () => {
 
   test('date created shows today and can be changed via the date picker', async ({
     page,
-    isLoggedIn,
     taskName,
-    requestTracker,
   }) => {
     const task = {
       ...DefaultTaskFields,
@@ -53,7 +51,7 @@ test.describe('Edit Task', () => {
     await clickSubmitBtnUpdate(getTaskForm(0), {
       updatedTasks: [task],
     })
-    checkNumCalls(requestTracker, { create: 1, update: 1 })
+    checkNumCalls({ create: 1, update: 1 })
 
     await openTaskEditForm(task)
     await checkDate(

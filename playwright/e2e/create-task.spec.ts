@@ -3,6 +3,7 @@ import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
+import type { CreatedTask } from '@test/support/utils/intercepts'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
 import {

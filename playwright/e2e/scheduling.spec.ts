@@ -17,11 +17,6 @@ import {
 } from '@test/support/utils/task-tree'
 
 test.describe('Scheduling', () => {
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-  })
-
   const today = new Date()
 
   test.beforeEach(async ({ page, isLoggedIn }) => {

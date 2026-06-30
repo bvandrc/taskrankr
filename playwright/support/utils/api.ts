@@ -1,9 +1,15 @@
 import { expect, type Page } from '@playwright/test'
 import { cloneDeepWith } from 'es-toolkit'
+import type { Jsonify, PartialDeep } from 'type-fest'
 
 import type { Task, UserSettings } from '../../../shared/schema'
 import { ApiPaths } from '../constants'
 import type { CreatedTask } from './intercepts'
+
+const normalizeTask = <T extends PartialDeep<Task>>(task: T): Jsonify<T> =>
+  cloneDeepWith(task, (v) =>
+    v instanceof Date ? v.toISOString() : undefined,
+  ) as Jsonify<T>
 
 export function getLocalStateTasks(
   page: Page,
@@ -24,12 +30,6 @@ export async function getApiTasks(page: Page): Promise<Task[]> {
 export async function getSettings(page: Page): Promise<UserSettings> {
   const res = await page.request.get(ApiPaths.GET_SETTINGS)
   return res.json()
-}
-
-function normalizeTask(task: CreatedTask): Record<string, unknown> {
-  return cloneDeepWith(task, (v) =>
-    v instanceof Date ? v.toISOString() : undefined,
-  ) as Record<string, unknown>
 }
 
 export async function checkTasksExist(

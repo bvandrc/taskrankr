@@ -43,9 +43,9 @@ export async function checkTasksExistBackend(
     )
 
     for (const expectedTask of tasks) {
-      const found = localTasks.find((t) => t.name === expectedTask.name)
-      expect(found, `Task "${expectedTask.name}" in local state`).toBeDefined()
-      if (found) expect(found).toMatchObject(normalizeTask(expectedTask))
+      const t = localTasks.find((t) => t.name === expectedTask.name)
+      expect(t, `Task "${expectedTask.name}" in local state`).toBeDefined()
+      if (t) expect(t).toMatchObject(normalizeTask(expectedTask))
     }
   }).toPass({ timeout: 8000 })
 
@@ -53,9 +53,9 @@ export async function checkTasksExistBackend(
     await expect(async () => {
       const apiTasks = await getApiTasks()
       for (const expectedTask of tasks) {
-        const found = apiTasks.find((t) => t.name === expectedTask.name)
-        expect(found, `Task "${expectedTask.name}" in backend`).toBeDefined()
-        if (found) expect(found).toMatchObject(normalizeTask(expectedTask))
+        const t = apiTasks.find((t) => t.name === expectedTask.name)
+        expect(t, `Task "${expectedTask.name}" in backend`).toBeDefined()
+        if (t) expect(t).toMatchObject(normalizeTask(expectedTask))
       }
     }).toPass({ timeout: 8000 })
   }

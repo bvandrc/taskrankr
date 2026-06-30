@@ -37,9 +37,9 @@ export async function checkTasksExistBackend(
     ).toEqual(expect.arrayContaining(expectedNames))
 
     // Isolated browser context means no cross-test contamination in local state
-    const uniqueNames = new Set(localTasks.map((t) => t.name))
-    expect(localTasks, 'no duplicate tasks in local state').toHaveLength(
-      uniqueNames.size,
+    const names = localTasks.map((t) => t.name)
+    expect(names, 'no duplicate tasks in local state').toHaveLength(
+      Array.from(new Set(names)).length,
     )
 
     for (const expectedTask of tasks) {

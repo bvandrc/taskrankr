@@ -20,6 +20,17 @@ import {
 const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
 
 test.describe('Create Subtasks', () => {
+  test.beforeEach(() => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+
+    // STEP 1: Open new task form and fill root task
+    cy.get(Selectors.CREATE_TASK_BTN).click()
+    getTaskForm(0).within(async () => {
+      await fillTaskForm(rootTask)
+    })
+  })
+
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Level Task',
@@ -51,17 +62,6 @@ test.describe('Create Subtasks', () => {
     ...subtask,
     status: TaskStatus.COMPLETED,
   } as const satisfies CreatedTask
-
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-
-    // STEP 1: Open new task form and fill root task
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    getTaskForm(0).within(async () => {
-      await fillTaskForm(rootTask)
-    })
-  })
 
   test('create a subtask, check appears in tree', async () => {
     // STEP 2: Add subtask and create

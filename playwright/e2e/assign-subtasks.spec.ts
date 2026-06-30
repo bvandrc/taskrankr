@@ -19,6 +19,20 @@ import {
 const { TaskForm } = Selectors
 
 test.describe('Assign Subtasks', () => {
+  test.beforeEach(async () => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+
+    // STEP: Create orphan tasks
+    cy.get(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(orphanTask)
+    await clickSubmitBtnCreate({ newTasks: [orphanTask] })
+
+    cy.get(Selectors.CREATE_TASK_BTN).click()
+    await fillTaskForm(orphanTask2)
+    await clickSubmitBtnCreate({ newTasks: [orphanTask2] })
+  })
+
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Task',
@@ -45,20 +59,6 @@ test.describe('Assign Subtasks', () => {
     name: 'E2E Brand New Subtask',
     status: TaskStatus.OPEN,
   } as const satisfies CreatedTask
-
-  test.beforeEach(async () => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-
-    // STEP: Create orphan tasks
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(orphanTask)
-    await clickSubmitBtnCreate({ newTasks: [orphanTask] })
-
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(orphanTask2)
-    await clickSubmitBtnCreate({ newTasks: [orphanTask2] })
-  })
 
   test('assign an existing orphaned task as a subtask of a task', async () => {
     // STEP 1: Create root task, create new subtask, assign sibling orphanTask

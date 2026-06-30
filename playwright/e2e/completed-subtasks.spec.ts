@@ -23,6 +23,11 @@ import {
 const { TaskForm } = Selectors
 
 test.describe('Completed Subtasks', () => {
+  test.beforeEach(() => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+  })
+
   const rootTask = {
     ...DefaultTaskFields,
     name: 'E2E Root Task',
@@ -76,11 +81,6 @@ test.describe('Completed Subtasks', () => {
 
     checkNumCalls({ create: 2, update: 0 })
   }
-
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-  })
 
   for (const { testTitle, markSubtaskComplete } of [
     {

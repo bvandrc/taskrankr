@@ -13,12 +13,6 @@ import { openTaskEditForm } from '@test/support/utils/task-tree'
 const { TaskForm } = Selectors
 
 test.describe('Edit Task', () => {
-  const task = {
-    ...DefaultTaskFields,
-    name: 'E2E Edit Task',
-    status: TaskStatus.PINNED,
-  } as const satisfies CreatedTask
-
   test.beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
@@ -28,6 +22,12 @@ test.describe('Edit Task', () => {
     await fillTaskForm(task)
     await clickSubmitBtnCreate({ newTasks: [task] })
   })
+
+  const task = {
+    ...DefaultTaskFields,
+    name: 'E2E Edit Task',
+    status: TaskStatus.PINNED,
+  } as const satisfies CreatedTask
 
   test('date created shows today and can be changed via the date picker', async () => {
     const today = new Date()

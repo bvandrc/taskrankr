@@ -17,6 +17,11 @@ import {
 const { TaskForm } = Selectors
 
 test.describe('Scheduling', () => {
+  test.beforeEach(() => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+  })
+
   const today = new Date()
 
   const baseTask = {
@@ -24,11 +29,6 @@ test.describe('Scheduling', () => {
     name: 'E2E Test Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
-
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-  })
 
   test('create a task with a due date, verify due badge displays on task card', async () => {
     const taskWithDueDate = {

@@ -15,24 +15,6 @@ import { openTaskEditForm } from '@test/support/utils/task-tree'
 const { TaskForm } = Selectors
 
 test.describe('Hiding Subtasks', () => {
-  const rootTask = {
-    ...DefaultTaskFields,
-    name: 'E2E Root Task',
-    status: TaskStatus.PINNED,
-  } as const satisfies CreatedTask
-
-  const openSubtask = {
-    ...DefaultTaskFields,
-    name: 'E2E Open Subtask',
-    status: TaskStatus.OPEN,
-  } as const satisfies CreatedTask
-
-  const completedSubtask = {
-    ...DefaultTaskFields,
-    name: 'E2E Completed Subtask',
-    status: TaskStatus.COMPLETED,
-  } as const satisfies CreatedTask
-
   test.beforeEach(async () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
@@ -73,6 +55,24 @@ test.describe('Hiding Subtasks', () => {
 
     await openTaskEditForm(rootTask)
   })
+
+  const rootTask = {
+    ...DefaultTaskFields,
+    name: 'E2E Root Task',
+    status: TaskStatus.PINNED,
+  } as const satisfies CreatedTask
+
+  const openSubtask = {
+    ...DefaultTaskFields,
+    name: 'E2E Open Subtask',
+    status: TaskStatus.OPEN,
+  } as const satisfies CreatedTask
+
+  const completedSubtask = {
+    ...DefaultTaskFields,
+    name: 'E2E Completed Subtask',
+    status: TaskStatus.COMPLETED,
+  } as const satisfies CreatedTask
 
   test('shows and hides hidden subtasks via the toggle button', () => {
     getTaskForm(0).within(async () => {

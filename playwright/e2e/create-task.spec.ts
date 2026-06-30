@@ -11,16 +11,16 @@ import {
 import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
 test.describe('Task Creation', () => {
+  test.beforeEach(() => {
+    const loggedIn = isLoggedIn()
+    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+  })
+
   const task = {
     ...DefaultTaskFields,
     name: 'E2E Root Level Task',
     status: TaskStatus.PINNED,
   } as const satisfies CreatedTask
-
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-  })
 
   test('create a task, check displays in main tree', async () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()

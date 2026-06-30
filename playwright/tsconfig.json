@@ -8,7 +8,7 @@
     "moduleResolution": "bundler",
     "strict": true,
     "paths": {
-      "@cypress/support/*": ["./support/*"],
+      "@test/support/*": ["./support/*"],
       "~/client*": ["../client/src/*"],
       "~/shared/*": ["../shared/*"],
       "@/*": ["../client/src/*"] // from root tsconfig aliases, but don't use this one in cypress code

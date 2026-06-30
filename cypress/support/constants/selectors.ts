@@ -33,6 +33,8 @@ export const Selectors = {
     EXPAND_BTN: testIdStartsWith('button-expand-'),
     COLLAPSE_BTN: testIdStartsWith('button-collapse-'),
     DUE_BADGE: testId('badge-due'),
+    IN_PROGRESS_BADGE: testId('badge-in-progress'),
+    RankFieldBadge: (field: RankField) => testId(`badge-${field}`),
   },
   TaskForm: {
     FORM: testId('task-form'),

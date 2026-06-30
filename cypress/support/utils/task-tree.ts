@@ -1,7 +1,12 @@
 import { format } from 'date-fns'
 import type { PickDeep } from 'type-fest'
 
-import { type Task, TaskStatus } from '~/shared/schema'
+import {
+  type RankField,
+  RankFields,
+  type Task,
+  TaskStatus,
+} from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
@@ -10,7 +15,7 @@ const { TaskCard } = Selectors
 
 type TaskTreeNode = PickDeep<
   CreatedTask,
-  'name' | 'status' | 'schedule.dueAt'
+  'name' | 'status' | 'schedule.dueAt' | RankField
 > & { subtasks?: TaskTreeNode[] }
 
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
@@ -45,6 +50,15 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
             .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
         } else {
           cy.wrap($el).find(TaskCard.DUE_BADGE).should('not.exist')
+        }
+        for (const field of RankFields) {
+          const value = task[field]
+          const badge = cy.wrap($el).find(TaskCard.RankFieldBadge(field))
+          if (value != null) {
+            badge.should('have.text', value.toUpperCase())
+          } else {
+            badge.should('not.exist')
+          }
         }
         return cy.wrap($el)
       })

@@ -54,10 +54,12 @@ const Title = ({
 )
 
 const TaskBadge = ({
+  'data-testid': testId,
   value,
   className,
   muted,
 }: {
+  'data-testid': string
   value: string
   className: string
   muted?: boolean
@@ -70,7 +72,7 @@ const TaskBadge = ({
         ? 'text-muted-foreground/50 bg-transparent border-muted/30'
         : className,
     )}
-    data-testid={`badge-${value}`}
+    data-testid={`badge-${testId}`}
   >
     {value}
   </Badge>
@@ -93,6 +95,7 @@ const InProgressBadge = ({
     <TaskBadge
       value="In Progress"
       className="text-blue-400 bg-blue-400/10 border-blue-400/20"
+      data-testid="in-progress"
     />
   </div>
 )
@@ -131,6 +134,7 @@ const RankBadges = ({
           value={value ?? ''}
           className={getRankFieldStyle(field, value, 'opacity-0')}
           muted={isCompleted}
+          data-testid={field}
         />
       )
     })}

@@ -1,3 +1,6 @@
+import { format } from 'date-fns'
+import type { PickDeep } from 'type-fest'
+
 import { type Task, TaskStatus } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { type CreatedTask, waitForUpdate } from './intercepts'
@@ -5,9 +8,10 @@ import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
 
-type TaskTreeNode = Pick<Task, 'name' | 'status'> & {
-  subtasks?: TaskTreeNode[]
-}
+type TaskTreeNode = PickDeep<
+  CreatedTask,
+  'name' | 'status' | 'schedule.dueAt'
+> & { subtasks?: TaskTreeNode[] }
 
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
@@ -33,6 +37,16 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
       )
       .closest(TaskCard.CARD)
       .should('have.attr', 'data-status', task.status)
+      .then(($el) => {
+        if (task.schedule?.dueAt) {
+          cy.wrap($el)
+            .find(TaskCard.DUE_BADGE)
+            .should('be.visible')
+            .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
+        } else {
+          cy.wrap($el).find(TaskCard.DUE_BADGE).should('not.exist')
+        }
+      })
 
   const taskCard = getTaskCard()
 

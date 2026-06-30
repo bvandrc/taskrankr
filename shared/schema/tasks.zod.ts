@@ -8,6 +8,7 @@ import { relations, sql } from 'drizzle-orm'
 import {
   boolean,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -74,6 +75,18 @@ export enum Time {
   HIGHEST = 'highest',
 }
 
+export const SCHEDULE_SEQUENCE = [
+  'hideUntil',
+  ...Object.values(Priority),
+  'dueAt',
+] as const
+
+export const taskScheduleSchema = z.object(
+  createObject(SCHEDULE_SEQUENCE, () => z.coerce.date().optional()),
+)
+
+export type TaskSchedule = z.infer<typeof taskScheduleSchema>
+
 export const taskStatusPgEnum = createPgEnum('status', TaskStatus)
 export const subtaskSortModePgEnum = createPgEnum(
   'subtask_sort_mode',
@@ -108,6 +121,7 @@ export const tasks = pgTable('tasks', {
   inheritCompletionState: boolean('inherit_completion_state')
     .default(false)
     .notNull(),
+  schedule: jsonb('schedule').$type<TaskSchedule>(),
 })
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
@@ -136,6 +150,7 @@ const taskSchemaRefine = {
   // apply default of null so can pass `undefined` from client and have it converted to `null` for the database.
   parentId: z.number().int().nullable().default(null),
   description: z.string().nullable().default(null),
+  schedule: taskScheduleSchema.nullable().default(null),
 } satisfies DrizzleZodDefaultRefine<typeof tasks>
 
 export const taskSchema = createSelectSchema(tasks, taskSchemaRefine)
@@ -175,6 +190,22 @@ export const insertTaskSchemaRefined = (
           code: z.ZodIssueCode.custom,
           path: [field],
           message: 'This field is required',
+        })
+      }
+    }
+
+    const s = data.schedule
+    if (!s) return
+    const sequence = SCHEDULE_SEQUENCE.flatMap((key) => {
+      const date = s[key]
+      return date ? [{ path: ['schedule', key], date, label: key }] : []
+    })
+    for (let i = 1; i < sequence.length; i++) {
+      if (sequence[i].date <= sequence[i - 1].date) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: sequence[i].path,
+          message: `Must be after ${sequence[i - 1].label} date`,
         })
       }
     }

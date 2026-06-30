@@ -1,3 +1,5 @@
+import type { PickDeep } from 'type-fest'
+
 import {
   DEFAULT_FIELD_CONFIG,
   type FieldConfig,
@@ -14,7 +16,10 @@ import { type CreatedTask, waitForCreate, waitForUpdate } from './intercepts'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
 
-type TaskFormData = Pick<Task, 'name' | RankField>
+type TaskFormData = PickDeep<
+  CreatedTask,
+  'name' | 'schedule.hideUntil' | 'schedule.dueAt' | RankField
+>
 
 export const getTaskForm = (tier = 0) =>
   cy.get(`${TaskForm.FORM}[data-tier="${tier}"]`).should('be.visible')
@@ -83,6 +88,15 @@ export const fillTaskForm = (
   cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).should(
     hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
   )
+
+  const { schedule } = task
+  if (schedule) {
+    openMoreSection()
+    if (schedule.hideUntil)
+      cy.get(TaskForm.Schedule.HIDE_UNTIL_PICKER).selectDate(schedule.hideUntil)
+    if (schedule.dueAt)
+      cy.get(TaskForm.Schedule.DUE_AT_PICKER).selectDate(schedule.dueAt)
+  }
 
   cy.log(`**...task form filled (task: ${task.name})**`)
 }
@@ -198,4 +212,8 @@ export const checkTaskFormSubtaskSettings = ({
       .getCheckedState()
       .should('eq', inheritCompletionState)
   }
+}
+
+export const openMoreSection = () => {
+  cy.get(TaskForm.MORE_SECTION).scrollIntoView().click()
 }

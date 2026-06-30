@@ -12,15 +12,12 @@ import type {
 
 import type { TaskWithSubtasks } from '@/types'
 import {
-  type Ease,
-  type Enjoyment,
-  type Priority,
   RankField,
   SubtaskSortMode,
   type Task,
   TaskStatus,
-  type Time,
 } from '~/shared/schema'
+import { getLevelWeight } from '~/shared/utils/task-utils'
 
 export * from '~/shared/utils/task-utils'
 
@@ -44,22 +41,6 @@ export const SORT_DIRECTIONS: Record<SortBy, SortDirection> = {
   [RankField.ENJOYMENT]: SortDirection.DESC,
   [RankField.TIME]: SortDirection.ASC,
 }
-
-const LEVEL_WEIGHTS = {
-  highest: 5,
-  hardest: 5,
-  high: 4,
-  hard: 4,
-  medium: 3,
-  low: 2,
-  easy: 2,
-  lowest: 1,
-  easiest: 1,
-} as const satisfies Record<Priority | Ease | Enjoyment | Time, number>
-
-const getLevelWeight = (
-  level: keyof typeof LEVEL_WEIGHTS | null | undefined,
-): number => (level ? (LEVEL_WEIGHTS[level] ?? 0) : 0)
 
 /** Compares two tasks by a single field, respecting its sort direction. */
 const compareByField = (a: Task, b: Task, field: SortBy): number => {
@@ -219,15 +200,23 @@ export const filterAndSortTree = (
 // *****************************************************************************
 
 /**
- * true iff `task` is hidden because its parent has `autoHideCompleted` enabled
- * and the task is COMPLETED.
+ * true iff `task` should be hidden: either its parent has `autoHideCompleted`
+ * and the task is COMPLETED, or its `schedule.hideUntil` date is in the future.
  */
 export const shouldBeHidden = (
-  task: Pick<Task, 'status' | 'parentId'>,
+  task: Pick<Task, 'status' | 'parentId' | 'schedule'>,
   taskById: Map<number, Task>,
+  now: Date = new Date(),
 ): boolean => {
   const parent = task.parentId != null ? taskById.get(task.parentId) : undefined
-  return Boolean(
-    parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED,
+  if (parent?.autoHideCompleted && task.status === TaskStatus.COMPLETED)
+    return true
+  const hideUntil = task.schedule?.hideUntil
+  if (
+    task.status !== TaskStatus.COMPLETED &&
+    hideUntil != null &&
+    now < hideUntil
   )
+    return true
+  return false
 }

@@ -212,7 +212,12 @@ export const TasksProvider = ({
     (incomingTasks: LocalTask[], source: string) => {
       const { tasks: reconciled, corrections } =
         TaskMutationService.reconcileInheritCompletionState(incomingTasks)
-      setTasks(reconciled)
+
+      const { tasks: finalTasks, patches: scheduledPatches } =
+        TaskMutationService.reconcileScheduledPriority(reconciled)
+
+      setTasks(finalTasks)
+
       if (corrections.length > 0) {
         debugLog.log('reconcile', `inheritCompletionState:${source}`, {
           corrections,
@@ -226,6 +231,22 @@ export const TasksProvider = ({
                 data: {
                   status: c.status,
                 },
+              }) as const,
+          ),
+        )
+      }
+
+      if (scheduledPatches.length > 0) {
+        debugLog.log('reconcile', `scheduledPriority:${source}`, {
+          scheduledPatches,
+        })
+        enqueueMany(
+          scheduledPatches.map(
+            (p) =>
+              ({
+                type: SyncOperationType.UPDATE_TASK,
+                id: p.id,
+                data: p.patch,
               }) as const,
           ),
         )

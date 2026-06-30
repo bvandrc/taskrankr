@@ -32,6 +32,7 @@ export const Selectors = {
     TITLE: testId('task-title'),
     EXPAND_BTN: testIdStartsWith('button-expand-'),
     COLLAPSE_BTN: testIdStartsWith('button-collapse-'),
+    DUE_BADGE: testId('badge-due'),
   },
   TaskForm: {
     FORM: testId('task-form'),
@@ -50,6 +51,12 @@ export const Selectors = {
     AUTOHIDE_COMPLETED_SUBTASKS_SWITCH: testId('switch-auto-hide-completed'),
     SHOW_HIDDEN_BTN: testId('button-show-hidden'), //show hidden subtasks
     EDIT_SUBTASK_BTN: testIdStartsWith('button-edit-subtask-'),
+    MORE_SECTION: testId('more-section'),
+    Schedule: {
+      DUE_AT_PICKER: testId('schedule-dueAt-picker'),
+      CLEAR_DUE_AT_BTN: '[aria-label="Clear Due At"]',
+      HIDE_UNTIL_PICKER: testId('schedule-hideUntil-picker'),
+    },
     // form bns
     SUBMIT_BTN: testId('submit-button'),
     CANCEL_BTN: testId('cancel-button'),

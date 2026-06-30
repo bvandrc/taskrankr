@@ -1,0 +1,237 @@
+{
+  "id": "d1f5d561-9114-49f2-a338-2c6da39e87e5",
+  "prevId": "4e54baf0-c97d-488f-bf86-646cff866971",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.user_settings": {
+      "name": "user_settings",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "auto_pin_new_tasks": {
+          "name": "auto_pin_new_tasks",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "enable_in_progress_status": {
+          "name": "enable_in_progress_status",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "always_sort_pinned_by_priority": {
+          "name": "always_sort_pinned_by_priority",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "sort_by": {
+          "name": "sort_by",
+          "type": "sort_by",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'priority'"
+        },
+        "field_config": {
+          "name": "field_config",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"priority\":{\"visible\":true,\"required\":true},\"ease\":{\"visible\":true,\"required\":true},\"enjoyment\":{\"visible\":true,\"required\":true},\"time\":{\"visible\":true,\"required\":true}}'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tasks": {
+      "name": "tasks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "priority",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ease": {
+          "name": "ease",
+          "type": "ease",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enjoyment": {
+          "name": "enjoyment",
+          "type": "enjoyment",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "time": {
+          "name": "time",
+          "type": "time_rank",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subtask_sort_mode": {
+          "name": "subtask_sort_mode",
+          "type": "subtask_sort_mode",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'inherit'"
+        },
+        "subtask_order": {
+          "name": "subtask_order",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::integer[]"
+        },
+        "auto_hide_completed": {
+          "name": "auto_hide_completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "inherit_completion_state": {
+          "name": "inherit_completion_state",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "schedule": {
+          "name": "schedule",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.sort_by": {
+      "name": "sort_by",
+      "schema": "public",
+      "values": ["priority", "ease", "enjoyment", "time"]
+    },
+    "public.ease": {
+      "name": "ease",
+      "schema": "public",
+      "values": ["easiest", "easy", "medium", "hard", "hardest"]
+    },
+    "public.enjoyment": {
+      "name": "enjoyment",
+      "schema": "public",
+      "values": ["lowest", "low", "medium", "high", "highest"]
+    },
+    "public.priority": {
+      "name": "priority",
+      "schema": "public",
+      "values": ["lowest", "low", "medium", "high", "highest"]
+    },
+    "public.subtask_sort_mode": {
+      "name": "subtask_sort_mode",
+      "schema": "public",
+      "values": ["inherit", "manual"]
+    },
+    "public.status": {
+      "name": "status",
+      "schema": "public",
+      "values": ["open", "in_progress", "pinned", "completed"]
+    },
+    "public.time_rank": {
+      "name": "time_rank",
+      "schema": "public",
+      "values": ["lowest", "low", "medium", "high", "highest"]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

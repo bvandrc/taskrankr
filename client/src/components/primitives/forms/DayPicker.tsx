@@ -36,18 +36,18 @@ export const DayPicker = ({
     showOutsideDays={showOutsideDays}
     className={cn('p-3', className)}
     classNames={{
-      months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+      months: 'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
       month: 'space-y-4',
-      month_caption: 'flex justify-center pt-1 relative items-center',
+      month_caption: 'flex justify-center pt-1 items-center',
       caption_label: 'text-m font-medium',
-      nav: 'space-x-1 flex items-center',
+      nav: 'absolute top-0 inset-x-0 flex justify-between items-center pt-1 px-1',
       button_previous: cn(
         buttonVariants({ variant: 'outline' }),
-        'absolute left-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+        'size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
       ),
       button_next: cn(
         buttonVariants({ variant: 'outline' }),
-        'absolute right-1 size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+        'size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
       ),
       month_grid: 'w-full border-collapse space-y-1',
       weekdays: 'flex',

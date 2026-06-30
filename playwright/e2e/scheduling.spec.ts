@@ -50,7 +50,7 @@ test.describe('Scheduling', () => {
 
     // STEP 3: Edit task again, clear the due date
     await openTaskEditForm(taskWithDueDate)
-    openMoreSection()
+    await openMoreSection()
     cy.get(TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
 
     await clickSubmitBtnUpdate({ updatedTasks: [baseTask] })

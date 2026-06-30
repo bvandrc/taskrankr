@@ -91,7 +91,7 @@ export const fillTaskForm = async (
 
   const { schedule } = task
   if (schedule) {
-    openMoreSection()
+    await openMoreSection()
     if (schedule.hideUntil)
       cy.get(TaskForm.Schedule.HIDE_UNTIL_PICKER).selectDate(schedule.hideUntil)
     if (schedule.dueAt)
@@ -214,6 +214,7 @@ export const checkTaskFormSubtaskSettings = ({
   }
 }
 
-export const openMoreSection = () => {
+// biome-ignore lint/suspicious/useAwait: <explanation>
+export const openMoreSection = async () => {
   cy.get(TaskForm.MORE_SECTION).scrollIntoView().click()
 }

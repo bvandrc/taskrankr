@@ -6,9 +6,6 @@ import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 
-export type CreatedTask = Pick<Task, 'name' | 'status'> &
-  Partial<Pick<Task, 'priority' | 'ease' | 'enjoyment' | 'time' | 'schedule'>>
-
 export type SubmitBtnArgs = {
   newTasks?: CreatedTask[]
   updatedTasks?: CreatedTask[]
@@ -24,6 +21,37 @@ export async function maybeWaitForResponses(
   const waiter = type === 'create' ? waitForCreate(count) : waitForUpdate(count)
   await waiter
   await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+}
+
+export type CreatedTask = Pick<Task, 'name' | 'status'> &
+  Partial<Pick<Task, 'priority' | 'ease' | 'enjoyment' | 'time' | 'schedule'>>
+
+export async function waitForCreateAndVerify(
+  tasks: CreatedTask[],
+): Promise<void> {
+  await maybeWaitForResponses('create', tasks.length, 201)
+  await checkTasksExistBackend(tasks)
+}
+
+export async function waitForUpdateAndVerify(
+  tasks: CreatedTask[],
+): Promise<void> {
+  await maybeWaitForResponses('update', tasks.length, 200)
+  await checkTasksExistBackend(tasks)
+}
+
+export async function checkTasksDontExistAndAssertDontExist(
+  tasks: CreatedTask[],
+): Promise<void> {
+  const page = getPage()
+  tasks.forEach((task) => {
+    // UI check: task name shouldn't appear anywhere
+    void page
+      .locator(`text="${task.name}"`)
+      .waitFor({ state: 'detached', timeout: 500 })
+      .catch(() => undefined)
+  })
+  await checkTasksDontExistBackend(tasks)
 }
 
 export function checkNumCalls(expected: {
@@ -53,32 +81,4 @@ export function checkNumCalls(expected: {
     expect(tracker.updateSettings, 'updateSettings call count').toBe(
       effectiveExpected.updateSettings,
     )
-}
-
-export async function waitForCreateAndVerify(
-  tasks: CreatedTask[],
-): Promise<void> {
-  await maybeWaitForResponses('create', tasks.length, 201)
-  await checkTasksExistBackend(tasks)
-}
-
-export async function waitForUpdateAndVerify(
-  tasks: CreatedTask[],
-): Promise<void> {
-  await maybeWaitForResponses('update', tasks.length, 200)
-  await checkTasksExistBackend(tasks)
-}
-
-export async function checkTasksDontExistAndAssertDontExist(
-  tasks: CreatedTask[],
-): Promise<void> {
-  const page = getPage()
-  tasks.forEach((task) => {
-    // UI check: task name shouldn't appear anywhere
-    void page
-      .locator(`text="${task.name}"`)
-      .waitFor({ state: 'detached', timeout: 500 })
-      .catch(() => undefined)
-  })
-  await checkTasksDontExistBackend(tasks)
 }

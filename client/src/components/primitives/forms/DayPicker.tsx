@@ -36,7 +36,8 @@ export const DayPicker = ({
     showOutsideDays={showOutsideDays}
     className={cn('p-3', className)}
     classNames={{
-      months: 'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+      months:
+        'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
       month: 'space-y-4',
       month_caption: 'flex justify-center pt-1 items-center',
       caption_label: 'text-m font-medium',

@@ -59,6 +59,9 @@ const TaskBadge = ({
   className,
   muted,
 }: {
+  /**
+   * resolves to `badge-${testId}`
+   */
   'data-testid': string
   value: string
   className: string
@@ -262,7 +265,6 @@ export const TaskCard = ({
       className="group relative"
       data-testid={`task-card-${task.id}`}
       data-tier={`${level}`}
-      data-status={task.status}
     >
       <motion.div
         {...(level === 0
@@ -307,7 +309,8 @@ export const TaskCard = ({
 
         <div
           className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4"
-          data-testid={`task-card-content-${task.id}`}
+          data-testid={`task-info-${task.id}`}
+          data-status={task.status}
         >
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
             <Title

@@ -2,12 +2,14 @@ import { format } from 'date-fns'
 import type { PickDeep } from 'type-fest'
 
 import {
+  DEFAULT_FIELD_CONFIG,
   type RankField,
   RankFields,
   type Task,
   TaskStatus,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
+import type { SettingsOptions } from '.'
 import { type CreatedTask, waitForUpdate } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
@@ -16,7 +18,9 @@ const { TaskCard } = Selectors
 type TaskTreeNode = PickDeep<
   CreatedTask,
   'name' | 'status' | 'schedule.dueAt' | RankField
-> & { subtasks?: TaskTreeNode[] }
+> & {
+  subtasks?: TaskTreeNode[]
+}
 
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
@@ -31,7 +35,11 @@ export const getTaskCardTitle = (task: Pick<Task, 'name'>) =>
     .scrollIntoView()
     .should('be.visible')
 
-const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
+const checkTitleAndSubtasks = (
+  task: TaskTreeNode,
+  tier: number,
+  { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
+) => {
   const getTaskCard = () =>
     getTaskCardTitle(task)
       .should(
@@ -41,12 +49,11 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
         'line-through',
       )
       .closest(TaskCard.CARD)
-      .should('have.attr', 'data-status', task.status)
-      .then(($el) =>
-        cy
-          .wrap($el)
-          .find(TaskCard.THIS_TASK_CONTENT)
+      .then(($card) => {
+        cy.wrap($card)
+          .find(TaskCard.THIS_TASK_INFO)
           .first()
+          .should('have.attr', 'data-status', task.status)
           .within(() => {
             if (task.schedule?.dueAt) {
               cy.get(TaskCard.DUE_BADGE)
@@ -55,49 +62,67 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
             } else {
               cy.get(TaskCard.DUE_BADGE).should('not.exist')
             }
+
             for (const field of RankFields) {
-              const value = task[field]
               const badge = cy.get(TaskCard.RankFieldBadge(field))
-              if (value != null) {
-                badge.should('have.text', value)
-              } else {
+              const expVal = task[field]
+              if (!settings[field].visible) {
                 badge.should('not.exist')
+              } else if (expVal == null) {
+                badge.should('have.text', '').should('not.be.visible')
+              } else {
+                badge.should('have.text', expVal)
               }
             }
-            return cy.wrap($el)
-          }),
-      )
+          })
+        return cy.wrap($card)
+      })
 
   const taskCard = getTaskCard()
 
-  if (!task.subtasks?.length) return
+  if (!task.subtasks?.length) {
+    taskCard
+      .find(`${TaskCard.COLLAPSE_BTN},${TaskCard.EXPAND_BTN}`)
+      .should('not.exist')
+    return
+  }
 
-  taskCard.then(($card) => {
-    const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
-    if (expandBtn.length > 0) {
-      cy.log('expanding collapsed card...')
-      cy.wrap(expandBtn).click()
-      cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
-      cy.wrap($card).find(TaskCard.CARD).should('exist')
-      cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
-      cy.log('...done expanding collapsed card...')
-    }
-  })
+  taskCard
+    .then(($card) => {
+      const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
+      if (expandBtn.length > 0) {
+        cy.log('expanding collapsed card...')
+        cy.wrap(expandBtn).click()
+        cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
+        cy.wrap($card).find(TaskCard.CARD).should('exist')
+        cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
+        cy.log('...done expanding collapsed card...')
 
-  // re-renders on expand, reduce flake by re-getting
-  getTaskCard().within(() => {
-    checkSubtasksInCard(task, tier + 1)
-  })
+        // re-renders on expand, reduce flake by re-getting
+        return getTaskCard()
+      }
+
+      return cy.wrap($card)
+    })
+    .within(() => {
+      checkSubtasksInCard(task, tier + 1, { settings })
+    })
 }
 
-const checkSubtasksInCard = (task: TaskTreeNode, tier: number) => {
+const checkSubtasksInCard = (
+  task: TaskTreeNode,
+  tier: number,
+  options: SettingsOptions = {},
+) => {
   task.subtasks?.forEach((subtask) => {
-    checkTitleAndSubtasks(subtask, tier)
+    checkTitleAndSubtasks(subtask, tier, options)
   })
 }
 
-export const expandAndCheckTree = (task: TaskTreeNode) =>
-  checkTitleAndSubtasks(task, 0)
+export const expandAndCheckTree = (
+  task: TaskTreeNode,
+  { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
+) => checkTitleAndSubtasks(task, 0, { settings })
 
 export const openTaskEditForm = (task: Pick<Task, 'name'>) => {
   cy.get(Selectors.TaskForm.FORM).should('not.exist')

@@ -5,25 +5,9 @@ import type { FieldConfig, UserSettings } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../page-context'
 import { getSettings } from './api'
+import { getCheckedState, toggleState } from './index'
 
 const { Menu, Settings } = Selectors
-
-async function getCheckedState(selector: string): Promise<boolean> {
-  const state = await getPage().locator(selector).getAttribute('data-state')
-  if (state === 'checked') return true
-  if (state === 'unchecked') return false
-  throw new Error(`Element ${selector} does not have a data-state attribute`)
-}
-
-async function toggleState(selector: string, newState: boolean): Promise<void> {
-  const current = await getCheckedState(selector)
-  expect(current, `expected current state to be ${!newState}`).toBe(!newState)
-  await getPage().locator(selector).click()
-  await expect(getPage().locator(selector)).toHaveAttribute(
-    'data-state',
-    newState ? 'checked' : 'unchecked',
-  )
-}
 
 async function maybeWaitForSettingsUpdate(): Promise<void> {
   if (!getIsLoggedIn()) return
@@ -68,15 +52,4 @@ export async function setSettings(
     const current = await getSettings()
     expect(current).toMatchObject(settings)
   }
-}
-
-export function getCheckedStateOf(selector: string): Promise<boolean> {
-  return getCheckedState(selector)
-}
-
-export function toggleStateOf(
-  selector: string,
-  newState: boolean,
-): Promise<void> {
-  return toggleState(selector, newState)
 }

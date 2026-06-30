@@ -15,8 +15,8 @@ import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../page-context'
 import { checkTasksDontExist, checkTasksExist } from './api'
+import { getCheckedState, toggleState } from './index'
 import type { CreatedTask, SubmitBtnArgs } from './intercepts'
-import { getCheckedStateOf, toggleStateOf } from './settings'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
 
@@ -217,13 +217,13 @@ export async function setTaskFormSubtaskSettings(
 ): Promise<void> {
   await form.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
-    await toggleStateOf(
+    await toggleState(
       TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
       autoHideCompleted,
     )
   }
   if (inheritCompletionState !== undefined) {
-    await toggleStateOf(TaskForm.AUTOCOMPLETE_SWITCH, inheritCompletionState)
+    await toggleState(TaskForm.AUTOCOMPLETE_SWITCH, inheritCompletionState)
   }
 }
 
@@ -236,13 +236,13 @@ export async function checkTaskFormSubtaskSettings(
 ): Promise<void> {
   await form.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
   if (autoHideCompleted !== undefined) {
-    const state = await getCheckedStateOf(
+    const state = await getCheckedState(
       TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
     )
     expect(state).toBe(autoHideCompleted)
   }
   if (inheritCompletionState !== undefined) {
-    const state = await getCheckedStateOf(TaskForm.AUTOCOMPLETE_SWITCH)
+    const state = await getCheckedState(TaskForm.AUTOCOMPLETE_SWITCH)
     expect(state).toBe(inheritCompletionState)
   }
 }

@@ -345,7 +345,10 @@ export const TasksProvider = ({
     if (!isInitialized) return
     const nextMs = getNextScheduleBoundaryMs(tasks)
     if (nextMs === null) return
-    const id = setTimeout(() => reconcileAndSetTasks(tasksRef.current, 'timer'), nextMs)
+    const id = setTimeout(
+      () => reconcileAndSetTasks(tasksRef.current, 'timer'),
+      nextMs,
+    )
     return () => clearTimeout(id)
   }, [tasks, isInitialized, reconcileAndSetTasks])
 

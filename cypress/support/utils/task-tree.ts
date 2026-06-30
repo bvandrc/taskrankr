@@ -42,26 +42,31 @@ const checkTitleAndSubtasks = (task: TaskTreeNode, tier: number) => {
       )
       .closest(TaskCard.CARD)
       .should('have.attr', 'data-status', task.status)
-      .then(($el) => {
-        if (task.schedule?.dueAt) {
-          cy.wrap($el)
-            .find(TaskCard.DUE_BADGE)
-            .should('be.visible')
-            .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
-        } else {
-          cy.wrap($el).find(TaskCard.DUE_BADGE).should('not.exist')
-        }
-        for (const field of RankFields) {
-          const value = task[field]
-          const badge = cy.wrap($el).find(TaskCard.RankFieldBadge(field))
-          if (value != null) {
-            badge.should('have.text', value)
-          } else {
-            badge.should('not.exist')
-          }
-        }
-        return cy.wrap($el)
-      })
+      .then(($el) =>
+        cy
+          .wrap($el)
+          .find(TaskCard.THIS_TASK_CONTENT)
+          .first()
+          .within(() => {
+            if (task.schedule?.dueAt) {
+              cy.get(TaskCard.DUE_BADGE)
+                .should('be.visible')
+                .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
+            } else {
+              cy.get(TaskCard.DUE_BADGE).should('not.exist')
+            }
+            for (const field of RankFields) {
+              const value = task[field]
+              const badge = cy.get(TaskCard.RankFieldBadge(field))
+              if (value != null) {
+                badge.should('have.text', value)
+              } else {
+                badge.should('not.exist')
+              }
+            }
+            return cy.wrap($el)
+          }),
+      )
 
   const taskCard = getTaskCard()
 

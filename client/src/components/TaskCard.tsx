@@ -305,7 +305,10 @@ export const TaskCard = ({
           )}
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
+        <div
+          className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4"
+          data-testid={`task-card-content-${task.id}`}
+        >
           <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
             <Title
               name={task.name}
@@ -359,7 +362,10 @@ export const TaskCard = ({
             }}
             className="overflow-hidden will-change-[height]"
           >
-            <div className="relative">
+            <div
+              className="relative"
+              data-testid={`subtasks-container-${task.id}`}
+            >
               <div
                 className="absolute left-6.5 top-0 bottom-3 w-px bg-white/5"
                 style={{ marginLeft: `${level * 16}px` }}

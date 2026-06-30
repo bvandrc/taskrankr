@@ -60,7 +60,7 @@ describe('Assign Subtasks', () => {
     await clickSubmitBtnCreate({ newTasks: [orphanTask2] })
   })
 
-  it('assign an existing orphaned task as a subtask of a task', async () => {
+  test('assign an existing orphaned task as a subtask of a task', async () => {
     // STEP: Step 1: Create root task, create new subtask, assign sibling orphanTask
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(async () => {

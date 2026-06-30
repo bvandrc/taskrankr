@@ -77,7 +77,7 @@ describe('Hiding Subtasks', () => {
     await openTaskEditForm(rootTask)
   })
 
-  it('shows and hides hidden subtasks via the toggle button', () => {
+  test('shows and hides hidden subtasks via the toggle button', () => {
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([openSubtask])
 
@@ -106,7 +106,7 @@ describe('Hiding Subtasks', () => {
     })
   }
 
-  it('preserves show-hidden state after saving a subtask form and returning to the parent', () => {
+  test('preserves show-hidden state after saving a subtask form and returning to the parent', () => {
     showHiddenAndEditSubtask()
 
     // Save the subtask form without changes — pops back to the parent form
@@ -118,7 +118,7 @@ describe('Hiding Subtasks', () => {
     checkAllVisible()
   })
 
-  it('preserves show-hidden state after cancelling a subtask form and returning to the parent', () => {
+  test('preserves show-hidden state after cancelling a subtask form and returning to the parent', () => {
     showHiddenAndEditSubtask()
 
     getTaskForm(1).within(() => {

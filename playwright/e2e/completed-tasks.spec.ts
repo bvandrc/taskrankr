@@ -83,7 +83,7 @@ describe('Completed Tasks', () => {
       },
     },
   ] as const) {
-    it(`${testTitle} — not in main tree, is on completed page`, async () => {
+    test(`${testTitle} — not in main tree, is on completed page`, async () => {
       setupTask()
       const completedTask = {
         ...task,

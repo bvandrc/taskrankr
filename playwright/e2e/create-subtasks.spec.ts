@@ -63,7 +63,7 @@ describe('Create Subtasks', () => {
     })
   })
 
-  it('create a subtask, check appears in tree', async () => {
+  test('create a subtask, check appears in tree', async () => {
     // STEP: Step 1: Add subtask and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -106,7 +106,7 @@ describe('Create Subtasks', () => {
     checkNumCalls({ create: 3, update: 1 })
   })
 
-  it('create multiple subtasks, check appear in tree', async () => {
+  test('create multiple subtasks, check appear in tree', async () => {
     // STEP: Step 1: Add two subtasks and create
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -162,7 +162,7 @@ describe('Create Subtasks', () => {
     checkNumCalls({ create: 4, update: 1 })
   })
 
-  it('create nested subtasks, ensure appear in tree', async () => {
+  test('create nested subtasks, ensure appear in tree', async () => {
     // STEP: Step 1: Add subtask with two nested children
     getTaskForm(0).within(() => {
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -220,7 +220,7 @@ describe('Create Subtasks', () => {
       await openTaskEditForm(completedRootTask)
     })
 
-    it('adding open subtask — save dialog appears, parent re-opens on home page', async () => {
+    test('adding open subtask — save dialog appears, parent re-opens on home page', async () => {
       // STEP: Add an open subtask
       getTaskForm(0).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -248,7 +248,7 @@ describe('Create Subtasks', () => {
       await expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
     })
 
-    it('adding completed subtask — no dialog, parent stays on completed page with new subtask', async () => {
+    test('adding completed subtask — no dialog, parent stays on completed page with new subtask', async () => {
       // STEP: Add a completed subtask
       getTaskForm(0).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()

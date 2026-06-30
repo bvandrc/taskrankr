@@ -30,7 +30,7 @@ describe('Scheduling', () => {
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  it('create a task with a due date, verify due badge displays on task card', async () => {
+  test('create a task with a due date, verify due badge displays on task card', async () => {
     const taskWithDueDate = {
       ...baseTask,
       schedule: {
@@ -60,7 +60,7 @@ describe('Scheduling', () => {
     await expandAndCheckTree(baseTask)
   })
 
-  it('task with hideUntil in the future is hidden from home page', async () => {
+  test('task with hideUntil in the future is hidden from home page', async () => {
     const hiddenTask = {
       ...baseTask,
       schedule: {

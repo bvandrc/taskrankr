@@ -29,7 +29,7 @@ describe('Edit Task', () => {
     await clickSubmitBtnCreate({ newTasks: [task] })
   })
 
-  it('date created shows today and can be changed via the date picker', async () => {
+  test('date created shows today and can be changed via the date picker', async () => {
     const today = new Date()
 
     // Pick a day in the same month that isn't today

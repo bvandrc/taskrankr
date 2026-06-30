@@ -96,7 +96,7 @@ describe('Task Form Cancellation', () => {
       }
 
       if (contextName === 'New Task') {
-        it('cancel on create form before adding any subtask — dialog closes, no task created', () => {
+        test('cancel on create form before adding any subtask — dialog closes, no task created', () => {
           getTaskForm(0).within(() => {
             cy.get(TaskForm.CANCEL_BTN).click()
           })
@@ -104,7 +104,7 @@ describe('Task Form Cancellation', () => {
         })
       }
 
-      it('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', () => {
+      test('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', () => {
         // STEP: Step 1: Add a subtask
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -126,7 +126,7 @@ describe('Task Form Cancellation', () => {
         afterEachSafe()
       })
 
-      it('cancel on parent form after multiple subtasks were added — confirmation shows correct count, discard removes all', () => {
+      test('cancel on parent form after multiple subtasks were added — confirmation shows correct count, discard removes all', () => {
         // STEP: Step 1: Add two subtasks
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -168,7 +168,7 @@ describe('Task Form Cancellation', () => {
         afterEachSafe()
       })
 
-      it('cancel on subtask form navigates back to parent, then cancel on parent discards all without confirmation', () => {
+      test('cancel on subtask form navigates back to parent, then cancel on parent discards all without confirmation', () => {
         // STEP: Step 1: Open subtask form, cancel — returns to parent
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()

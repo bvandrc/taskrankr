@@ -22,7 +22,7 @@ describe('Task Creation', () => {
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  it('create a task, check displays in main tree', async () => {
+  test('create a task, check displays in main tree', async () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(task)
     await clickSubmitBtnCreate({ newTasks: [task] })
@@ -31,7 +31,7 @@ describe('Task Creation', () => {
     checkNumCalls({ create: 1 })
   })
 
-  it('change rank field visibility/required in settings, check form matches the new settings, create task adhering to new settings', async () => {
+  test('change rank field visibility/required in settings, check form matches the new settings, create task adhering to new settings', async () => {
     const fieldConfig = {
       priority: { visible: true, required: true },
       ease: { visible: true, required: false },

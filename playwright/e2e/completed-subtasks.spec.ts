@@ -135,7 +135,7 @@ describe('Completed Subtasks', () => {
       },
     },
   ] as const) {
-    it(`${testTitle} - present in main tree as crossed out, not in completed page`, async () => {
+    test(`${testTitle} - present in main tree as crossed out, not in completed page`, async () => {
       markSubtaskComplete()
       await expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
       checkTasksExistBackend([completedSubtask])
@@ -147,7 +147,7 @@ describe('Completed Subtasks', () => {
   }
 
   context('Auto-complete parent when all subtasks completed', () => {
-    it('auto-completes parent when inheritCompletionState is enabled first, then the last subtask becomes completed', async () => {
+    test('auto-completes parent when inheritCompletionState is enabled first, then the last subtask becomes completed', async () => {
       // STEP: Step 1: Create root task (autocomplete=on) with one subtask
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(async () => {
@@ -182,7 +182,7 @@ describe('Completed Subtasks', () => {
       ])
     })
 
-    it('auto-completes parent when inheritCompletionState becomes enabled after all subtasks are already completed', async () => {
+    test('auto-completes parent when inheritCompletionState becomes enabled after all subtasks are already completed', async () => {
       // STEP: Step 1: Create task with completed subtask
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(async () => {
@@ -215,7 +215,7 @@ describe('Completed Subtasks', () => {
       ])
     })
 
-    it('auto-completes grandparent chain when completing the last subtask', async () => {
+    test('auto-completes grandparent chain when completing the last subtask', async () => {
       // STEP: Step 1: Create root task with subtask, set autocomplete=on
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(async () => {
@@ -309,7 +309,7 @@ describe('Completed Subtasks', () => {
         await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       }
 
-      it('via completion checkbox in new subtask form', async () => {
+      test('via completion checkbox in new subtask form', async () => {
         // STEP: Step 1: Add a second subtask, mark it completed in the form
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -325,7 +325,7 @@ describe('Completed Subtasks', () => {
         await afterEachSafe()
       })
 
-      it('via completion checkbox in edit subtask form', async () => {
+      test('via completion checkbox in edit subtask form', async () => {
         // STEP: Step 1: Add a second subtask
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
@@ -353,7 +353,7 @@ describe('Completed Subtasks', () => {
     })
 
     context('When editing an existing root task', () => {
-      it('with subtasks already completed', async () => {
+      test('with subtasks already completed', async () => {
         // STEP: Step 1: Create root task with one open and one completed subtask
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(async () => {

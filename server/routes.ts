@@ -220,7 +220,8 @@ export function registerRoutes(httpServer: Server, app: Express): Server {
   return httpServer
 }
 
-const TEST_USER_ID = process.env.CYPRESS_TEST_USER_ID ?? 'cypress-test-user'
+const TEST_USER_ID =
+  process.env.PLAYWRIGHT_TEST_USER_ID ?? 'playwright-test-user'
 
 /**
  * E2E-only routes, never registered in production.

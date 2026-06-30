@@ -1,4 +1,7 @@
+import { existsSync } from 'node:fs'
 import { defineConfig, devices } from '@playwright/test'
+
+const CCR_CHROMIUM = '/opt/pw-browsers/chromium'
 
 const PORT = process.env.PORT || 5000
 const BASE_URL =
@@ -18,7 +21,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     launchOptions: {
-      executablePath: '/opt/pw-browsers/chromium',
+      executablePath: existsSync(CCR_CHROMIUM) ? CCR_CHROMIUM : undefined,
     },
   },
   projects: [

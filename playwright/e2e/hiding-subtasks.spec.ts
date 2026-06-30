@@ -32,7 +32,7 @@ test.describe('Hiding Subtasks', () => {
       status: TaskStatus.COMPLETED,
     }
 
-    // Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
+    // STEP 1: Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
     // so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)

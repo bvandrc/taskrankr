@@ -52,12 +52,12 @@ describe('Assign Subtasks', () => {
 
     cy.log('Create orphan tasks')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(orphanTask)
-    clickSubmitBtnCreate({ newTasks: [orphanTask] })
+    await fillTaskForm(orphanTask)
+    await clickSubmitBtnCreate({ newTasks: [orphanTask] })
 
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(orphanTask2)
-    clickSubmitBtnCreate({ newTasks: [orphanTask2] })
+    await fillTaskForm(orphanTask2)
+    await clickSubmitBtnCreate({ newTasks: [orphanTask2] })
   })
 
   it('assign an existing orphaned task as a subtask of a task', () => {
@@ -66,7 +66,7 @@ describe('Assign Subtasks', () => {
     )
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
-      fillTaskForm(rootTask)
+      await fillTaskForm(rootTask)
       assignSubtask(orphanTask)
     })
     // task form re-renders TODO: debug?
@@ -76,23 +76,23 @@ describe('Assign Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(newSubtask)
-      clickSubmitBtnCreate()
+      await fillTaskForm(newSubtask)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([orphanTask, newSubtask])
-      clickSubmitBtnCreate({
+      await clickSubmitBtnCreate({
         newTasks: [rootTask, newSubtask],
         updatedTasks: [orphanTask],
       })
     })
 
-    expandAndCheckTree({ ...rootTask, subtasks: [orphanTask, newSubtask] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [orphanTask, newSubtask] })
     checkNumCalls({ create: 4, update: 1 })
 
     cy.log('Step 2: Edit root task, assign second orphan')
-    openTaskEditForm(rootTask)
+    await openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([orphanTask, newSubtask])
       assignSubtask(orphanTask2)
@@ -100,7 +100,7 @@ describe('Assign Subtasks', () => {
       clickSubmitBtnUpdate({ updatedTasks: [rootTask, orphanTask2] })
     })
 
-    expandAndCheckTree({
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [orphanTask, newSubtask, orphanTask2],
     })

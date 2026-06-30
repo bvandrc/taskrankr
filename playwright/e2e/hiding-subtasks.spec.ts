@@ -46,13 +46,13 @@ describe('Hiding Subtasks', () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()
 
     getTaskForm(0).within(() => {
-      fillTaskForm(rootTask)
+      await fillTaskForm(rootTask)
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(openSubtask)
-      clickSubmitBtnCreate()
+      await fillTaskForm(openSubtask)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
@@ -60,21 +60,21 @@ describe('Hiding Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(completedSubtask)
+      await fillTaskForm(completedSubtask)
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      clickSubmitBtnCreate()
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([openSubtask]) // completed subtask is hidden by default
-      clickSubmitBtnCreate({
+      await clickSubmitBtnCreate({
         newTasks: [rootTask, openSubtask, completedSubtask],
       })
     })
 
     checkNumCalls({ create: 3, update: 0 })
 
-    openTaskEditForm(rootTask)
+    await openTaskEditForm(rootTask)
   })
 
   it('shows and hides hidden subtasks via the toggle button', () => {

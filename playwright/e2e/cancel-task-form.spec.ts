@@ -57,7 +57,7 @@ describe('Task Form Cancellation', () => {
         cy.log('Open new task form and fill')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
-          fillTaskForm(rootTask)
+          await fillTaskForm(rootTask)
         })
       },
       afterEachHook: () => {
@@ -71,12 +71,12 @@ describe('Task Form Cancellation', () => {
         cy.log('Create root task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
-          fillTaskForm(rootTask)
-          clickSubmitBtnCreate({ newTasks: [rootTask] })
+          await fillTaskForm(rootTask)
+          await clickSubmitBtnCreate({ newTasks: [rootTask] })
         })
 
         cy.log('Open edit form')
-        openTaskEditForm(rootTask)
+        await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
       },
       afterEachHook: () => {
@@ -111,8 +111,8 @@ describe('Task Form Cancellation', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask)
+          await clickSubmitBtnCreate()
         })
 
         cy.log('Step 2: Cancel parent form — expect confirmation dialog')
@@ -133,8 +133,8 @@ describe('Task Form Cancellation', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask)
+          await clickSubmitBtnCreate()
         })
 
         getTaskForm(0).within(() => {
@@ -143,8 +143,8 @@ describe('Task Form Cancellation', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask2)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask2)
+          await clickSubmitBtnCreate()
         })
 
         cy.log(

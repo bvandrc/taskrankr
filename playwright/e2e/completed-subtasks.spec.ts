@@ -60,18 +60,18 @@ describe('Completed Subtasks', () => {
     cy.log('Create root task with uncompleted subtask')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
-      fillTaskForm(rootTask)
+      await fillTaskForm(rootTask)
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
       setTaskFormSubtaskSettings({ autoHideCompleted: false })
-      clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+      await clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
     })
 
     checkNumCalls({ create: 2, update: 0 })
@@ -89,20 +89,20 @@ describe('Completed Subtasks', () => {
         cy.log('Step 1: Create root task with subtask pre-marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
-          fillTaskForm(rootTask)
+          await fillTaskForm(rootTask)
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask)
+          await fillTaskForm(subtask)
           cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-          clickSubmitBtnCreate()
+          await clickSubmitBtnCreate()
         })
 
         getTaskForm(0).within(() => {
           setTaskFormSubtaskSettings({ autoHideCompleted: false })
           checkTaskFormSubtasks([completedSubtask])
-          clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
+          await clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
         })
 
         checkNumCalls({ create: 2, update: 0 })
@@ -113,10 +113,10 @@ describe('Completed Subtasks', () => {
       markSubtaskComplete: () => {
         cy.log('Step 1: Create root task with uncompleted subtask')
         createUncompletedSubtask()
-        expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
 
         cy.log('Step 2: Edit subtask, mark as completed')
-        openTaskEditForm(subtask)
+        await openTaskEditForm(subtask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnUpdate({ updatedTasks: [completedSubtask] })
         checkNumCalls({ create: 2, update: 1 })
@@ -127,7 +127,7 @@ describe('Completed Subtasks', () => {
       markSubtaskComplete: () => {
         cy.log('Step 1: Create root task with uncompleted subtask')
         createUncompletedSubtask()
-        expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
 
         cy.log('Step 2: Complete subtask via status change dialog')
         changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED)
@@ -137,7 +137,7 @@ describe('Completed Subtasks', () => {
   ] as const) {
     it(`${testTitle} - present in main tree as crossed out, not in completed page`, () => {
       markSubtaskComplete()
-      expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
       checkTasksExistBackend([completedSubtask])
 
       goToCompletedPage()
@@ -151,13 +151,13 @@ describe('Completed Subtasks', () => {
       cy.log('Step 1: Create root task (autocomplete=on) with one subtask')
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
-        fillTaskForm(rootTask)
+        await fillTaskForm(rootTask)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
 
       getTaskForm(1).within(() => {
-        fillTaskForm(subtask)
-        clickSubmitBtnCreate()
+        await fillTaskForm(subtask)
+        await clickSubmitBtnCreate()
       })
 
       getTaskForm(0).within(() => {
@@ -165,11 +165,11 @@ describe('Completed Subtasks', () => {
           autoHideCompleted: false,
           inheritCompletionState: true,
         })
-        clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+        await clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
 
       checkNumCalls({ create: 2, update: 0 })
-      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       cy.log('Step 2: Complete subtask — parent auto-completes')
       changeStatusViaStatusChangeDialog(subtask, TaskStatus.COMPLETED, {
@@ -186,26 +186,26 @@ describe('Completed Subtasks', () => {
       cy.log('Step 1: Create task with completed subtask')
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
-        fillTaskForm(rootTask)
+        await fillTaskForm(rootTask)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
 
       getTaskForm(1).within(() => {
-        fillTaskForm(subtask)
+        await fillTaskForm(subtask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).toggleState(true)
-        clickSubmitBtnCreate()
+        await clickSubmitBtnCreate()
       })
 
       getTaskForm(0).within(() => {
         setTaskFormSubtaskSettings({ autoHideCompleted: false })
-        clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
+        await clickSubmitBtnCreate({ newTasks: [rootTask, completedSubtask] })
       })
-      expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [completedSubtask] })
 
       cy.log(
         'Step 2: Enable inheritCompletionState — parent auto-completes immediately',
       )
-      openTaskEditForm(rootTask)
+      await openTaskEditForm(rootTask)
       getTaskForm(0).within(() => {
         setTaskFormSubtaskSettings({ inheritCompletionState: true })
         clickSubmitBtnUpdate({ updatedTasks: [completedRootTask] })
@@ -221,34 +221,34 @@ describe('Completed Subtasks', () => {
       cy.log('Step 1: Create root task with subtask, set autocomplete=on')
       cy.get(Selectors.CREATE_TASK_BTN).click()
       getTaskForm(0).within(() => {
-        fillTaskForm(rootTask)
+        await fillTaskForm(rootTask)
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(1).within(() => {
-        fillTaskForm(subtask)
-        clickSubmitBtnCreate()
+        await fillTaskForm(subtask)
+        await clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
         setTaskFormSubtaskSettings({
           autoHideCompleted: false,
           inheritCompletionState: true,
         })
-        clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+        await clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
       })
       checkNumCalls({ create: 2, update: 0 })
-      expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
 
       cy.log(
         'Step 2: Edit subtask to enable autocomplete and add subtask2 as its child',
       )
-      openTaskEditForm(subtask)
+      await openTaskEditForm(subtask)
       // TODO: would be nice if we could base `data-tier` by the level of dialog it is, not by the level in tree
       getTaskForm(1).within(() => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(2).within(() => {
-        fillTaskForm(subtask2)
-        clickSubmitBtnCreate()
+        await fillTaskForm(subtask2)
+        await clickSubmitBtnCreate()
       })
       getTaskForm(1).within(() => {
         setTaskFormSubtaskSettings({
@@ -258,7 +258,7 @@ describe('Completed Subtasks', () => {
         clickSubmitBtnUpdate({ updatedTasks: [subtask] })
       })
       checkNumCalls({ create: 3, update: 1 })
-      expandAndCheckTree({
+      await expandAndCheckTree({
         ...rootTask,
         subtasks: [{ ...subtask, subtasks: [subtask2] }],
       })
@@ -287,14 +287,14 @@ describe('Completed Subtasks', () => {
         )
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
-          fillTaskForm(rootTask)
+          await fillTaskForm(rootTask)
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
         getTaskForm(1).within(() => {
           // task that will not be marked as completed, to verify that only completed subtasks are hidden
-          fillTaskForm(subtask)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask)
+          await clickSubmitBtnCreate()
         })
 
         getTaskForm(0).within(() => {
@@ -308,13 +308,13 @@ describe('Completed Subtasks', () => {
         getTaskForm(0).within(() => {
           checkTaskFormSubtaskSettings({ autoHideCompleted: true })
           checkTaskFormSubtasks([subtask])
-          clickSubmitBtnCreate({
+          await clickSubmitBtnCreate({
             newTasks: [rootTask, subtask, completedSubtask2],
           })
         })
 
         checkNumCalls({ create: 3, update: 0 })
-        expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       }
 
       it('via completion checkbox in new subtask form', () => {
@@ -324,9 +324,9 @@ describe('Completed Subtasks', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask2)
+          await fillTaskForm(subtask2)
           cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-          clickSubmitBtnCreate()
+          await clickSubmitBtnCreate()
         })
 
         cy.log('Step 2: Submit root task — completed subtask hidden in tree')
@@ -340,8 +340,8 @@ describe('Completed Subtasks', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask2)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask2)
+          await clickSubmitBtnCreate()
         })
 
         cy.log('Step 2: Edit the second subtask, mark it completed')
@@ -352,7 +352,7 @@ describe('Completed Subtasks', () => {
 
         getTaskForm(1).within(() => {
           cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-          clickSubmitBtnCreate()
+          await clickSubmitBtnCreate()
         })
 
         cy.log('Step 3: Submit root task — completed subtask hidden in tree')
@@ -367,13 +367,13 @@ describe('Completed Subtasks', () => {
         )
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(() => {
-          fillTaskForm(rootTask)
+          await fillTaskForm(rootTask)
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask)
-          clickSubmitBtnCreate()
+          await fillTaskForm(subtask)
+          await clickSubmitBtnCreate()
         })
 
         getTaskForm(0).within(() => {
@@ -381,9 +381,9 @@ describe('Completed Subtasks', () => {
         })
 
         getTaskForm(1).within(() => {
-          fillTaskForm(subtask2)
+          await fillTaskForm(subtask2)
           cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-          clickSubmitBtnCreate()
+          await clickSubmitBtnCreate()
         })
 
         const subtasks = [subtask, completedSubtask2]
@@ -391,16 +391,16 @@ describe('Completed Subtasks', () => {
         getTaskForm(0).within(() => {
           setTaskFormSubtaskSettings({ autoHideCompleted: false })
           checkTaskFormSubtasks(subtasks)
-          clickSubmitBtnCreate({ newTasks: [rootTask, ...subtasks] })
+          await clickSubmitBtnCreate({ newTasks: [rootTask, ...subtasks] })
         })
 
-        expandAndCheckTree({ ...rootTask, subtasks })
+        await expandAndCheckTree({ ...rootTask, subtasks })
         checkNumCalls({ create: 3, update: 0 })
 
         cy.log(
           'Step 2: Edit root task, enable auto-hide — completed subtask disappears from form',
         )
-        openTaskEditForm(rootTask)
+        await openTaskEditForm(rootTask)
         getTaskForm(0).within(() => {
           checkTaskFormSubtasks(subtasks)
 
@@ -410,7 +410,7 @@ describe('Completed Subtasks', () => {
         })
 
         checkNumCalls({ create: 3, update: 1 })
-        expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+        await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })
     })
   })

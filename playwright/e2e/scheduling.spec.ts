@@ -29,7 +29,7 @@ describe('Scheduling', () => {
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  it('create a task with a due date, verify due badge displays on task card', () => {
+  it('create a task with a due date, verify due badge displays on task card', async () => {
     const taskWithDueDate = {
       ...baseTask,
       schedule: {
@@ -40,15 +40,15 @@ describe('Scheduling', () => {
 
     cy.log('Step 1: Create task with due date')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(taskWithDueDate)
-    clickSubmitBtnCreate({ newTasks: [taskWithDueDate] })
+    await fillTaskForm(taskWithDueDate)
+    await clickSubmitBtnCreate({ newTasks: [taskWithDueDate] })
     checkNumCalls({ create: 1, update: 0 })
 
     cy.log('Step 2: Verify due badge displays on task card with correct text')
-    expandAndCheckTree(taskWithDueDate)
+    await expandAndCheckTree(taskWithDueDate)
 
     cy.log('Step 3: Edit task again, clear the due date')
-    openTaskEditForm(taskWithDueDate)
+    await openTaskEditForm(taskWithDueDate)
     openMoreSection()
     cy.get(TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
 
@@ -56,7 +56,7 @@ describe('Scheduling', () => {
     checkNumCalls({ create: 1, update: 1 })
 
     cy.log('Step 4: Verify due badge is gone')
-    expandAndCheckTree(baseTask)
+    await expandAndCheckTree(baseTask)
   })
 
   it('task with hideUntil in the future is hidden from home page', () => {
@@ -74,8 +74,8 @@ describe('Scheduling', () => {
 
     cy.log('Step 1: Create task with hideUntil = tomorrow')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(hiddenTask)
-    clickSubmitBtnCreate({ newTasks: [hiddenTask] })
+    await fillTaskForm(hiddenTask)
+    await clickSubmitBtnCreate({ newTasks: [hiddenTask] })
 
     cy.log('Step 2: Task should not be visible in the home page list')
     cy.contains(hiddenTask.name).should('not.exist')

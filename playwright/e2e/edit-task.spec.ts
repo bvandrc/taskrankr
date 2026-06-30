@@ -25,8 +25,8 @@ describe('Edit Task', () => {
 
     cy.log('Step 1: Create task')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(task)
-    clickSubmitBtnCreate({ newTasks: [task] })
+    await fillTaskForm(task)
+    await clickSubmitBtnCreate({ newTasks: [task] })
   })
 
   it('date created shows today and can be changed via the date picker', () => {
@@ -37,7 +37,7 @@ describe('Edit Task', () => {
     const newDate = new Date(today.getFullYear(), today.getMonth(), newDay)
 
     cy.log('Step 2: Open edit form, verify Date Created shows today')
-    openTaskEditForm(task)
+    await openTaskEditForm(task)
     cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(today)
 
     cy.log('Step 3: Open calendar and pick a different day')
@@ -48,7 +48,7 @@ describe('Edit Task', () => {
     checkNumCalls({ create: 1, update: 1 })
 
     cy.log('Step 5: Re-open edit form, verify date was persisted')
-    openTaskEditForm(task)
+    await openTaskEditForm(task)
     cy.get(TaskForm.DATE_CREATED_PICKER).checkDate(newDate)
   })
 })

@@ -38,9 +38,9 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task already marked as completed')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(task)
+        await fillTaskForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        clickSubmitBtnCreate({
+        await clickSubmitBtnCreate({
           newTasks: [{ ...task, status: TaskStatus.COMPLETED }],
         })
         checkNumCalls({ create: 1, update: 0 })
@@ -51,14 +51,14 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(task)
-        clickSubmitBtnCreate({
+        await fillTaskForm(task)
+        await clickSubmitBtnCreate({
           newTasks: [{ ...task, status: TaskStatus.PINNED }],
         })
         checkNumCalls({ create: 1, update: 0 })
 
         cy.log('Step 2: Edit task, mark as completed')
-        openTaskEditForm(task)
+        await openTaskEditForm(task)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
         clickSubmitBtnUpdate({
           updatedTasks: [{ ...task, status: TaskStatus.COMPLETED }],
@@ -71,8 +71,8 @@ describe('Completed Tasks', () => {
       setupTask: () => {
         cy.log('Step 1: Create task')
         cy.get(Selectors.CREATE_TASK_BTN).click()
-        fillTaskForm(task)
-        clickSubmitBtnCreate({
+        await fillTaskForm(task)
+        await clickSubmitBtnCreate({
           newTasks: [{ ...task, status: TaskStatus.PINNED }],
         })
         checkNumCalls({ create: 1, update: 0 })

@@ -62,7 +62,7 @@ export const fillTaskFormRankFields = (
 /**
  * Fills form.
  */
-export const fillTaskForm = (
+export const fillTaskForm = async (
   task: TaskFormData,
   {
     settings = DEFAULT_FIELD_CONFIG,
@@ -83,7 +83,7 @@ export const fillTaskForm = (
   cy.get(TaskForm.NAME_INPUT).type(task.name)
   cy.get(TaskForm.ADD_SUBTASK_BTN).should('be.enabled')
 
-  fillTaskFormRankFields(task, settings)
+  await fillTaskFormRankFields(task, settings)
 
   cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).should(
     hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',

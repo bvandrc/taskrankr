@@ -59,7 +59,7 @@ describe('Create Subtasks', () => {
     cy.log('Open new task form and fill root task')
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(() => {
-      fillTaskForm(rootTask)
+      await fillTaskForm(rootTask)
     })
   })
 
@@ -70,28 +70,28 @@ describe('Create Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask])
-      clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
+      await clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
     })
 
-    expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
     checkNumCalls({ create: 2, update: 0 })
 
     cy.log('Step 2: Edit root task, add a second subtask')
-    openTaskEditForm(rootTask)
+    await openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask])
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask2)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask2)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
@@ -99,7 +99,7 @@ describe('Create Subtasks', () => {
       clickSubmitBtnUpdate({ updatedTasks: [rootTask], newTasks: [subtask2] })
     })
 
-    expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 1 })
   })
 
@@ -110,8 +110,8 @@ describe('Create Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
@@ -120,28 +120,28 @@ describe('Create Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask2)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask2)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2])
-      clickSubmitBtnCreate({ newTasks: [rootTask, subtask, subtask2] })
+      await clickSubmitBtnCreate({ newTasks: [rootTask, subtask, subtask2] })
     })
 
-    expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
     checkNumCalls({ create: 3, update: 0 })
 
     cy.log('Step 2: Edit root task, add a third subtask')
-    openTaskEditForm(rootTask)
+    await openTaskEditForm(rootTask)
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2])
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask3)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask3)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(0).within(() => {
@@ -149,7 +149,7 @@ describe('Create Subtasks', () => {
       clickSubmitBtnUpdate({ updatedTasks: [rootTask], newTasks: [subtask3] })
     })
 
-    expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2, subtask3] })
+    await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2, subtask3] })
     checkNumCalls({ create: 4, update: 1 })
   })
 
@@ -160,13 +160,13 @@ describe('Create Subtasks', () => {
     })
 
     getTaskForm(1).within(() => {
-      fillTaskForm(subtask)
+      await fillTaskForm(subtask)
       cy.get(TaskForm.ADD_SUBTASK_BTN).click()
     })
 
     getTaskForm(2).within(() => {
-      fillTaskForm(subtask2)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask2)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(1).within(() => {
@@ -175,24 +175,24 @@ describe('Create Subtasks', () => {
     })
 
     getTaskForm(2).within(() => {
-      fillTaskForm(subtask3)
-      clickSubmitBtnCreate()
+      await fillTaskForm(subtask3)
+      await clickSubmitBtnCreate()
     })
 
     getTaskForm(1).within(() => {
       checkTaskFormSubtasks([subtask2, subtask3])
-      clickSubmitBtnCreate()
+      await clickSubmitBtnCreate()
     })
 
     cy.log('Step 2: Submit root task and verify nested tree')
     getTaskForm(0).within(() => {
       checkTaskFormSubtasks([subtask, subtask2, subtask3])
-      clickSubmitBtnCreate({
+      await clickSubmitBtnCreate({
         newTasks: [rootTask, subtask, subtask2, subtask3],
       })
     })
 
-    expandAndCheckTree({
+    await expandAndCheckTree({
       ...rootTask,
       subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
     })
@@ -204,11 +204,11 @@ describe('Create Subtasks', () => {
   context('Adding subtasks to a completed task', () => {
     beforeEach(() => {
       cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      clickSubmitBtnCreate({ newTasks: [completedRootTask] })
+      await clickSubmitBtnCreate({ newTasks: [completedRootTask] })
 
       cy.log('Navigate to completed page and open the edit form')
       goToCompletedPage()
-      openTaskEditForm(completedRootTask)
+      await openTaskEditForm(completedRootTask)
     })
 
     it('adding open subtask — save dialog appears, parent re-opens on home page', () => {
@@ -217,8 +217,8 @@ describe('Create Subtasks', () => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(1).within(() => {
-        fillTaskForm(subtask)
-        clickSubmitBtnCreate()
+        await fillTaskForm(subtask)
+        await clickSubmitBtnCreate()
       })
 
       const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
@@ -238,7 +238,7 @@ describe('Create Subtasks', () => {
       cy.contains(rootTask.name).should('not.exist')
       cy.contains(subtask.name).should('not.exist')
       goToHomePage()
-      expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
+      await expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
     })
 
     it('adding completed subtask — no dialog, parent stays on completed page with new subtask', () => {
@@ -247,9 +247,9 @@ describe('Create Subtasks', () => {
         cy.get(TaskForm.ADD_SUBTASK_BTN).click()
       })
       getTaskForm(1).within(() => {
-        fillTaskForm(completedSubtask)
+        await fillTaskForm(completedSubtask)
         cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        clickSubmitBtnCreate()
+        await clickSubmitBtnCreate()
       })
       getTaskForm(0).within(() => {
         setTaskFormSubtaskSettings({ autoHideCompleted: false })
@@ -262,7 +262,7 @@ describe('Create Subtasks', () => {
       cy.log(
         'Completed page still shows parent task with its new completed subtask',
       )
-      expandAndCheckTree({ ...completedRootTask, subtasks: [completedSubtask] })
+      await expandAndCheckTree({ ...completedRootTask, subtasks: [completedSubtask] })
     })
   })
 })

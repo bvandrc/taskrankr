@@ -24,10 +24,10 @@ describe('Task Creation', () => {
 
   it('create a task, check displays in main tree', () => {
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(task)
-    clickSubmitBtnCreate({ newTasks: [task] })
+    await fillTaskForm(task)
+    await clickSubmitBtnCreate({ newTasks: [task] })
 
-    expandAndCheckTree(task)
+    await expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
   })
 
@@ -53,9 +53,9 @@ describe('Task Creation', () => {
 
     cy.log('Step 2: Create task using new field config, verify in tree')
     cy.get(Selectors.CREATE_TASK_BTN).click()
-    fillTaskForm(newTask, { settings: fieldConfig })
-    clickSubmitBtnCreate({ newTasks: [newTask] })
-    expandAndCheckTree(newTask, { settings: fieldConfig })
+    await fillTaskForm(newTask, { settings: fieldConfig })
+    await clickSubmitBtnCreate({ newTasks: [newTask] })
+    await expandAndCheckTree(newTask, { settings: fieldConfig })
     checkNumCalls({ create: 1 })
   })
 })

@@ -170,6 +170,6 @@ export const checkCompletedPage = (completedTasks: TaskTreeNode[]) => {
   cy.log('Check task is in completed page')
   goToCompletedPage()
   for (const task of completedTasks) {
-    expandAndCheckTree(task)
+    await expandAndCheckTree(task)
   }
 }

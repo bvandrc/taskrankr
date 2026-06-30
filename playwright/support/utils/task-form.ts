@@ -1,4 +1,4 @@
-import type { PickDeep } from 'type-fest'
+﻿import type { PickDeep } from 'type-fest'
 
 import {
   DEFAULT_FIELD_CONFIG,
@@ -74,7 +74,7 @@ export const fillTaskForm = async (
     hasIncompleteSubtasks?: boolean
   } = {},
 ) => {
-  cy.log(`**filling task form... (task: ${task.name})**`)
+  // STEP: **filling task form... (task: ${task.name})**
   checkTasksDontExistBackend([task])
 
   cy.get(TaskForm.SUBMIT_BTN).should('be.disabled')
@@ -98,7 +98,7 @@ export const fillTaskForm = async (
       cy.get(TaskForm.Schedule.DUE_AT_PICKER).selectDate(schedule.dueAt)
   }
 
-  cy.log(`**...task form filled (task: ${task.name})**`)
+  // STEP: **...task form filled (task: ${task.name})**
 }
 
 type SubmitBtnArgs = {

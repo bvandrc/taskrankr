@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+﻿import { format } from 'date-fns'
 import type { PickDeep } from 'type-fest'
 
 import {
@@ -92,12 +92,12 @@ const checkTitleAndSubtasks = async (
     .then(($card) => {
       const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
       if (expandBtn.length > 0) {
-        cy.log('expanding collapsed card...')
+        // STEP: expanding collapsed card...
         cy.wrap(expandBtn).click()
         cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
         cy.wrap($card).find(TaskCard.CARD).should('exist')
         cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
-        cy.log('...done expanding collapsed card...')
+        // STEP: ...done expanding collapsed card...
 
         // re-renders on expand, reduce flake by re-getting
         return getTaskCard()
@@ -154,13 +154,13 @@ export const changeStatusViaStatusChangeDialog = async (
 }
 
 export const checkCompletedPage = async (completedTasks: TaskTreeNode[]) => {
-  cy.log('Check task is not in main tree')
+  // STEP: Check task is not in main tree
   checkIsAtHomePage()
   flattenTree(completedTasks).forEach((task) => {
     cy.contains(task.name).should('not.exist')
   })
 
-  cy.log('Check task is in completed page')
+  // STEP: Check task is in completed page
   goToCompletedPage()
   for (const task of completedTasks) {
     await expandAndCheckTree(task)

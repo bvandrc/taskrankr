@@ -1,4 +1,4 @@
-import { Routes } from '~/client/lib/constants'
+﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
@@ -39,16 +39,16 @@ describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    cy.log('Step 1: Create task with due date')
+    // STEP: Step 1: Create task with due date
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(taskWithDueDate)
     await clickSubmitBtnCreate({ newTasks: [taskWithDueDate] })
     checkNumCalls({ create: 1, update: 0 })
 
-    cy.log('Step 2: Verify due badge displays on task card with correct text')
+    // STEP: Step 2: Verify due badge displays on task card with correct text
     await expandAndCheckTree(taskWithDueDate)
 
-    cy.log('Step 3: Edit task again, clear the due date')
+    // STEP: Step 3: Edit task again, clear the due date
     await openTaskEditForm(taskWithDueDate)
     openMoreSection()
     cy.get(TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
@@ -56,7 +56,7 @@ describe('Scheduling', () => {
     await clickSubmitBtnUpdate({ updatedTasks: [baseTask] })
     checkNumCalls({ create: 1, update: 1 })
 
-    cy.log('Step 4: Verify due badge is gone')
+    // STEP: Step 4: Verify due badge is gone
     await expandAndCheckTree(baseTask)
   })
 
@@ -73,12 +73,12 @@ describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    cy.log('Step 1: Create task with hideUntil = tomorrow')
+    // STEP: Step 1: Create task with hideUntil = tomorrow
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(hiddenTask)
     await clickSubmitBtnCreate({ newTasks: [hiddenTask] })
 
-    cy.log('Step 2: Task should not be visible in the home page list')
+    // STEP: Step 2: Task should not be visible in the home page list
     cy.contains(hiddenTask.name).should('not.exist')
   })
 

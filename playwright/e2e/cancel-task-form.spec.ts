@@ -1,4 +1,4 @@
-import { Routes } from '~/client/lib/constants'
+﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { checkTasksDontExistBackend } from '@test/support/utils/api'
@@ -54,7 +54,7 @@ describe('Task Form Cancellation', () => {
     {
       contextName: 'New Task',
       beforeEachHook: () => {
-        cy.log('Open new task form and fill')
+        // STEP: Open new task form and fill
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(async () => {
           await fillTaskForm(rootTask)
@@ -68,14 +68,14 @@ describe('Task Form Cancellation', () => {
     {
       contextName: 'Edit Task',
       beforeEachHook: async () => {
-        cy.log('Create root task')
+        // STEP: Create root task
         cy.get(Selectors.CREATE_TASK_BTN).click()
         getTaskForm(0).within(async () => {
           await fillTaskForm(rootTask)
           await clickSubmitBtnCreate({ newTasks: [rootTask] })
         })
 
-        cy.log('Open edit form')
+        // STEP: Open edit form
         await openTaskEditForm(rootTask)
         checkNumCalls({ create: 1, update: 0 })
       },
@@ -105,7 +105,7 @@ describe('Task Form Cancellation', () => {
       }
 
       it('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', () => {
-        cy.log('Step 1: Add a subtask')
+        // STEP: Step 1: Add a subtask
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -115,7 +115,7 @@ describe('Task Form Cancellation', () => {
           await clickSubmitBtnCreate()
         })
 
-        cy.log('Step 2: Cancel parent form — expect confirmation dialog')
+        // STEP: Step 2: Cancel parent form — expect confirmation dialog
         getTaskForm(0).within(async () => {
           await checkTaskFormSubtasks([subtask])
           cy.get(TaskForm.CANCEL_BTN).click()
@@ -127,7 +127,7 @@ describe('Task Form Cancellation', () => {
       })
 
       it('cancel on parent form after multiple subtasks were added — confirmation shows correct count, discard removes all', () => {
-        cy.log('Step 1: Add two subtasks')
+        // STEP: Step 1: Add two subtasks
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -147,9 +147,7 @@ describe('Task Form Cancellation', () => {
           await clickSubmitBtnCreate()
         })
 
-        cy.log(
-          'Step 2: Cancel parent form — deny discard, verify form preserved',
-        )
+        // STEP: Step 2: Cancel parent form — deny discard, verify form preserved
         getTaskForm(0).within(async () => {
           await checkTaskFormSubtasks([subtask, subtask2])
           cy.get(TaskForm.CANCEL_BTN).click()
@@ -164,16 +162,14 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        cy.log(
-          'Step 3: Cancel parent form — confirm discard, verify all removed',
-        )
+        // STEP: Step 3: Cancel parent form — confirm discard, verify all removed
         checkCancelWarningDialog(2)
         cy.get(ConfirmDialog.CONFIRM_BTN).click()
         afterEachSafe()
       })
 
       it('cancel on subtask form navigates back to parent, then cancel on parent discards all without confirmation', () => {
-        cy.log('Step 1: Open subtask form, cancel — returns to parent')
+        // STEP: Step 1: Open subtask form, cancel — returns to parent
         getTaskForm(0).within(() => {
           cy.get(TaskForm.ADD_SUBTASK_BTN).click()
         })
@@ -183,7 +179,7 @@ describe('Task Form Cancellation', () => {
           cy.get(TaskForm.CANCEL_BTN).click()
         })
 
-        cy.log('Step 2: Cancel parent form — no confirmation needed')
+        // STEP: Step 2: Cancel parent form — no confirmation needed
         getTaskForm(0).within(() => {
           cy.get(TaskForm.NAME_INPUT).should('have.value', rootTask.name)
           cy.get(TaskForm.CANCEL_BTN).click()

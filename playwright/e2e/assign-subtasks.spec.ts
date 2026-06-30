@@ -1,4 +1,4 @@
-import { Routes } from '~/client/lib/constants'
+﻿import { Routes } from '~/client/lib/constants'
 import { Priority, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
@@ -50,7 +50,7 @@ describe('Assign Subtasks', () => {
     const loggedIn = isLoggedIn()
     cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
 
-    cy.log('Create orphan tasks')
+    // STEP: Create orphan tasks
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(orphanTask)
     await clickSubmitBtnCreate({ newTasks: [orphanTask] })
@@ -61,9 +61,7 @@ describe('Assign Subtasks', () => {
   })
 
   it('assign an existing orphaned task as a subtask of a task', async () => {
-    cy.log(
-      'Step 1: Create root task, create new subtask, assign sibling orphanTask',
-    )
+    // STEP: Step 1: Create root task, create new subtask, assign sibling orphanTask
     cy.get(Selectors.CREATE_TASK_BTN).click()
     getTaskForm(0).within(async () => {
       await fillTaskForm(rootTask)
@@ -94,7 +92,7 @@ describe('Assign Subtasks', () => {
     })
     checkNumCalls({ create: 4, update: 1 })
 
-    cy.log('Step 2: Edit root task, assign second orphan')
+    // STEP: Step 2: Edit root task, assign second orphan
     await openTaskEditForm(rootTask)
     getTaskForm(0).within(async () => {
       await checkTaskFormSubtasks([orphanTask, newSubtask])

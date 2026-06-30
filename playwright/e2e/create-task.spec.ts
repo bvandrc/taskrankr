@@ -1,4 +1,4 @@
-import { Routes } from '~/client/lib/constants'
+﻿import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { isLoggedIn } from '@test/support/utils'
@@ -46,12 +46,12 @@ describe('Task Creation', () => {
       enjoyment: null,
     } satisfies CreatedTask
 
-    cy.log('Step 1: Update rank field settings')
+    // STEP: Step 1: Update rank field settings
     setSettings({ fieldConfig })
     checkNumCalls({ updateSettings: 3 })
     cy.get(Selectors.BACK_BTN).click()
 
-    cy.log('Step 2: Create task using new field config, verify in tree')
+    // STEP: Step 2: Create task using new field config, verify in tree
     cy.get(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(newTask, { settings: fieldConfig })
     await clickSubmitBtnCreate({ newTasks: [newTask] })

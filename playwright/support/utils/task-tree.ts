@@ -45,7 +45,13 @@ async function getTaskCard(task: TaskTreeNode): Promise<Locator> {
   await expect(title).toHaveCount(1)
   await title.scrollIntoViewIfNeeded()
   await expect(title).toBeVisible()
-  return getPage().locator(TaskCard.CARD).filter({ has: title })
+  // The task's own card is the title's nearest enclosing `task-card-`. A
+  // `filter({ has: title })` over all cards can't express this: `title` is
+  // itself scoped under `task-card-`, so it only matches an ancestor card with
+  // a nested card (or none at all, for a leaf root task).
+  return title.locator(
+    'xpath=ancestor::*[starts-with(@data-testid, "task-card-")][1]',
+  )
 }
 
 async function checkTitleAndSubtasks(

@@ -1,4 +1,5 @@
-import { Routes } from '@client/lib/constants'
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
 import { DefaultTask, Selectors } from '@cypress/support/constants'
 import {
   checkTasksDontExistBackend,
@@ -16,8 +17,6 @@ import {
   checkCompletedPage,
   openTaskEditForm,
 } from '@cypress/support/utils/task-tree'
-
-import { TaskStatus } from '~/shared/schema'
 
 const { TaskForm } = Selectors
 

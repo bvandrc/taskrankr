@@ -81,7 +81,7 @@ const SortingMethodSwitch = ({
         </div>
       </div>
       <span
-        className="block text-[11px] text-muted-foreground/70 leading-snug text-right"
+        className="block text-xs text-muted-foreground/70 leading-snug text-right pl-1"
         data-testid="text-sort-caption"
       >
         {isManualSortMode

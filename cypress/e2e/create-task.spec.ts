@@ -1,16 +1,13 @@
 import { Routes } from '@client/lib/constants'
-import { DefaultTask, Selectors } from '@cypress/support/constants'
-import { isLoggedIn } from '@cypress/support/utils'
-import {
-  type CreatedTask,
-  checkNumCalls,
-} from '@cypress/support/utils/intercepts'
-import { setSettings } from '@cypress/support/utils/settings'
+import { DefaultTask, Selectors } from '@test/support/constants'
+import { isLoggedIn } from '@test/support/utils'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { setSettings } from '@test/support/utils/settings'
 import {
   clickSubmitBtnCreate,
   fillTaskForm,
-} from '@cypress/support/utils/task-form'
-import { expandAndCheckTree } from '@cypress/support/utils/task-tree'
+} from '@test/support/utils/task-form'
+import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
 

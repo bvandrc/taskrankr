@@ -1,21 +1,21 @@
 import { Routes } from '@client/lib/constants'
-import { DefaultTask, Selectors } from '@cypress/support/constants'
+import { DefaultTask, Selectors } from '@test/support/constants'
 import {
   checkTasksDontExistBackend,
   checkTasksExistBackend,
   isLoggedIn,
-} from '@cypress/support/utils'
-import { checkNumCalls } from '@cypress/support/utils/intercepts'
+} from '@test/support/utils'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
   fillTaskForm,
-} from '@cypress/support/utils/task-form'
+} from '@test/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
   checkCompletedPage,
   openTaskEditForm,
-} from '@cypress/support/utils/task-tree'
+} from '@test/support/utils/task-tree'
 
 import { TaskStatus } from '~/shared/schema'
 

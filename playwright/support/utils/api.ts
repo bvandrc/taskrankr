@@ -25,11 +25,6 @@ export async function getApiTasks(): Promise<Task[]> {
   return res.json()
 }
 
-export async function getSettings(): Promise<UserSettings> {
-  const res = await getPage().request.get(ApiPaths.GET_SETTINGS)
-  return res.json()
-}
-
 export async function checkTasksExist(tasks: CreatedTask[]): Promise<void> {
   await expect(async () => {
     const localTasks = await getLocalStateTasks()
@@ -90,4 +85,9 @@ export async function checkTasksDontExist(
       }
     }).toPass({ timeout: 5000 })
   }
+}
+
+export async function getSettings(): Promise<UserSettings> {
+  const res = await getPage().request.get(ApiPaths.GET_SETTINGS)
+  return res.json()
 }

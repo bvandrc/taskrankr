@@ -4,7 +4,7 @@ import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { checkTasksDontExistBackend } from '@test/support/utils/api'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
@@ -32,7 +32,7 @@ for (const { contextName, isEdit } of [
           ...DefaultTaskFields,
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
-        }
+        } as const satisfies CreatedTask
 
         await getPage().locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
@@ -55,12 +55,12 @@ for (const { contextName, isEdit } of [
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
-      }
+      } as const satisfies CreatedTask
 
       if (isEdit) {
         // STEP 0.1: Create root task
@@ -112,17 +112,17 @@ for (const { contextName, isEdit } of [
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
-      }
+      } as const satisfies CreatedTask
       const subtask2 = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 2'),
         status: TaskStatus.OPEN,
-      }
+      } as const satisfies CreatedTask
 
       if (isEdit) {
         // STEP 0.1: Create root task
@@ -190,12 +190,12 @@ for (const { contextName, isEdit } of [
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
-      }
+      } as const satisfies CreatedTask
 
       if (isEdit) {
         // STEP 0.1: Create root task

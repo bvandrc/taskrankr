@@ -23,7 +23,7 @@ test.describe('Task Creation', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
 
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
@@ -50,7 +50,7 @@ test.describe('Task Creation', () => {
       status: TaskStatus.PINNED,
       ease: null,
       enjoyment: null,
-    } satisfies CreatedTask
+    } as const satisfies CreatedTask
 
     // STEP 1: Update rank field settings
     await setSettings({ fieldConfig })

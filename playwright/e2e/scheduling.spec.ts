@@ -31,14 +31,14 @@ test.describe('Scheduling', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Scheduled Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const taskWithDueDate = {
       ...baseTask,
       schedule: {
         // next month, day 15 — avoids today edge cases and always navigates to a future date
         dueAt: new Date(today.getFullYear(), today.getMonth() + 1, 15),
       },
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Create task with due date
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -67,7 +67,7 @@ test.describe('Scheduling', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Hidden Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const hiddenTask = {
       ...baseTask,
       schedule: {

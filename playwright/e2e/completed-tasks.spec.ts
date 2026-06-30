@@ -3,7 +3,7 @@ import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   clickSubmitBtnCreate,
   clickSubmitBtnUpdate,
@@ -28,8 +28,11 @@ test.describe('Completed Tasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
-    }
-    const completedTask = { ...task, status: TaskStatus.COMPLETED }
+    } as const satisfies CreatedTask
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP 1: Create task already marked as completed
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
@@ -50,8 +53,11 @@ test.describe('Completed Tasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
-    }
-    const completedTask = { ...task, status: TaskStatus.COMPLETED }
+    } as const satisfies CreatedTask
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP 1: Create task
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
@@ -81,8 +87,11 @@ test.describe('Completed Tasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Test Task'),
       status: TaskStatus.PINNED,
-    }
-    const completedTask = { ...task, status: TaskStatus.COMPLETED }
+    } as const satisfies CreatedTask
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP 1: Create task
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()

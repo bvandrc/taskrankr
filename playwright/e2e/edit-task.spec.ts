@@ -2,7 +2,7 @@
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkDate,
   clickSubmitBtnCreate,
@@ -26,7 +26,7 @@ test.describe('Edit Task', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Edit Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
 
     const today = new Date()
     // Pick a day in the same month that isn't today

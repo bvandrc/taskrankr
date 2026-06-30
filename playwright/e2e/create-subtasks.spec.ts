@@ -2,7 +2,7 @@
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage, goToHomePage } from '@test/support/utils/navigation'
 import {
   checkTaskFormSubtasks,
@@ -30,17 +30,17 @@ test.describe('Create Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 1'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const subtask2 = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 2'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -88,22 +88,22 @@ test.describe('Create Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 1'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const subtask2 = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 2'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const subtask3 = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 3'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -160,22 +160,22 @@ test.describe('Create Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Level Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 1'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const subtask2 = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 2'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const subtask3 = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask 3'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -224,13 +224,16 @@ test.describe('Create Subtasks', () => {
         ...DefaultTaskFields,
         name: taskName('E2E Root Level Task'),
         status: TaskStatus.PINNED,
-      }
-      const completedRootTask = { ...rootTask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
-      }
+      } as const satisfies CreatedTask
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const form0 = getTaskForm(0)
@@ -271,14 +274,20 @@ test.describe('Create Subtasks', () => {
         ...DefaultTaskFields,
         name: taskName('E2E Root Level Task'),
         status: TaskStatus.PINNED,
-      }
-      const completedRootTask = { ...rootTask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 1'),
         status: TaskStatus.OPEN,
-      }
-      const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedSubtask = {
+        ...subtask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const form0 = getTaskForm(0)

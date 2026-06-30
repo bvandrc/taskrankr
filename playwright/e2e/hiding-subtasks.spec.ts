@@ -2,7 +2,7 @@ import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
@@ -20,17 +20,17 @@ test.describe('Hiding Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const openSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
-    }
+    } as const satisfies CreatedTask
 
     // STEP 1: Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
     // so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.
@@ -63,12 +63,12 @@ test.describe('Hiding Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
-    }
+    } as const satisfies CreatedTask
     const form0 = getTaskForm(0)
 
     await checkTaskFormSubtasks(form0, [openSubtask])
@@ -87,12 +87,12 @@ test.describe('Hiding Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
-    }
+    } as const satisfies CreatedTask
     const form0 = getTaskForm(0)
 
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
@@ -113,12 +113,12 @@ test.describe('Hiding Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Open Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Completed Subtask'),
       status: TaskStatus.COMPLETED,
-    }
+    } as const satisfies CreatedTask
     const form0 = getTaskForm(0)
 
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()

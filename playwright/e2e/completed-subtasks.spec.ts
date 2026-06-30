@@ -54,13 +54,16 @@ test.describe('Completed Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
-    }
-    const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+    } as const satisfies CreatedTask
+    const completedSubtask = {
+      ...subtask,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
 
     // STEP: Create root task with subtask pre-marked as completed
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -95,12 +98,12 @@ test.describe('Completed Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
     // STEP: Create root task with uncompleted subtask
@@ -135,12 +138,12 @@ test.describe('Completed Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const subtask = {
       ...DefaultTaskFields,
       name: taskName('E2E Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
     const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
 
     // STEP: Create root task with uncompleted subtask
@@ -170,14 +173,20 @@ test.describe('Completed Subtasks', () => {
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
-      const completedRootTask = { ...rootTask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
-      }
-      const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedSubtask = {
+        ...subtask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
 
       // STEP: Create root task (autocomplete=on) with one subtask
       await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -212,14 +221,20 @@ test.describe('Completed Subtasks', () => {
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
-      const completedRootTask = { ...rootTask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
-      }
-      const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedSubtask = {
+        ...subtask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
 
       // STEP: Create task with completed subtask
       await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -261,20 +276,29 @@ test.describe('Completed Subtasks', () => {
         ...DefaultTaskFields,
         name: taskName('E2E Root Task'),
         status: TaskStatus.PINNED,
-      }
-      const completedRootTask = { ...rootTask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask'),
         status: TaskStatus.OPEN,
-      }
-      const completedSubtask = { ...subtask, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedSubtask = {
+        ...subtask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
       const subtask2 = {
         ...DefaultTaskFields,
         name: taskName('E2E Subtask 2'),
         status: TaskStatus.OPEN,
-      }
-      const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
+      } as const satisfies CreatedTask
+      const completedSubtask2 = {
+        ...subtask2,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
 
       // STEP: Create root task with subtask, set autocomplete=on
       await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -333,18 +357,21 @@ test.describe('Completed Subtasks', () => {
           ...DefaultTaskFields,
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
-        }
+        } as const satisfies CreatedTask
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
-        }
+        } as const satisfies CreatedTask
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
-        }
-        const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
+        } as const satisfies CreatedTask
+        const completedSubtask2 = {
+          ...subtask2,
+          status: TaskStatus.COMPLETED,
+        } as const satisfies CreatedTask
 
         // STEP: Create root task with one uncompleted subtask, enable auto-hide
         await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -384,18 +411,21 @@ test.describe('Completed Subtasks', () => {
           ...DefaultTaskFields,
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
-        }
+        } as const satisfies CreatedTask
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
-        }
+        } as const satisfies CreatedTask
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
-        }
-        const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
+        } as const satisfies CreatedTask
+        const completedSubtask2 = {
+          ...subtask2,
+          status: TaskStatus.COMPLETED,
+        } as const satisfies CreatedTask
 
         // STEP: Create root task with one uncompleted subtask, enable auto-hide
         await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -438,18 +468,21 @@ test.describe('Completed Subtasks', () => {
           ...DefaultTaskFields,
           name: taskName('E2E Root Task'),
           status: TaskStatus.PINNED,
-        }
+        } as const satisfies CreatedTask
         const subtask = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask'),
           status: TaskStatus.OPEN,
-        }
+        } as const satisfies CreatedTask
         const subtask2 = {
           ...DefaultTaskFields,
           name: taskName('E2E Subtask 2'),
           status: TaskStatus.OPEN,
-        }
-        const completedSubtask2 = { ...subtask2, status: TaskStatus.COMPLETED }
+        } as const satisfies CreatedTask
+        const completedSubtask2 = {
+          ...subtask2,
+          status: TaskStatus.COMPLETED,
+        } as const satisfies CreatedTask
 
         // STEP: Create root task with one open and one completed subtask
         await page.locator(Selectors.CREATE_TASK_BTN).click()

@@ -2,7 +2,7 @@
 import { Priority, TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { checkNumCalls } from '@test/support/utils/intercepts'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import {
   assignSubtask,
   checkTaskFormSubtasks,
@@ -29,25 +29,25 @@ test.describe('Assign Subtasks', () => {
       ...DefaultTaskFields,
       name: taskName('E2E Root Task'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const orphanTask = {
       ...DefaultTaskFields,
       priority: Priority.HIGH,
       name: taskName('E2E Orphan Task 1'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const orphanTask2 = {
       ...DefaultTaskFields,
       priority: Priority.MEDIUM,
       name: taskName('E2E Orphan Task 2'),
       status: TaskStatus.PINNED,
-    }
+    } as const satisfies CreatedTask
     const newSubtask = {
       ...DefaultTaskFields,
       priority: Priority.LOW,
       name: taskName('E2E Brand New Subtask'),
       status: TaskStatus.OPEN,
-    }
+    } as const satisfies CreatedTask
 
     // STEP: Create orphan tasks
     await page.locator(Selectors.CREATE_TASK_BTN).click()

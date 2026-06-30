@@ -52,9 +52,7 @@ test.describe('Edit Task', () => {
     )
 
     // STEP 4: Save and verify update count
-    await clickSubmitBtnUpdate(getTaskForm(0), {
-      updatedTasks: [task],
-    })
+    await clickSubmitBtnUpdate(getTaskForm(0), { updatedTasks: [task] })
     checkNumCalls({ create: 1, update: 1 })
 
     // STEP 5: Re-open edit form, verify date was persisted

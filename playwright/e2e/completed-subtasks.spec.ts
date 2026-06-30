@@ -302,9 +302,7 @@ test.describe('Completed Subtasks', () => {
         autoHideCompleted: false,
         inheritCompletionState: true,
       })
-      await clickSubmitBtnUpdate(editForm1, {
-        updatedTasks: [subtask],
-      })
+      await clickSubmitBtnUpdate(editForm1, { updatedTasks: [subtask] })
       checkNumCalls({ create: 3, update: 1 })
       await expandAndCheckTree({
         ...rootTask,
@@ -487,9 +485,7 @@ test.describe('Completed Subtasks', () => {
           autoHideCompleted: true,
         })
         await checkTaskFormSubtasks(editForm0, [subtask])
-        await clickSubmitBtnUpdate(editForm0, {
-          updatedTasks: [rootTask],
-        })
+        await clickSubmitBtnUpdate(editForm0, { updatedTasks: [rootTask] })
         checkNumCalls({ create: 3, update: 1 })
         await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
       })

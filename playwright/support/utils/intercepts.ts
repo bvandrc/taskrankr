@@ -6,12 +6,6 @@ import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 
-export type SubmitBtnArgs = {
-  newTasks?: CreatedTask[]
-  updatedTasks?: CreatedTask[]
-  confirmDialog?: string
-}
-
 export async function maybeWaitForResponses(
   type: 'create' | 'update',
   count: number,

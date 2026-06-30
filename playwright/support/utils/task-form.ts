@@ -16,7 +16,7 @@ import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { getCheckedState, toggleState } from './index'
-import type { CreatedTask, SubmitBtnArgs } from './intercepts'
+import type { CreatedTask } from './intercepts'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
 
@@ -114,6 +114,12 @@ export async function fillTaskForm(
         schedule.dueAt,
       )
   }
+}
+
+type SubmitBtnArgs = {
+  newTasks?: CreatedTask[]
+  updatedTasks?: CreatedTask[]
+  confirmDialog?: string
 }
 
 async function clickSubmitBtn(

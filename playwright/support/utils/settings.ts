@@ -25,14 +25,12 @@ async function setFieldConfig(targetConfig: FieldConfig): Promise<void> {
     const visibleSel = Settings.FieldConfig.visibleCheckbox(field)
     const requiredSel = Settings.FieldConfig.requiredCheckbox(field)
 
-    const isVisible = await getCheckedState(visibleSel)
-    if (isVisible !== visible) {
+    if ((await getCheckedState(visibleSel)) !== visible) {
       await toggleState(visibleSel, visible)
       await maybeWaitForSettingsUpdate()
     }
 
-    const isRequired = await getCheckedState(requiredSel)
-    if (isRequired !== required) {
+    if ((await getCheckedState(requiredSel)) !== required) {
       await toggleState(requiredSel, required)
       await maybeWaitForSettingsUpdate()
     }

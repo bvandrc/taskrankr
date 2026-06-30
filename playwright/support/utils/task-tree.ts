@@ -13,7 +13,7 @@ import {
 import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
-import { checkTasksExist } from './api'
+import { checkTasksExistBackend } from './api'
 import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
@@ -159,7 +159,7 @@ export async function changeStatusViaStatusChangeDialog(
   await completeBtn.click()
 
   if (updateWaiter) await updateWaiter
-  await checkTasksExist(allUpdated)
+  await checkTasksExistBackend(allUpdated)
   await expect(
     page.locator(Selectors.ChangeStatusDialog.DIALOG),
   ).not.toBeAttached()

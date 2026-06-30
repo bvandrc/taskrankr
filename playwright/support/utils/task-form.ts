@@ -14,7 +14,7 @@ import {
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
-import { checkTasksDontExist, checkTasksExist } from './api'
+import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { getCheckedState, toggleState } from './index'
 import type { CreatedTask, SubmitBtnArgs } from './intercepts'
 
@@ -83,7 +83,7 @@ export async function fillTaskForm(
     hasIncompleteSubtasks?: boolean
   } = {},
 ): Promise<void> {
-  await checkTasksDontExist([task])
+  await checkTasksDontExistBackend([task])
 
   await expect(form.locator(TaskForm.SUBMIT_BTN)).toBeDisabled()
   await expect(form.locator(TaskForm.ADD_SUBTASK_BTN)).toBeDisabled()
@@ -122,7 +122,7 @@ async function clickSubmitBtn(
   { newTasks = [], updatedTasks = [], confirmDialog }: SubmitBtnArgs = {},
 ): Promise<void> {
   if (newTasks.length > 0) {
-    await checkTasksDontExist(newTasks)
+    await checkTasksDontExistBackend(newTasks)
   }
 
   // Set up waiters BEFORE clicking to capture all responses
@@ -152,7 +152,7 @@ async function clickSubmitBtn(
   await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 
   if (newTasks.length > 0 || updatedTasks.length > 0) {
-    await checkTasksExist([...newTasks, ...updatedTasks])
+    await checkTasksExistBackend([...newTasks, ...updatedTasks])
     // Form should disappear after root-level submit
     await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
   }

@@ -3,7 +3,7 @@ import { TaskStatus } from '~/shared/schema'
 import { DefaultTaskFields, Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
-import { checkTasksDontExist } from '@test/support/utils/api'
+import { checkTasksDontExistBackend } from '@test/support/utils/api'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
@@ -42,7 +42,7 @@ for (const { contextName, isEdit } of [
           getPage().locator(TaskForm.CANCEL_CONFIRM_DIALOG),
         ).not.toBeAttached()
         await expect(getPage().locator(TaskForm.FORM)).not.toBeAttached()
-        await checkTasksDontExist([rootTask])
+        await checkTasksDontExistBackend([rootTask])
         checkNumCalls({ create: 0, update: 0 })
       })
     }
@@ -97,11 +97,11 @@ for (const { contextName, isEdit } of [
         page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
       ).not.toBeAttached()
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
-      await checkTasksDontExist([subtask])
+      await checkTasksDontExistBackend([subtask])
       if (isEdit) {
         checkNumCalls({ create: 1, update: 0 })
       } else {
-        await checkTasksDontExist([rootTask])
+        await checkTasksDontExistBackend([rootTask])
         checkNumCalls({ create: 0, update: 0 })
       }
     })
@@ -177,11 +177,11 @@ for (const { contextName, isEdit } of [
         page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
       ).not.toBeAttached()
       await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
-      await checkTasksDontExist([subtask, subtask2])
+      await checkTasksDontExistBackend([subtask, subtask2])
       if (isEdit) {
         checkNumCalls({ create: 1, update: 0 })
       } else {
-        await checkTasksDontExist([rootTask])
+        await checkTasksDontExistBackend([rootTask])
         checkNumCalls({ create: 0, update: 0 })
       }
     })
@@ -235,7 +235,7 @@ for (const { contextName, isEdit } of [
       if (isEdit) {
         checkNumCalls({ create: 1, update: 0 })
       } else {
-        await checkTasksDontExist([rootTask, subtask])
+        await checkTasksDontExistBackend([rootTask, subtask])
         checkNumCalls({ create: 0, update: 0 })
       }
     })

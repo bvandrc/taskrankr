@@ -4,7 +4,7 @@ import type { Task } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
-import { checkTasksDontExist, checkTasksExist } from './api'
+import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 
 export type CreatedTask = Pick<Task, 'name' | 'status'> &
   Partial<Pick<Task, 'priority' | 'ease' | 'enjoyment' | 'time' | 'schedule'>>
@@ -59,14 +59,14 @@ export async function waitForCreateAndVerify(
   tasks: CreatedTask[],
 ): Promise<void> {
   await maybeWaitForResponses('create', tasks.length, 201)
-  await checkTasksExist(tasks)
+  await checkTasksExistBackend(tasks)
 }
 
 export async function waitForUpdateAndVerify(
   tasks: CreatedTask[],
 ): Promise<void> {
   await maybeWaitForResponses('update', tasks.length, 200)
-  await checkTasksExist(tasks)
+  await checkTasksExistBackend(tasks)
 }
 
 export async function checkTasksDontExistAndAssertDontExist(
@@ -80,5 +80,5 @@ export async function checkTasksDontExistAndAssertDontExist(
       .waitFor({ state: 'detached', timeout: 500 })
       .catch(() => undefined)
   })
-  await checkTasksDontExist(tasks)
+  await checkTasksDontExistBackend(tasks)
 }

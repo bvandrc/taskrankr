@@ -62,7 +62,7 @@ test.describe('Assign Subtasks', () => {
       newTasks: [orphanTask2],
     })
 
-    // STEP: Create root task, create new subtask, assign sibling orphanTask
+    // STEP 1: Create root task, create new subtask, assign sibling orphanTask
     await page.locator(Selectors.CREATE_TASK_BTN).click()
     const form0 = getTaskForm(0)
     await fillTaskForm(form0, rootTask)
@@ -86,13 +86,13 @@ test.describe('Assign Subtasks', () => {
     })
     checkNumCalls({ create: 4, update: 1 })
 
-    // STEP: Edit root task, assign second orphan
+    // STEP 2: Edit root task, assign second orphan
     await openTaskEditForm(rootTask)
     const editForm0 = getTaskForm(0)
     await checkTaskFormSubtasks(editForm0, [orphanTask, newSubtask])
     await assignSubtask(editForm0, orphanTask2)
     await checkTaskFormSubtasks(getTaskForm(0), [
-      // all at same level, so we don't care about orde really.
+      // all at same level, so we don't care about order really.
       orphanTask,
       orphanTask2,
       newSubtask,

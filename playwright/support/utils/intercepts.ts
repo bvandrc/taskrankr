@@ -4,7 +4,7 @@ import type { Entries, SetOptional } from 'type-fest'
 
 import type { RankField, Task } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { waitForCreate, waitForUpdate } from '../fixtures'
+import { waitForCreateTask, waitForUpdateTask } from '../fixtures'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 
@@ -24,12 +24,12 @@ export type CreatedTask = SetOptional<
 >
 
 export async function waitForCreateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForCreate, tasks.length)
+  await maybeWaitForResponses(waitForCreateTask, tasks.length)
   await checkTasksExistBackend(tasks)
 }
 
 export async function waitForUpdateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForUpdate, tasks.length)
+  await maybeWaitForResponses(waitForUpdateTask, tasks.length)
   await checkTasksExistBackend(tasks)
 }
 

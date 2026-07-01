@@ -57,59 +57,49 @@ type Fixtures = {
   _setup: undefined
 }
 
-function isCreateResponse(r: Response) {
-  return (
+const getWaitForNResponses =
+  (predicate: (r: Response) => boolean) =>
+  (n: number, timeout = 15_000) => {
+    if (n === 0) return Promise.resolve()
+    const page = getPage()
+    return new Promise<void>((resolve, reject) => {
+      let count = 0
+      const timer = setTimeout(() => {
+        page.off('response', handler)
+        reject(
+          new Error(
+            `Timed out waiting for ${n} matching responses (got ${count})`,
+          ),
+        )
+      }, timeout)
+      const handler = (r: Response) => {
+        if (predicate(r)) {
+          count++
+          if (count >= n) {
+            clearTimeout(timer)
+            page.off('response', handler)
+            resolve()
+          }
+        }
+      }
+      page.on('response', handler)
+    })
+  }
+
+export const waitForCreateTask = getWaitForNResponses(
+  (r) =>
     r.url().includes(ApiPaths.GET_TASKS) &&
     r.request().method() === 'POST' &&
     !r.url().includes('/import') &&
-    r.status() === 201
-  )
-}
+    r.status() === 201,
+)
 
-function isUpdateResponse(r: Response) {
-  return (
+export const waitForUpdateTask = getWaitForNResponses(
+  (r) =>
     ApiPaths.UPDATE_TASK.test(r.url()) &&
     r.request().method() === 'PATCH' &&
-    r.status() === 200
-  )
-}
-
-export function waitForNResponses(
-  predicate: (r: Response) => boolean,
-  n: number,
-  timeout = 15_000,
-) {
-  if (n === 0) return Promise.resolve()
-  const page = getPage()
-  return new Promise<void>((resolve, reject) => {
-    let count = 0
-    const timer = setTimeout(() => {
-      page.off('response', handler)
-      reject(
-        new Error(
-          `Timed out waiting for ${n} matching responses (got ${count})`,
-        ),
-      )
-    }, timeout)
-    const handler = (r: Response) => {
-      if (predicate(r)) {
-        count++
-        if (count >= n) {
-          clearTimeout(timer)
-          page.off('response', handler)
-          resolve()
-        }
-      }
-    }
-    page.on('response', handler)
-  })
-}
-
-export const waitForCreate = (n: number) =>
-  waitForNResponses(isCreateResponse, n)
-
-export const waitForUpdate = (n: number) =>
-  waitForNResponses(isUpdateResponse, n)
+    r.status() === 200,
+)
 
 export const test = baseTest.extend<Fixtures>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright requires destructuring for the fixtures arg

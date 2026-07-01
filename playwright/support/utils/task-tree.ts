@@ -12,7 +12,7 @@ import {
   TaskStatus,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { waitForUpdate } from '../fixtures'
+import { waitForUpdateTask } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksExistBackend } from './api'
 import { expectWithFlag } from './index'
@@ -168,7 +168,9 @@ export async function changeStatusViaStatusChangeDialog(
     { ...task, status: newStatus },
     ...sideEffects,
   ] satisfies CreatedTask[]
-  const updateWaiter = getIsLoggedIn() ? waitForUpdate(allUpdated.length) : null
+  const updateWaiter = getIsLoggedIn()
+    ? waitForUpdateTask(allUpdated.length)
+    : null
 
   await expect(completeBtn).not.toBeDisabled()
   await completeBtn.click()

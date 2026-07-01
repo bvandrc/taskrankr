@@ -12,7 +12,7 @@ import {
   type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { waitForCreate, waitForUpdate } from '../fixtures'
+import { waitForCreateTask, waitForUpdateTask } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { expectWithFlag, getCheckedState, toggleState } from './index'
@@ -197,10 +197,12 @@ export class TaskFormLocator {
     // Set up waiters BEFORE clicking to capture all responses
     const isLoggedIn = getIsLoggedIn()
     const createWaiter =
-      isLoggedIn && newTasks.length > 0 ? waitForCreate(newTasks.length) : null
+      isLoggedIn && newTasks.length > 0
+        ? waitForCreateTask(newTasks.length)
+        : null
     const updateWaiter =
       isLoggedIn && updatedTasks.length > 0
-        ? waitForUpdate(updatedTasks.length)
+        ? waitForUpdateTask(updatedTasks.length)
         : null
 
     const submitBtn = this.locator(TaskForm.SUBMIT_BTN)

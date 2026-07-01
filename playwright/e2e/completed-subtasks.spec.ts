@@ -129,7 +129,10 @@ test.describe('Completed Subtasks', () => {
     await test.step('Create root task with uncompleted subtask', async () => {
       await createRootWithUncompletedSubtask(rootTask, subtask)
       checkNumCalls({ create: 2, update: 0 })
-      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] }) // expands the tree
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [subtask, buildTask('Subtask2', TaskStatus.OPEN)],
+      }) // expands the tree // TODO: test debug
     })
 
     await test.step('Complete subtask via status change dialog', async () => {

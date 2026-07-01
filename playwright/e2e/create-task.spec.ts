@@ -1,9 +1,8 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
-import type { CreatedTask } from '@test/support/utils/intercepts'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
 import {
@@ -18,12 +17,8 @@ test.describe('Task Creation', () => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  test('create a task, check displays in main tree', async ({ taskName }) => {
-    const task = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+  test('create a task, check displays in main tree', async ({ buildTask }) => {
+    const task = buildTask('Root Task', TaskStatus.PINNED)
 
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     await fillTaskForm(getTaskForm(0), task)
@@ -35,7 +30,7 @@ test.describe('Task Creation', () => {
 
   test('change rank field visibility/required in settings, check form matches new settings, create task', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
     const fieldConfig = {
       priority: { visible: true, required: true },
@@ -44,13 +39,10 @@ test.describe('Task Creation', () => {
       time: { visible: true, required: false },
     } as const satisfies FieldConfig
 
-    const newTask = {
-      ...DefaultTaskFields,
-      name: taskName('Field Config Test Task'),
-      status: TaskStatus.PINNED,
+    const newTask = buildTask('Field Config Test Task', TaskStatus.PINNED, {
       ease: null,
       enjoyment: null,
-    } as const satisfies CreatedTask
+    })
 
     // STEP 1: Update rank field settings
     await setSettings({ fieldConfig })

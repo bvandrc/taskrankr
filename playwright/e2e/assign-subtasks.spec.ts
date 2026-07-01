@@ -1,8 +1,8 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { Priority, TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   assignSubtask,
   checkTaskFormSubtasks,
@@ -23,34 +23,21 @@ test.describe('Assign Subtasks', () => {
 
   test('assign an existing orphaned task as a subtask of a task', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const orphanTask = {
-      ...DefaultTaskFields,
+    const orphanTask = buildTask('Orphan Task 1', TaskStatus.PINNED, {
       priority: Priority.HIGH,
-      name: taskName('Orphan Task 1'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    })
 
-    const orphanTask2 = {
-      ...DefaultTaskFields,
+    const orphanTask2 = buildTask('Orphan Task 2', TaskStatus.PINNED, {
       priority: Priority.MEDIUM,
-      name: taskName('Orphan Task 2'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    })
 
-    const newSubtask = {
-      ...DefaultTaskFields,
+    const newSubtask = buildTask('New Subtask', TaskStatus.OPEN, {
       priority: Priority.LOW,
-      name: taskName('New Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    })
 
     // STEP 1: Create orphan tasks
     await page.locator(Selectors.CREATE_TASK_BTN).click()

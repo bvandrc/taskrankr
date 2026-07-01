@@ -1,6 +1,6 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
@@ -22,13 +22,9 @@ test.describe('Completed Tasks', () => {
   })
 
   test('complete task via New Task Form — not in main tree, is on completed page', async ({
-    taskName,
+    buildTask,
   }) => {
-    const task = {
-      ...DefaultTaskFields,
-      name: taskName('Test Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const task = buildTask('Test Task', TaskStatus.PINNED)
 
     const completedTask = {
       ...task,
@@ -48,13 +44,9 @@ test.describe('Completed Tasks', () => {
   })
 
   test('complete task via Edit Form — not in main tree, is on completed page', async ({
-    taskName,
+    buildTask,
   }) => {
-    const task = {
-      ...DefaultTaskFields,
-      name: taskName('Test Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const task = buildTask('Test Task', TaskStatus.PINNED)
 
     const completedTask = {
       ...task,
@@ -83,13 +75,9 @@ test.describe('Completed Tasks', () => {
   })
 
   test('complete task via Change Status Dialog — not in main tree, is on completed page', async ({
-    taskName,
+    buildTask,
   }) => {
-    const task = {
-      ...DefaultTaskFields,
-      name: taskName('Test Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const task = buildTask('Test Task', TaskStatus.PINNED)
 
     const completedTask = {
       ...task,

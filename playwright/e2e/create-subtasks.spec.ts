@@ -1,6 +1,6 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage, goToHomePage } from '@test/support/utils/navigation'
@@ -24,25 +24,13 @@ test.describe('Create Subtasks', () => {
 
   test('create a subtask, check appears in tree', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 1'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
-    const subtask2 = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 2'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -84,31 +72,15 @@ test.describe('Create Subtasks', () => {
 
   test('create multiple subtasks, check appear in tree', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 1'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
-    const subtask2 = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 2'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
-    const subtask3 = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 3'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -159,31 +131,15 @@ test.describe('Create Subtasks', () => {
 
   test('create nested subtasks, ensure appear in tree', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 1'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
-    const subtask2 = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 2'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
-    const subtask3 = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask 3'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
 
     // STEP 1: Open new task form and fill root task
     await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -226,24 +182,16 @@ test.describe('Create Subtasks', () => {
   test.describe('Adding subtasks to a completed task', () => {
     test('adding open subtask — save dialog appears, parent re-opens on home page', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 1'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const form0 = getTaskForm(0)
@@ -278,24 +226,16 @@ test.describe('Create Subtasks', () => {
 
     test('adding completed subtask — no dialog, parent stays on completed page', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 1'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       const completedSubtask = {
         ...subtask,

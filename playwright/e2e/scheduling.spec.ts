@@ -1,6 +1,6 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
@@ -25,13 +25,9 @@ test.describe('Scheduling', () => {
 
   test('create a task with a due date, verify due badge displays on task card', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const baseTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const baseTask = buildTask('Root Task', TaskStatus.PINNED)
 
     const taskWithDueDate = {
       ...baseTask,
@@ -62,13 +58,9 @@ test.describe('Scheduling', () => {
   })
 
   test('task with hideUntil in the future is hidden from home page', async ({
-    taskName,
+    buildTask,
   }) => {
-    const baseTask = {
-      ...DefaultTaskFields,
-      name: taskName('Hidden Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const baseTask = buildTask('Hidden Task', TaskStatus.PINNED)
 
     const hiddenTask = {
       ...baseTask,

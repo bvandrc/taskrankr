@@ -1,8 +1,8 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkDate,
   clickSubmitBtnCreate,
@@ -20,13 +20,9 @@ test.describe('Edit Task', () => {
 
   test('date created shows today and can be changed via the date picker', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const task = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const task = buildTask('Root Task', TaskStatus.PINNED)
 
     const today = new Date()
     // Pick a day in the same month that isn't today

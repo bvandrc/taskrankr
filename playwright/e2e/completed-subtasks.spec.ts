@@ -1,6 +1,6 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
@@ -48,19 +48,11 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via New Task Form - present in main tree as crossed out, not in completed page', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
     const completedSubtask = {
       ...subtask,
@@ -94,19 +86,11 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via Edit Form - present in main tree as crossed out, not in completed page', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
     const completedSubtask = {
       ...subtask,
@@ -140,19 +124,11 @@ test.describe('Completed Subtasks', () => {
 
   test('complete subtask via Change Status Dialog - present in main tree as crossed out, not in completed page', async ({
     page,
-    taskName,
+    buildTask,
   }) => {
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const subtask = {
-      ...DefaultTaskFields,
-      name: taskName('Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
     const completedSubtask = {
       ...subtask,
@@ -180,24 +156,16 @@ test.describe('Completed Subtasks', () => {
   test.describe('Auto-complete parent when all subtasks completed', () => {
     test('auto-completes parent when inheritCompletionState is enabled first, then last subtask becomes completed', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
       const completedSubtask = {
         ...subtask,
@@ -231,24 +199,16 @@ test.describe('Completed Subtasks', () => {
 
     test('auto-completes parent when inheritCompletionState becomes enabled after all subtasks already completed', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
       const completedSubtask = {
         ...subtask,
@@ -289,35 +249,23 @@ test.describe('Completed Subtasks', () => {
 
     test('auto-completes grandparent chain when completing the last subtask', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
 
-      const subtask2 = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 2'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
       const completedSubtask2 = {
         ...subtask2,
@@ -375,25 +323,13 @@ test.describe('Completed Subtasks', () => {
     test.describe('When creating a new root task', () => {
       test('via completion checkbox in new subtask form', async ({
         page,
-        taskName,
+        buildTask,
       }) => {
-        const rootTask = {
-          ...DefaultTaskFields,
-          name: taskName('Root Task'),
-          status: TaskStatus.PINNED,
-        } as const satisfies CreatedTask
+        const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-        const subtask = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
-        const subtask2 = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask 2'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
         const completedSubtask2 = {
           ...subtask2,
@@ -432,25 +368,13 @@ test.describe('Completed Subtasks', () => {
 
       test('via completion checkbox in edit subtask form', async ({
         page,
-        taskName,
+        buildTask,
       }) => {
-        const rootTask = {
-          ...DefaultTaskFields,
-          name: taskName('Root Task'),
-          status: TaskStatus.PINNED,
-        } as const satisfies CreatedTask
+        const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-        const subtask = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
-        const subtask2 = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask 2'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
         const completedSubtask2 = {
           ...subtask2,
@@ -493,24 +417,12 @@ test.describe('Completed Subtasks', () => {
     })
 
     test.describe('When editing an existing root task', () => {
-      test('with subtasks already completed', async ({ page, taskName }) => {
-        const rootTask = {
-          ...DefaultTaskFields,
-          name: taskName('Root Task'),
-          status: TaskStatus.PINNED,
-        } as const satisfies CreatedTask
+      test('with subtasks already completed', async ({ page, buildTask }) => {
+        const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-        const subtask = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask = buildTask('Subtask', TaskStatus.OPEN)
 
-        const subtask2 = {
-          ...DefaultTaskFields,
-          name: taskName('Subtask 2'),
-          status: TaskStatus.OPEN,
-        } as const satisfies CreatedTask
+        const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
         const completedSubtask2 = {
           ...subtask2,

@@ -4,10 +4,11 @@ import {
   request as playwrightRequest,
   type Response,
 } from '@playwright/test'
+import type { EmptyObject, Except, Simplify, Spread } from 'type-fest'
 
 import { TestPaths } from '~/shared/constants'
-import type { Task } from '~/shared/schema'
-import { ApiPaths } from './constants'
+import type { Task, TaskStatus } from '~/shared/schema'
+import { ApiPaths, DefaultTaskFields } from './constants'
 import {
   getPage,
   setApiContext,
@@ -26,11 +27,33 @@ export type RequestCounts = {
   updateSettings: number
 }
 
+type BuildTaskFields = Partial<Except<Task, 'name' | 'status'>>
+
+function buildTask(testSuffix: string) {
+  return function buildTaskForTest<
+    N extends string,
+    S extends TaskStatus,
+    F extends BuildTaskFields | undefined = undefined,
+  >(name: N, status: S, fields?: F) {
+    return {
+      ...DefaultTaskFields,
+      ...fields,
+      status,
+      name: `${name} [${testSuffix}]`,
+    } as Simplify<
+      Spread<
+        Spread<typeof DefaultTaskFields, F extends undefined ? EmptyObject : F>,
+        { name: N; status: S }
+      >
+    >
+  }
+}
+
 type Fixtures = {
   userMode: UserMode
   isLoggedIn: boolean
   testSuffix: string
-  taskName: (baseName: string) => string
+  buildTask: ReturnType<typeof buildTask>
   _setup: undefined
 }
 
@@ -104,8 +127,8 @@ export const test = baseTest.extend<Fixtures>({
     await use(suffix)
   },
 
-  taskName: async ({ testSuffix }, use) => {
-    await use((baseName: string) => `${baseName} [${testSuffix}]`)
+  buildTask: async ({ testSuffix }, use) => {
+    await use(buildTask(testSuffix))
   },
 
   _setup: [

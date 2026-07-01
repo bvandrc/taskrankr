@@ -1,8 +1,8 @@
 import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
-import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
@@ -13,26 +13,17 @@ import {
 import { openTaskEditForm } from '@test/support/utils/task-tree'
 
 test.describe('Hiding Subtasks', () => {
-  test.beforeEach(async ({ page, isLoggedIn, taskName }) => {
+  test.beforeEach(async ({ page, isLoggedIn, buildTask }) => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
 
-    const rootTask = {
-      ...DefaultTaskFields,
-      name: taskName('Root Task'),
-      status: TaskStatus.PINNED,
-    } as const satisfies CreatedTask
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-    const openSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Open Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
 
-    const completedSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Completed Subtask'),
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
+    const completedSubtask = buildTask(
+      'Completed Subtask',
+      TaskStatus.COMPLETED,
+    )
 
     // STEP 1: Create rootTask with one open and one completed subtask; auto-hide completed is enabled,
     // so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.
@@ -59,19 +50,14 @@ test.describe('Hiding Subtasks', () => {
   })
 
   test('shows and hides hidden subtasks via the toggle button', async ({
-    taskName,
+    buildTask,
   }) => {
-    const openSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Open Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
 
-    const completedSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Completed Subtask'),
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
+    const completedSubtask = buildTask(
+      'Completed Subtask',
+      TaskStatus.COMPLETED,
+    )
 
     const form0 = getTaskForm(0)
     await checkTaskFormSubtasks(form0, [openSubtask])
@@ -84,19 +70,14 @@ test.describe('Hiding Subtasks', () => {
   })
 
   test('preserves show-hidden state after saving a subtask form and returning to parent', async ({
-    taskName,
+    buildTask,
   }) => {
-    const openSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Open Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
 
-    const completedSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Completed Subtask'),
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
+    const completedSubtask = buildTask(
+      'Completed Subtask',
+      TaskStatus.COMPLETED,
+    )
 
     const form0 = getTaskForm(0)
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
@@ -111,19 +92,14 @@ test.describe('Hiding Subtasks', () => {
   })
 
   test('preserves show-hidden state after cancelling a subtask form and returning to parent', async ({
-    taskName,
+    buildTask,
   }) => {
-    const openSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Open Subtask'),
-      status: TaskStatus.OPEN,
-    } as const satisfies CreatedTask
+    const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
 
-    const completedSubtask = {
-      ...DefaultTaskFields,
-      name: taskName('Completed Subtask'),
-      status: TaskStatus.COMPLETED,
-    } as const satisfies CreatedTask
+    const completedSubtask = buildTask(
+      'Completed Subtask',
+      TaskStatus.COMPLETED,
+    )
 
     const form0 = getTaskForm(0)
     await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()

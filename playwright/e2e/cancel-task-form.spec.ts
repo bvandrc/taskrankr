@@ -1,10 +1,10 @@
 ﻿import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
+import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { checkTasksDontExistBackend } from '@test/support/utils/api'
-import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkTaskFormSubtasks,
   clickSubmitBtnCreate,
@@ -26,13 +26,9 @@ for (const { contextName, isEdit } of [
 
     if (!isEdit) {
       test('cancel on create form before adding any subtask — dialog closes, no task created', async ({
-        taskName,
+        buildTask,
       }) => {
-        const rootTask = {
-          ...DefaultTaskFields,
-          name: taskName('Root Task'),
-          status: TaskStatus.PINNED,
-        } as const satisfies CreatedTask
+        const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
         await getPage().locator(Selectors.CREATE_TASK_BTN).click()
         await fillTaskForm(getTaskForm(0), rootTask)
@@ -49,19 +45,11 @@ for (const { contextName, isEdit } of [
 
     test('cancel on parent form after a subtask was added — confirmation dialog appears, discard removes all', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 1'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       if (isEdit) {
         // STEP 0.1: Create root task
@@ -107,25 +95,13 @@ for (const { contextName, isEdit } of [
 
     test('cancel on parent form after multiple subtasks — correct count in dialog, deny/confirm flows', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 1'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
-      const subtask2 = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 2'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
       if (isEdit) {
         // STEP 0.1: Create root task
@@ -187,19 +163,11 @@ for (const { contextName, isEdit } of [
 
     test('cancel on subtask form navigates back to parent, then cancel parent discards without confirmation', async ({
       page,
-      taskName,
+      buildTask,
     }) => {
-      const rootTask = {
-        ...DefaultTaskFields,
-        name: taskName('Root Task'),
-        status: TaskStatus.PINNED,
-      } as const satisfies CreatedTask
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
-      const subtask = {
-        ...DefaultTaskFields,
-        name: taskName('Subtask 1'),
-        status: TaskStatus.OPEN,
-      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       if (isEdit) {
         // STEP 0.1: Create root task

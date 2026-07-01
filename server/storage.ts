@@ -48,7 +48,7 @@ export class DatabaseStorage implements IStorage {
   /**
    * Loads all tasks for `userId`, opportunistically self-healing legacy data.
    */
-  async getTasks(userId: string): Promise<Task[]> {
+  async getTasks(userId: string) {
     const result = await db
       .select()
       .from(tasks)
@@ -93,7 +93,7 @@ export class DatabaseStorage implements IStorage {
     return result
   }
 
-  async getTask(id: number, userId: string): Promise<Task | undefined> {
+  async getTask(id: number, userId: string) {
     const [task] = await db
       .select()
       .from(tasks)
@@ -101,17 +101,14 @@ export class DatabaseStorage implements IStorage {
     return task
   }
 
-  async getSubtasks(parentId: number, userId: string): Promise<Task[]> {
+  async getSubtasks(parentId: number, userId: string) {
     return await db
       .select()
       .from(tasks)
       .where(and(eq(tasks.parentId, parentId), eq(tasks.userId, userId)))
   }
 
-  async findInProgressTask(
-    userId: string,
-    excludeId: number,
-  ): Promise<Task | undefined> {
+  async findInProgressTask(userId: string, excludeId: number) {
     const [task] = await db
       .select()
       .from(tasks)
@@ -126,16 +123,12 @@ export class DatabaseStorage implements IStorage {
     return task
   }
 
-  async createTask(insertTask: InsertTask): Promise<Task> {
+  async createTask(insertTask: InsertTask) {
     const [task] = await db.insert(tasks).values(insertTask).returning()
     return task
   }
 
-  async updateTask(
-    id: number,
-    userId: string,
-    updates: UpdateTaskArg,
-  ): Promise<Task> {
+  async updateTask(id: number, userId: string, updates: UpdateTaskArg) {
     const [task] = await db
       .update(tasks)
       .set(updates)
@@ -144,11 +137,11 @@ export class DatabaseStorage implements IStorage {
     return task
   }
 
-  async deleteTask(id: number, userId: string): Promise<void> {
+  async deleteTask(id: number, userId: string) {
     await db.delete(tasks).where(taskByIdAndUser(id, userId))
   }
 
-  async getSettings(userId: string): Promise<UserSettings> {
+  async getSettings(userId: string) {
     const [settings] = await db
       .select()
       .from(userSettings)
@@ -163,10 +156,7 @@ export class DatabaseStorage implements IStorage {
     return newSettings
   }
 
-  async updateSettings(
-    userId: string,
-    updates: Partial<UserSettings>,
-  ): Promise<UserSettings> {
+  async updateSettings(userId: string, updates: Partial<UserSettings>) {
     await this.getSettings(userId)
 
     const { userId: _, ...updateData } = sanitizeSettings(updates)
@@ -178,7 +168,7 @@ export class DatabaseStorage implements IStorage {
     return sanitizeSettings(settings)
   }
 
-  async deleteUserItems(userId: string): Promise<void> {
+  async deleteUserItems(userId: string) {
     await db.delete(tasks).where(eq(tasks.userId, userId))
     await db.delete(userSettings).where(eq(userSettings.userId, userId))
   }

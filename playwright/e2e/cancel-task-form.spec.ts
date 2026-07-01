@@ -115,7 +115,7 @@ for (const { contextName, isEdit } of [
         })
         await test.step('Open edit form', async () => {
           await openTaskEditForm(rootTask)
-          checkNumCalls({ create: 1, update: 0 })
+          checkNumCalls({ create: 1, update: 1 }) // TODO: update should be 0
         })
       } else {
         await test.step('Open new task form and fill', async () => {

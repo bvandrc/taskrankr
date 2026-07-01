@@ -38,7 +38,10 @@ const getTaskCardLocator = (
   task: Pick<Task, 'name'>,
 ): Locator => {
   return scope.locator(TaskCard.CARD).filter({
-    has: scope
+    // `has` must be page-rooted, not `scope`-rooted: inside a filter its `:scope`
+    // binds to the candidate card. Rooting it at `scope` (the parent card for
+    // subtasks) points `:scope` at the parent instead, so it matches nothing.
+    has: getPage()
       .locator(TOP_LEVEL_CARD_TITLE_SEL)
       // Escape: task names carry a `[wN-xxxxx]` suffix that is otherwise parsed
       // as a regex character class (and `N-x` as an invalid range).

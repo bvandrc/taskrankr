@@ -102,9 +102,7 @@ for (const { contextName, isEdit } of [
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
-
       const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
       if (isEdit) {
@@ -178,7 +176,6 @@ for (const { contextName, isEdit } of [
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       if (isEdit) {

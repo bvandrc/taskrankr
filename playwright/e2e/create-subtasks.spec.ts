@@ -27,9 +27,7 @@ test.describe('Create Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
-
     const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
     const form0 = getTaskForm(0)
@@ -78,11 +76,8 @@ test.describe('Create Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
-
     const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
-
     const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
 
     const form0 = getTaskForm(0)
@@ -140,11 +135,8 @@ test.describe('Create Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
-
     const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
-
     const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
 
     const form0 = getTaskForm(0)
@@ -194,12 +186,10 @@ test.describe('Create Subtasks', () => {
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
@@ -242,14 +232,11 @@ test.describe('Create Subtasks', () => {
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
-
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,

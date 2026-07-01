@@ -28,7 +28,6 @@ test.describe('Scheduling', () => {
     buildTask,
   }) => {
     const baseTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const taskWithDueDate = {
       ...baseTask,
       schedule: {
@@ -67,7 +66,6 @@ test.describe('Scheduling', () => {
     buildTask,
   }) => {
     const baseTask = buildTask('Hidden Task', TaskStatus.PINNED)
-
     const hiddenTask = {
       ...baseTask,
       schedule: {

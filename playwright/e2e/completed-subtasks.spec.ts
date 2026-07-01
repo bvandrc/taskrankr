@@ -51,9 +51,7 @@ test.describe('Completed Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
     const completedSubtask = {
       ...subtask,
       status: TaskStatus.COMPLETED,
@@ -90,9 +88,7 @@ test.describe('Completed Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
     const completedSubtask = {
       ...subtask,
       status: TaskStatus.COMPLETED,
@@ -130,9 +126,7 @@ test.describe('Completed Subtasks', () => {
     buildTask,
   }) => {
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
     const completedSubtask = {
       ...subtask,
       status: TaskStatus.COMPLETED,
@@ -164,14 +158,11 @@ test.describe('Completed Subtasks', () => {
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
@@ -209,14 +200,11 @@ test.describe('Completed Subtasks', () => {
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
@@ -261,19 +249,15 @@ test.describe('Completed Subtasks', () => {
       buildTask,
     }) => {
       const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
       const completedRootTask = {
         ...rootTask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
       const completedSubtask = {
         ...subtask,
         status: TaskStatus.COMPLETED,
       } as const satisfies CreatedTask
-
       const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
       const completedSubtask2 = {
@@ -342,11 +326,8 @@ test.describe('Completed Subtasks', () => {
         buildTask,
       }) => {
         const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
         const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
         const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
-
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,
@@ -392,11 +373,8 @@ test.describe('Completed Subtasks', () => {
         buildTask,
       }) => {
         const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
         const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
         const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
-
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,
@@ -447,11 +425,8 @@ test.describe('Completed Subtasks', () => {
     test.describe('When editing an existing root task', () => {
       test('with subtasks already completed', async ({ page, buildTask }) => {
         const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
         const subtask = buildTask('Subtask', TaskStatus.OPEN)
-
         const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
-
         const completedSubtask2 = {
           ...subtask2,
           status: TaskStatus.COMPLETED,

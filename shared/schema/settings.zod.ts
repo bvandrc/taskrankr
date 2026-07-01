@@ -27,11 +27,7 @@ export type FieldConfig = z.infer<typeof fieldConfigSchema>
 
 export const DEFAULT_FIELD_CONFIG = createObject(
   RankFields,
-  () =>
-    ({
-      visible: true,
-      required: true,
-    }) as const,
+  () => ({ visible: true, required: true }) as const,
 ) satisfies FieldConfig
 
 /** Ensures `required` is always false whenever `visible` is false. */

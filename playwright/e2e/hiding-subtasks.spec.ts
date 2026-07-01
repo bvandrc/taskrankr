@@ -17,9 +17,7 @@ test.describe('Hiding Subtasks', () => {
     await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
 
     const rootTask = buildTask('Root Task', TaskStatus.PINNED)
-
     const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
-
     const completedSubtask = buildTask(
       'Completed Subtask',
       TaskStatus.COMPLETED,
@@ -53,7 +51,6 @@ test.describe('Hiding Subtasks', () => {
     buildTask,
   }) => {
     const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
-
     const completedSubtask = buildTask(
       'Completed Subtask',
       TaskStatus.COMPLETED,
@@ -73,7 +70,6 @@ test.describe('Hiding Subtasks', () => {
     buildTask,
   }) => {
     const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
-
     const completedSubtask = buildTask(
       'Completed Subtask',
       TaskStatus.COMPLETED,
@@ -95,7 +91,6 @@ test.describe('Hiding Subtasks', () => {
     buildTask,
   }) => {
     const openSubtask = buildTask('Open Subtask', TaskStatus.OPEN)
-
     const completedSubtask = buildTask(
       'Completed Subtask',
       TaskStatus.COMPLETED,

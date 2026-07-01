@@ -25,7 +25,6 @@ test.describe('Completed Tasks', () => {
     buildTask,
   }) => {
     const task = buildTask('Test Task', TaskStatus.PINNED)
-
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,
@@ -50,7 +49,6 @@ test.describe('Completed Tasks', () => {
     buildTask,
   }) => {
     const task = buildTask('Test Task', TaskStatus.PINNED)
-
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,
@@ -83,7 +81,6 @@ test.describe('Completed Tasks', () => {
     buildTask,
   }) => {
     const task = buildTask('Test Task', TaskStatus.PINNED)
-
     const completedTask = {
       ...task,
       status: TaskStatus.COMPLETED,

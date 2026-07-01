@@ -2,7 +2,6 @@ import {
   test as baseTest,
   expect,
   request as playwrightRequest,
-  type Response,
 } from '@playwright/test'
 import type { EmptyObject, Except, Simplify, Spread } from 'type-fest'
 
@@ -10,7 +9,6 @@ import { TestPaths } from '~/shared/constants'
 import type { Task, TaskStatus } from '~/shared/schema'
 import { ApiPaths, DefaultTaskFields } from './constants'
 import {
-  getPage,
   setApiContext,
   setIsLoggedIn,
   setPage,
@@ -56,50 +54,6 @@ type Fixtures = {
   buildTask: ReturnType<typeof buildTask>
   _setup: undefined
 }
-
-const getWaitForNResponses =
-  (predicate: (r: Response) => boolean) =>
-  (n: number, timeout = 15_000) => {
-    if (n === 0) return Promise.resolve()
-    const page = getPage()
-    return new Promise<void>((resolve, reject) => {
-      let count = 0
-      const timer = setTimeout(() => {
-        page.off('response', handler)
-        reject(
-          new Error(
-            `Timed out waiting for ${n} matching responses (got ${count})`,
-          ),
-        )
-      }, timeout)
-      const handler = (r: Response) => {
-        if (predicate(r)) {
-          count++
-          if (count >= n) {
-            clearTimeout(timer)
-            page.off('response', handler)
-            resolve()
-          }
-        }
-      }
-      page.on('response', handler)
-    })
-  }
-
-export const waitForCreateTask = getWaitForNResponses(
-  (r) =>
-    r.url().includes(ApiPaths.GET_TASKS) &&
-    r.request().method() === 'POST' &&
-    !r.url().includes('/import') &&
-    r.status() === 201,
-)
-
-export const waitForUpdateTask = getWaitForNResponses(
-  (r) =>
-    ApiPaths.UPDATE_TASK.test(r.url()) &&
-    r.request().method() === 'PATCH' &&
-    r.status() === 200,
-)
 
 export const test = baseTest.extend<Fixtures>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright requires destructuring for the fixtures arg

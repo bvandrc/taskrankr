@@ -1,37 +1,60 @@
-import { expect } from '@playwright/test'
+import { expect, type Response } from '@playwright/test'
 import { mapValues } from 'es-toolkit'
 import type { Entries, SetOptional } from 'type-fest'
 
 import type { RankField, Task } from '~/shared/schema'
-import { Selectors } from '../constants'
-import { waitForCreateTask, waitForUpdateTask } from '../fixtures'
+import { ApiPaths } from '../constants'
 import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
-import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
-
-async function maybeWaitForResponses(
-  waiter: (count: number) => Promise<void>,
-  count: number,
-) {
-  if (getIsLoggedIn() && count > 0) {
-    await waiter(count)
-  }
-  await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
-}
+import { checkTasksDontExistBackend } from './api'
 
 export type CreatedTask = SetOptional<
   Pick<Task, 'name' | 'status' | 'schedule' | RankField>,
   'schedule'
 >
 
-export async function waitForCreateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForCreateTask, tasks.length)
-  await checkTasksExistBackend(tasks)
-}
+const getWaitForNResponses =
+  (predicate: (r: Response) => boolean) =>
+  (n: number, timeout = 15_000) => {
+    if (n === 0) return Promise.resolve()
+    const page = getPage()
+    return new Promise<void>((resolve, reject) => {
+      let count = 0
+      const timer = setTimeout(() => {
+        page.off('response', handler)
+        reject(
+          new Error(
+            `Timed out waiting for ${n} matching responses (got ${count})`,
+          ),
+        )
+      }, timeout)
+      const handler = (r: Response) => {
+        if (predicate(r)) {
+          count++
+          if (count >= n) {
+            clearTimeout(timer)
+            page.off('response', handler)
+            resolve()
+          }
+        }
+      }
+      page.on('response', handler)
+    })
+  }
 
-export async function waitForUpdateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForUpdateTask, tasks.length)
-  await checkTasksExistBackend(tasks)
-}
+export const waitForCreateTask = getWaitForNResponses(
+  (r) =>
+    r.url().includes(ApiPaths.GET_TASKS) &&
+    r.request().method() === 'POST' &&
+    !r.url().includes('/import') &&
+    r.status() === 201,
+)
+
+export const waitForUpdateTask = getWaitForNResponses(
+  (r) =>
+    ApiPaths.UPDATE_TASK.test(r.url()) &&
+    r.request().method() === 'PATCH' &&
+    r.status() === 200,
+)
 
 export async function checkTasksDontExistAndAssertDontExist(
   tasks: CreatedTask[],

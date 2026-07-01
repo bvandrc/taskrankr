@@ -12,11 +12,11 @@ import {
   TaskStatus,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { waitForUpdateTask } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksExistBackend } from './api'
 import { expectWithFlag } from './index'
 import type { CreatedTask } from './intercepts'
+import { waitForUpdateTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors

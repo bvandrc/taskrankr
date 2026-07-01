@@ -12,11 +12,11 @@ import {
   type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { waitForCreateTask, waitForUpdateTask } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { expectWithFlag, getCheckedState, toggleState } from './index'
 import type { CreatedTask } from './intercepts'
+import { waitForCreateTask, waitForUpdateTask } from './intercepts'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
 
@@ -190,6 +190,9 @@ export class TaskFormLocator {
     submitBtnText: string,
     { newTasks = [], updatedTasks = [], confirmDialog }: SubmitBtnArgs = {},
   ) {
+    const page = getPage()
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+
     if (newTasks.length > 0) {
       await checkTasksDontExistBackend(newTasks)
     }
@@ -210,8 +213,9 @@ export class TaskFormLocator {
     await expect(submitBtn).not.toBeDisabled()
     await submitBtn.click()
 
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+
     if (confirmDialog) {
-      const page = getPage()
       await expect(page.locator(confirmDialog)).toBeVisible()
       await page.locator(Selectors.ConfirmDialog.CONFIRM_BTN).click()
     }
@@ -219,8 +223,7 @@ export class TaskFormLocator {
     if (createWaiter) await createWaiter
     if (updateWaiter) await updateWaiter
 
-    const page = getPage()
-    await expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 
     if (newTasks.length > 0 || updatedTasks.length > 0) {
       await checkTasksExistBackend([...newTasks, ...updatedTasks])

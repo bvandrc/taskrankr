@@ -20,6 +20,8 @@ import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
+const TOP_LEVEL_CARD_TITLE_SEL =
+  `:scope > div:first-child ${TaskCard.THIS_TASK_INFO} ${TaskCard.TITLE}` as const
 
 type TaskTreeNode = PickDeep<
   CreatedTask,
@@ -31,30 +33,24 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-function getTaskCardTitle(
+const getTaskCardLocator = (
   scope: Locator | Page,
   task: Pick<Task, 'name'>,
-): Locator {
-  return (
-    scope
-      .locator(`${TaskCard.CARD} ${TaskCard.TITLE}`)
+): Locator => {
+  return scope.locator(TaskCard.CARD).filter({
+    has: scope
+      .locator(TOP_LEVEL_CARD_TITLE_SEL)
       // Escape: task names carry a `[wN-xxxxx]` suffix that is otherwise parsed
       // as a regex character class (and `N-x` as an invalid range).
-      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) })
-  )
+      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) }),
+  })
 }
 
 async function getTaskCard(
   scope: Locator | Page,
-  task: TaskTreeNode,
+  task: Pick<Task, 'name'>,
 ): Promise<Locator> {
-  const card = scope.locator(TaskCard.CARD).filter({
-    has: scope
-      .locator(
-        `:scope > div:first-child ${TaskCard.THIS_TASK_INFO} ${TaskCard.TITLE}`,
-      )
-      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) }),
-  })
+  const card = getTaskCardLocator(scope, task)
   await expect(card).toHaveCount(1)
   await card.scrollIntoViewIfNeeded()
   await expect(card).toBeVisible()
@@ -67,13 +63,13 @@ async function checkTitleAndSubtasks(
   tier: number,
   settings: FieldConfig,
 ) {
-  const title = getTaskCardTitle(scope, task)
+  let card = await getTaskCard(scope, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
   await expectWithFlag(
     title,
     tier > 0 && task.status === TaskStatus.COMPLETED,
   ).toHaveClass(/line-through/)
 
-  let card = await getTaskCard(scope, task)
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
   await expect(taskInfo).toHaveAttribute('data-status', task.status)
 
@@ -131,13 +127,16 @@ export async function expandAndCheckTree(
 export async function openTaskEditForm(task: Pick<Task, 'name'>) {
   const page = getPage()
   await expect(page.locator(Selectors.TaskForm.FORM)).not.toBeAttached()
-  await getTaskCardTitle(page, task).click()
+  const card = await getTaskCard(page, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
+  await title.click()
   await expect(page.locator(Selectors.TaskForm.FORM)).toBeVisible()
 }
 
 export async function openStatusChangeDialog(task: Pick<Task, 'name'>) {
   const page = getPage()
-  const title = getTaskCardTitle(page, task)
+  const card = await getTaskCard(page, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
   await page.clock.install()
   await title.dispatchEvent('mousedown')
   await page.clock.fastForward(900)
@@ -182,7 +181,7 @@ export async function checkCompletedPage(completedTasks: TaskTreeNode[]) {
   await checkIsAtHomePage()
   const page = getPage()
   for (const task of flattenTree(completedTasks)) {
-    await expect(getTaskCardTitle(page, task)).not.toBeAttached()
+    await expect(getTaskCardLocator(page, task)).not.toBeAttached()
   }
 
   await goToCompletedPage()

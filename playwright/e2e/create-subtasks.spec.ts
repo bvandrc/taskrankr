@@ -187,7 +187,21 @@ test.describe('Create Subtasks', () => {
       checkNumCalls({ create: 4, update: 0 })
     })
 
-    // TODO: test EDIT
+    await test.step('Edit root task - verify nested subtask structure is preserved', async () => {
+      await openTaskEditForm(rootTask)
+      const editedRootTaskForm = getTaskForm(0)
+      // Root task's direct child list shows only the top-level subtask
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask])
+      await editedRootTaskForm.clickSubmitBtnUpdate({
+        updatedTasks: [rootTask],
+      })
+
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
+      })
+      checkNumCalls({ create: 4, update: 1 })
+    })
   })
 
   test.describe('Adding subtasks to a completed task', () => {

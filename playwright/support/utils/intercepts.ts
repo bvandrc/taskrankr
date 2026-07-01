@@ -11,11 +11,9 @@ import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 async function maybeWaitForResponses(
   waiter: (count: number) => Promise<void>,
   count: number,
-  _expectedStatus: number,
 ) {
   if (getIsLoggedIn() && count > 0) {
     await waiter(count)
-    // TODO: need to bring back in status check
   }
   await expect(getPage().locator(Selectors.Toasts.ERROR)).not.toBeVisible()
 }
@@ -26,12 +24,12 @@ export type CreatedTask = SetOptional<
 >
 
 export async function waitForCreateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForCreate, tasks.length, 201)
+  await maybeWaitForResponses(waitForCreate, tasks.length)
   await checkTasksExistBackend(tasks)
 }
 
 export async function waitForUpdateAndVerify(tasks: CreatedTask[]) {
-  await maybeWaitForResponses(waitForUpdate, tasks.length, 200)
+  await maybeWaitForResponses(waitForUpdate, tasks.length)
   await checkTasksExistBackend(tasks)
 }
 
@@ -65,7 +63,6 @@ export function checkNumCalls(expected: {
     typeof effectiveExpected
   >) {
     if (value !== undefined) {
-      // TODO: check the whole object at once
       expect(tracker[key], `${key} call count`).toBe(value)
     }
   }

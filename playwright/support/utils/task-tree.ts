@@ -116,6 +116,7 @@ async function checkTitleAndSubtasks(
   }
 
   for (const subtask of task.subtasks) {
+    // TODO: check # of subtasks is correct(currently, adding an extra to this fn doesn't cause fail)
     await checkTitleAndSubtasks(card, subtask, tier + 1, settings)
   }
 }

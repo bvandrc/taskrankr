@@ -1,10 +1,9 @@
 /**
  * @fileoverview Firebase test-user authentication for Playwright.
  *
- * Mirrors the old `cypress-firebase` `cy.login(uid)` flow: the Admin SDK mints a
- * custom token for the test user, which is either signed in on the page (to seed
- * the browser's Firebase session) or exchanged for an ID token used as a Bearer
- * token on authenticated API requests.
+ * The Admin SDK mints a custom token for the test user, which is either signed
+ * in on the page (to seed the browser's Firebase session) or exchanged for an
+ * ID token used as a Bearer token on authenticated API requests.
  */
 
 import { cert, getApps, initializeApp } from 'firebase-admin/app'

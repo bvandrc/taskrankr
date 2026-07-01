@@ -31,8 +31,9 @@ for (const { contextName, isEdit } of [
         const rootTask = buildTask('Root Task', TaskStatus.PINNED)
 
         await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-        await fillTaskForm(getTaskForm(0), rootTask)
-        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
+        const rootTaskForm = getTaskForm(0)
+        await fillTaskForm(rootTaskForm, rootTask)
+        await rootTaskForm.locator(TaskForm.CANCEL_BTN).click()
 
         await expect(
           getPage().locator(TaskForm.CANCEL_CONFIRM_DIALOG),
@@ -53,8 +54,9 @@ for (const { contextName, isEdit } of [
       if (isEdit) {
         await test.step('Create root task', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
-          await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
+          await clickSubmitBtnCreate(rootTaskForm, { newTasks: [rootTask] })
         })
         await test.step('Open edit form', async () => {
           await openTaskEditForm(rootTask)
@@ -63,19 +65,23 @@ for (const { contextName, isEdit } of [
       } else {
         await test.step('Open new task form and fill', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
         })
       }
 
       await test.step('Add a subtask', async () => {
-        await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(1), subtask)
-        await clickSubmitBtnCreate(getTaskForm(1))
+        const rootTaskForm = getTaskForm(0)
+        await rootTaskForm.locator(TaskForm.ADD_SUBTASK_BTN).click()
+        const subtaskForm = getTaskForm(1)
+        await fillTaskForm(subtaskForm, subtask)
+        await clickSubmitBtnCreate(subtaskForm)
       })
 
       await test.step('Cancel parent form - expect confirmation dialog', async () => {
-        await checkTaskFormSubtasks(getTaskForm(0), [subtask])
-        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
+        const rootTaskForm = getTaskForm(0)
+        await checkTaskFormSubtasks(rootTaskForm, [subtask])
+        await rootTaskForm.locator(TaskForm.CANCEL_BTN).click()
 
         await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
         await expect(
@@ -108,8 +114,9 @@ for (const { contextName, isEdit } of [
       if (isEdit) {
         await test.step('Create root task', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
-          await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
+          await clickSubmitBtnCreate(rootTaskForm, { newTasks: [rootTask] })
         })
         await test.step('Open edit form', async () => {
           await openTaskEditForm(rootTask)
@@ -118,24 +125,29 @@ for (const { contextName, isEdit } of [
       } else {
         await test.step('Open new task form and fill', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
         })
       }
 
       await test.step('Add two subtasks', async () => {
-        await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(1), subtask)
-        await clickSubmitBtnCreate(getTaskForm(1))
+        const rootTaskForm = getTaskForm(0)
+        await rootTaskForm.locator(TaskForm.ADD_SUBTASK_BTN).click()
+        const subtaskForm = getTaskForm(1)
+        await fillTaskForm(subtaskForm, subtask)
+        await clickSubmitBtnCreate(subtaskForm)
 
-        await checkTaskFormSubtasks(getTaskForm(0), [subtask])
-        await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-        await fillTaskForm(getTaskForm(1), subtask2)
-        await clickSubmitBtnCreate(getTaskForm(1))
+        await checkTaskFormSubtasks(rootTaskForm, [subtask])
+        await rootTaskForm.locator(TaskForm.ADD_SUBTASK_BTN).click()
+        const subtask2Form = getTaskForm(1)
+        await fillTaskForm(subtask2Form, subtask2)
+        await clickSubmitBtnCreate(subtask2Form)
       })
 
       await test.step('Deny discard - form is preserved', async () => {
-        await checkTaskFormSubtasks(getTaskForm(0), [subtask, subtask2])
-        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
+        const rootTaskForm = getTaskForm(0)
+        await checkTaskFormSubtasks(rootTaskForm, [subtask, subtask2])
+        await rootTaskForm.locator(TaskForm.CANCEL_BTN).click()
 
         await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
         await expect(
@@ -146,11 +158,12 @@ for (const { contextName, isEdit } of [
         await expect(page.locator(TaskForm.NAME_INPUT)).toHaveValue(
           rootTask.name,
         )
-        await checkTaskFormSubtasks(getTaskForm(0), [subtask, subtask2])
+        await checkTaskFormSubtasks(rootTaskForm, [subtask, subtask2])
       })
 
       await test.step('Confirm discard - all removed', async () => {
-        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
+        const rootTaskForm = getTaskForm(0)
+        await rootTaskForm.locator(TaskForm.CANCEL_BTN).click()
         await expect(page.locator(TaskForm.CANCEL_CONFIRM_DIALOG)).toBeVisible()
         await expect(
           page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),
@@ -181,8 +194,9 @@ for (const { contextName, isEdit } of [
       if (isEdit) {
         await test.step('Create root task', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
-          await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [rootTask] })
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
+          await clickSubmitBtnCreate(rootTaskForm, { newTasks: [rootTask] })
         })
         await test.step('Open edit form', async () => {
           await openTaskEditForm(rootTask)
@@ -191,21 +205,25 @@ for (const { contextName, isEdit } of [
       } else {
         await test.step('Open new task form and fill', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(getTaskForm(0), rootTask)
+          const rootTaskForm = getTaskForm(0)
+          await fillTaskForm(rootTaskForm, rootTask)
         })
       }
 
       await test.step('Open subtask form, cancel - returns to parent', async () => {
-        await getTaskForm(0).locator(TaskForm.ADD_SUBTASK_BTN).click()
-        await getTaskForm(1).locator(TaskForm.NAME_INPUT).fill(subtask.name)
-        await getTaskForm(1).locator(TaskForm.CANCEL_BTN).click()
+        const rootTaskForm = getTaskForm(0)
+        await rootTaskForm.locator(TaskForm.ADD_SUBTASK_BTN).click()
+        const subtaskForm = getTaskForm(1)
+        await subtaskForm.locator(TaskForm.NAME_INPUT).fill(subtask.name)
+        await subtaskForm.locator(TaskForm.CANCEL_BTN).click()
       })
 
       await test.step('Cancel parent - no confirmation needed (no submitted subtasks)', async () => {
-        await expect(getTaskForm(0).locator(TaskForm.NAME_INPUT)).toHaveValue(
+        const rootTaskForm = getTaskForm(0)
+        await expect(rootTaskForm.locator(TaskForm.NAME_INPUT)).toHaveValue(
           rootTask.name,
         )
-        await getTaskForm(0).locator(TaskForm.CANCEL_BTN).click()
+        await rootTaskForm.locator(TaskForm.CANCEL_BTN).click()
 
         await expect(
           page.locator(TaskForm.CANCEL_CONFIRM_DIALOG),

@@ -21,8 +21,9 @@ test.describe('Task Creation', () => {
     const task = buildTask('Root Task', TaskStatus.PINNED)
 
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), task)
-    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [task] })
+    const taskForm = getTaskForm(0)
+    await fillTaskForm(taskForm, task)
+    await clickSubmitBtnCreate(taskForm, { newTasks: [task] })
 
     await expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
@@ -52,8 +53,9 @@ test.describe('Task Creation', () => {
 
     await test.step('Create task using new field config, verify in tree', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), newTask, { settings: fieldConfig })
-      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [newTask] })
+      const newTaskForm = getTaskForm(0)
+      await fillTaskForm(newTaskForm, newTask, { settings: fieldConfig })
+      await clickSubmitBtnCreate(newTaskForm, { newTasks: [newTask] })
       await expandAndCheckTree(newTask, { settings: fieldConfig })
       checkNumCalls({ create: 1 })
     })

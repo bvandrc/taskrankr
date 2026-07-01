@@ -38,8 +38,9 @@ test.describe('Scheduling', () => {
 
     await test.step('Create task with due date', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), taskWithDueDate)
-      await clickSubmitBtnCreate(getTaskForm(0), {
+      const taskWithDueDateForm = getTaskForm(0)
+      await fillTaskForm(taskWithDueDateForm, taskWithDueDate)
+      await clickSubmitBtnCreate(taskWithDueDateForm, {
         newTasks: [taskWithDueDate],
       })
       checkNumCalls({ create: 1, update: 0 })
@@ -51,9 +52,12 @@ test.describe('Scheduling', () => {
 
     await test.step('Edit task again, clear the due date', async () => {
       await openTaskEditForm(taskWithDueDate)
-      await openMoreSection(getTaskForm(0))
+      const taskWithDueDateForm = getTaskForm(0)
+      await openMoreSection(taskWithDueDateForm)
       await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-      await clickSubmitBtnUpdate(getTaskForm(0), { updatedTasks: [baseTask] })
+      await clickSubmitBtnUpdate(taskWithDueDateForm, {
+        updatedTasks: [baseTask],
+      })
       checkNumCalls({ create: 1, update: 1 })
     })
 
@@ -80,8 +84,9 @@ test.describe('Scheduling', () => {
 
     await test.step('Create task with hideUntil = tomorrow', async () => {
       await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), hiddenTask)
-      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [hiddenTask] })
+      const hiddenTaskForm = getTaskForm(0)
+      await fillTaskForm(hiddenTaskForm, hiddenTask)
+      await clickSubmitBtnCreate(hiddenTaskForm, { newTasks: [hiddenTask] })
     })
 
     await test.step('Task should not be visible in the home page list', async () => {

@@ -25,20 +25,23 @@ test.describe('Hiding Subtasks', () => {
 
     await test.step('Create rootTask with one open and one completed subtask; auto-hide completed is enabled, so the completed subtask is hidden in the form and tree until "Show Hidden" is toggled.', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const form0 = getTaskForm(0)
-      await fillTaskForm(form0, rootTask)
-      await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(1), openSubtask)
-      await clickSubmitBtnCreate(getTaskForm(1))
-      await form0.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      const form1 = getTaskForm(1)
-      await fillTaskForm(form1, completedSubtask)
-      await form1.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      await clickSubmitBtnCreate(form1)
+      const rootTaskForm = getTaskForm(0)
+      await fillTaskForm(rootTaskForm, rootTask)
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const openSubtaskForm = getTaskForm(1)
+      await fillTaskForm(openSubtaskForm, openSubtask)
+      await clickSubmitBtnCreate(openSubtaskForm)
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const completedSubtaskForm = getTaskForm(1)
+      await fillTaskForm(completedSubtaskForm, completedSubtask)
+      await completedSubtaskForm
+        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+        .click()
+      await clickSubmitBtnCreate(completedSubtaskForm)
 
       // completed subtask is hidden by default (autoHideCompleted: true)
-      await checkTaskFormSubtasks(form0, [openSubtask])
-      await clickSubmitBtnCreate(form0, {
+      await checkTaskFormSubtasks(rootTaskForm, [openSubtask])
+      await clickSubmitBtnCreate(rootTaskForm, {
         newTasks: [rootTask, openSubtask, completedSubtask],
       })
       checkNumCalls({ create: 3, update: 0 })
@@ -56,14 +59,14 @@ test.describe('Hiding Subtasks', () => {
       TaskStatus.COMPLETED,
     )
 
-    const form0 = getTaskForm(0)
-    await checkTaskFormSubtasks(form0, [openSubtask])
-    await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
-    await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
-    await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
+    const rootTaskForm = getTaskForm(0)
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask])
+    await rootTaskForm.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
+    await rootTaskForm.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask, completedSubtask])
 
-    await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
-    await checkTaskFormSubtasks(form0, [openSubtask])
+    await rootTaskForm.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask])
   })
 
   test('preserves show-hidden state after saving a subtask form and returning to parent', async ({
@@ -75,16 +78,20 @@ test.describe('Hiding Subtasks', () => {
       TaskStatus.COMPLETED,
     )
 
-    const form0 = getTaskForm(0)
-    await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
-    await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
-    await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
-    await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).first().click()
+    const rootTaskForm = getTaskForm(0)
+    await rootTaskForm.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
+    await rootTaskForm.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask, completedSubtask])
+    await rootTaskForm
+      .locator(Selectors.TaskForm.EDIT_SUBTASK_BTN)
+      .first()
+      .click()
 
     // Save without changes — returns to parent with show-hidden preserved
-    await clickSubmitBtnUpdate(getTaskForm(1))
+    const openSubtaskForm = getTaskForm(1)
+    await clickSubmitBtnUpdate(openSubtaskForm)
     // The parent form should still have show-hidden on
-    await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask, completedSubtask])
   })
 
   test('preserves show-hidden state after cancelling a subtask form and returning to parent', async ({
@@ -96,14 +103,18 @@ test.describe('Hiding Subtasks', () => {
       TaskStatus.COMPLETED,
     )
 
-    const form0 = getTaskForm(0)
-    await form0.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
-    await form0.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
-    await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
-    await form0.locator(Selectors.TaskForm.EDIT_SUBTASK_BTN).first().click()
+    const rootTaskForm = getTaskForm(0)
+    await rootTaskForm.locator(Selectors.TaskForm.SUBTASK_SETTINGS_BTN).click()
+    await rootTaskForm.locator(Selectors.TaskForm.SHOW_HIDDEN_BTN).click()
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask, completedSubtask])
+    await rootTaskForm
+      .locator(Selectors.TaskForm.EDIT_SUBTASK_BTN)
+      .first()
+      .click()
 
-    await getTaskForm(1).locator(Selectors.TaskForm.CANCEL_BTN).click()
+    const openSubtaskForm = getTaskForm(1)
+    await openSubtaskForm.locator(Selectors.TaskForm.CANCEL_BTN).click()
     // The parent form should still have show-hidden on
-    await checkTaskFormSubtasks(form0, [openSubtask, completedSubtask])
+    await checkTaskFormSubtasks(rootTaskForm, [openSubtask, completedSubtask])
   })
 })

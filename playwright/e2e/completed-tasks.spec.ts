@@ -32,11 +32,10 @@ test.describe('Completed Tasks', () => {
 
     await test.step('Create task already marked as completed', async () => {
       await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), task)
-      await getTaskForm(0)
-        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
-        .click()
-      await clickSubmitBtnCreate(getTaskForm(0), {
+      const taskForm = getTaskForm(0)
+      await fillTaskForm(taskForm, task)
+      await taskForm.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      await clickSubmitBtnCreate(taskForm, {
         newTasks: [completedTask],
       })
       checkNumCalls({ create: 1, update: 0 })
@@ -56,8 +55,9 @@ test.describe('Completed Tasks', () => {
 
     await test.step('Create task', async () => {
       await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), task)
-      await clickSubmitBtnCreate(getTaskForm(0), {
+      const taskForm = getTaskForm(0)
+      await fillTaskForm(taskForm, task)
+      await clickSubmitBtnCreate(taskForm, {
         newTasks: [{ ...task, status: TaskStatus.PINNED }],
       })
       checkNumCalls({ create: 1, update: 0 })
@@ -65,10 +65,9 @@ test.describe('Completed Tasks', () => {
 
     await test.step('Edit task, mark as completed', async () => {
       await openTaskEditForm(task)
-      await getTaskForm(0)
-        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
-        .click()
-      await clickSubmitBtnUpdate(getTaskForm(0), {
+      const taskForm = getTaskForm(0)
+      await taskForm.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      await clickSubmitBtnUpdate(taskForm, {
         updatedTasks: [completedTask],
       })
       checkNumCalls({ create: 1, update: 1 })
@@ -88,8 +87,9 @@ test.describe('Completed Tasks', () => {
 
     await test.step('Create task', async () => {
       await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), task)
-      await clickSubmitBtnCreate(getTaskForm(0), {
+      const taskForm = getTaskForm(0)
+      await fillTaskForm(taskForm, task)
+      await clickSubmitBtnCreate(taskForm, {
         newTasks: [{ ...task, status: TaskStatus.PINNED }],
       })
       checkNumCalls({ create: 1, update: 0 })

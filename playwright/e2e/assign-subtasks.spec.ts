@@ -38,28 +38,30 @@ test.describe('Assign Subtasks', () => {
 
     await test.step('Create dummy orphan tasks (to test order)', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), orphanTask)
-      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask] })
+      const orphanTaskForm = getTaskForm(0)
+      await fillTaskForm(orphanTaskForm, orphanTask)
+      await clickSubmitBtnCreate(orphanTaskForm, { newTasks: [orphanTask] })
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(getTaskForm(0), orphanTask2)
-      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [orphanTask2] })
+      const orphanTask2Form = getTaskForm(0)
+      await fillTaskForm(orphanTask2Form, orphanTask2)
+      await clickSubmitBtnCreate(orphanTask2Form, { newTasks: [orphanTask2] })
     })
 
     await test.step('Create root task, create new subtask, assign sibling orphanTask', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const form0 = getTaskForm(0)
-      await fillTaskForm(form0, rootTask)
-      await assignSubtask(form0, orphanTask)
-      // task form re-renders TODO: debug?
+      const rootTaskForm = getTaskForm(0)
+      await fillTaskForm(rootTaskForm, rootTask)
+      await assignSubtask(rootTaskForm, orphanTask)
 
-      await checkTaskFormSubtasks(getTaskForm(0), [orphanTask])
-      await getTaskForm(0).locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
-      await fillTaskForm(getTaskForm(1), newSubtask)
-      await clickSubmitBtnCreate(getTaskForm(1))
+      await checkTaskFormSubtasks(rootTaskForm, [orphanTask])
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const newSubtaskForm = getTaskForm(1)
+      await fillTaskForm(newSubtaskForm, newSubtask)
+      await clickSubmitBtnCreate(newSubtaskForm)
 
-      await checkTaskFormSubtasks(getTaskForm(0), [orphanTask, newSubtask])
-      await clickSubmitBtnCreate(getTaskForm(0), {
+      await checkTaskFormSubtasks(rootTaskForm, [orphanTask, newSubtask])
+      await clickSubmitBtnCreate(rootTaskForm, {
         newTasks: [rootTask, newSubtask],
         updatedTasks: [orphanTask],
       })
@@ -73,16 +75,16 @@ test.describe('Assign Subtasks', () => {
 
     await test.step('Edit root task, assign second orphan', async () => {
       await openTaskEditForm(rootTask)
-      const editForm0 = getTaskForm(0)
-      await checkTaskFormSubtasks(editForm0, [orphanTask, newSubtask])
-      await assignSubtask(editForm0, orphanTask2)
-      await checkTaskFormSubtasks(getTaskForm(0), [
+      const rootTaskForm = getTaskForm(0)
+      await checkTaskFormSubtasks(rootTaskForm, [orphanTask, newSubtask])
+      await assignSubtask(rootTaskForm, orphanTask2)
+      await checkTaskFormSubtasks(rootTaskForm, [
         // all at same level, so we don't care about order really.
         orphanTask,
         orphanTask2,
         newSubtask,
       ])
-      await clickSubmitBtnUpdate(getTaskForm(0), {
+      await clickSubmitBtnUpdate(rootTaskForm, {
         updatedTasks: [rootTask, orphanTask2],
       })
 

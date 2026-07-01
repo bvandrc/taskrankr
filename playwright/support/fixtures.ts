@@ -14,7 +14,7 @@ import {
   setPage,
   setRequestTracker,
 } from './test-globals'
-import { getIdToken } from './utils/auth'
+import { createCustomToken, firebaseClientConfig } from './utils/auth'
 
 export type UserMode = 'user' | 'guest'
 
@@ -45,6 +45,39 @@ function buildTask(testSuffix: string) {
       >
     >
   }
+}
+
+let cachedIdToken: { token: string; expiresAt: number } | undefined
+
+async function getIdToken(): Promise<string> {
+  if (cachedIdToken && Date.now() < cachedIdToken.expiresAt - 60_000) {
+    return cachedIdToken.token
+  }
+
+  const customToken = await createCustomToken()
+  const res = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${firebaseClientConfig.apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: customToken, returnSecureToken: true }),
+    },
+  )
+  if (!res.ok) {
+    throw new Error(
+      `ID token exchange failed: ${res.status} ${await res.text()}`,
+    )
+  }
+
+  const { idToken, expiresIn } = (await res.json()) as {
+    idToken: string
+    expiresIn: string
+  }
+  cachedIdToken = {
+    token: idToken,
+    expiresAt: Date.now() + Number(expiresIn) * 1000,
+  }
+  return idToken
 }
 
 type Fixtures = {

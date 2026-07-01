@@ -1,4 +1,4 @@
-﻿import { Routes } from '~/client/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
@@ -31,14 +31,17 @@ test.describe('Completed Tasks', () => {
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
-    // STEP 1: Create task already marked as completed
-    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), task)
-    await getTaskForm(0)
-      .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
-      .click()
-    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [completedTask] })
-    checkNumCalls({ create: 1, update: 0 })
+    await test.step('Create task already marked as completed', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), task)
+      await getTaskForm(0)
+        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+        .click()
+      await clickSubmitBtnCreate(getTaskForm(0), {
+        newTasks: [completedTask],
+      })
+      checkNumCalls({ create: 1, update: 0 })
+    })
 
     await checkCompletedPage([completedTask])
   })
@@ -53,23 +56,25 @@ test.describe('Completed Tasks', () => {
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
-    // STEP 1: Create task
-    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), task)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [{ ...task, status: TaskStatus.PINNED }],
+    await test.step('Create task', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), task)
+      await clickSubmitBtnCreate(getTaskForm(0), {
+        newTasks: [{ ...task, status: TaskStatus.PINNED }],
+      })
+      checkNumCalls({ create: 1, update: 0 })
     })
-    checkNumCalls({ create: 1, update: 0 })
 
-    // STEP 2: Edit task, mark as completed
-    await openTaskEditForm(task)
-    await getTaskForm(0)
-      .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
-      .click()
-    await clickSubmitBtnUpdate(getTaskForm(0), {
-      updatedTasks: [completedTask],
+    await test.step('Edit task, mark as completed', async () => {
+      await openTaskEditForm(task)
+      await getTaskForm(0)
+        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+        .click()
+      await clickSubmitBtnUpdate(getTaskForm(0), {
+        updatedTasks: [completedTask],
+      })
+      checkNumCalls({ create: 1, update: 1 })
     })
-    checkNumCalls({ create: 1, update: 1 })
 
     await checkCompletedPage([completedTask])
   })
@@ -84,17 +89,19 @@ test.describe('Completed Tasks', () => {
       status: TaskStatus.COMPLETED,
     } as const satisfies CreatedTask
 
-    // STEP 1: Create task
-    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), task)
-    await clickSubmitBtnCreate(getTaskForm(0), {
-      newTasks: [{ ...task, status: TaskStatus.PINNED }],
+    await test.step('Create task', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), task)
+      await clickSubmitBtnCreate(getTaskForm(0), {
+        newTasks: [{ ...task, status: TaskStatus.PINNED }],
+      })
+      checkNumCalls({ create: 1, update: 0 })
     })
-    checkNumCalls({ create: 1, update: 0 })
 
-    // STEP 2: Complete task via status change dialog
-    await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
-    checkNumCalls({ create: 1, update: 1 })
+    await test.step('Complete task via status change dialog', async () => {
+      await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
+      checkNumCalls({ create: 1, update: 1 })
+    })
 
     await checkCompletedPage([completedTask])
   })

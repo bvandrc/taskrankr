@@ -1,4 +1,4 @@
-﻿import { Routes } from '~/client/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
 import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
@@ -37,24 +37,30 @@ test.describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    // STEP 1: Create task with due date
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), taskWithDueDate)
-    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [taskWithDueDate] })
-    checkNumCalls({ create: 1, update: 0 })
+    await test.step('Create task with due date', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), taskWithDueDate)
+      await clickSubmitBtnCreate(getTaskForm(0), {
+        newTasks: [taskWithDueDate],
+      })
+      checkNumCalls({ create: 1, update: 0 })
+    })
 
-    // STEP 2: Verify due badge displays on task card with correct text
-    await expandAndCheckTree(taskWithDueDate)
+    await test.step('Verify due badge displays on task card with correct text', async () => {
+      await expandAndCheckTree(taskWithDueDate)
+    })
 
-    // STEP 3: Edit task again, clear the due date
-    await openTaskEditForm(taskWithDueDate)
-    await openMoreSection(getTaskForm(0))
-    await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-    await clickSubmitBtnUpdate(getTaskForm(0), { updatedTasks: [baseTask] })
-    checkNumCalls({ create: 1, update: 1 })
+    await test.step('Edit task again, clear the due date', async () => {
+      await openTaskEditForm(taskWithDueDate)
+      await openMoreSection(getTaskForm(0))
+      await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
+      await clickSubmitBtnUpdate(getTaskForm(0), { updatedTasks: [baseTask] })
+      checkNumCalls({ create: 1, update: 1 })
+    })
 
-    // STEP 4: Verify due badge is gone
-    await expandAndCheckTree(baseTask)
+    await test.step('Verify due badge is gone', async () => {
+      await expandAndCheckTree(baseTask)
+    })
   })
 
   test('task with hideUntil in the future is hidden from home page', async ({
@@ -74,13 +80,15 @@ test.describe('Scheduling', () => {
       },
     } as const satisfies CreatedTask
 
-    // STEP 1: Create task with hideUntil = tomorrow
-    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), hiddenTask)
-    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [hiddenTask] })
+    await test.step('Create task with hideUntil = tomorrow', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), hiddenTask)
+      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [hiddenTask] })
+    })
 
-    // STEP 2: Task should not be visible in the home page list
-    await expect(getPage().getByText(hiddenTask.name)).not.toBeAttached()
+    await test.step('Task should not be visible in the home page list', async () => {
+      await expect(getPage().getByText(hiddenTask.name)).not.toBeAttached()
+    })
   })
 
   // TODO: reconciles priority escalation on load when escalation date has passed

@@ -1,4 +1,4 @@
-﻿import { Routes } from '~/client/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
 import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
@@ -44,16 +44,18 @@ test.describe('Task Creation', () => {
       enjoyment: null,
     })
 
-    // STEP 1: Update rank field settings
-    await setSettings({ fieldConfig })
-    checkNumCalls({ updateSettings: 3 })
-    await page.locator(Selectors.BACK_BTN).click()
+    await test.step('Update rank field settings', async () => {
+      await setSettings({ fieldConfig })
+      checkNumCalls({ updateSettings: 3 })
+      await page.locator(Selectors.BACK_BTN).click()
+    })
 
-    // STEP 2: Create task using new field config, verify in tree
-    await page.locator(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(getTaskForm(0), newTask, { settings: fieldConfig })
-    await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [newTask] })
-    await expandAndCheckTree(newTask, { settings: fieldConfig })
-    checkNumCalls({ create: 1 })
+    await test.step('Create task using new field config, verify in tree', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      await fillTaskForm(getTaskForm(0), newTask, { settings: fieldConfig })
+      await clickSubmitBtnCreate(getTaskForm(0), { newTasks: [newTask] })
+      await expandAndCheckTree(newTask, { settings: fieldConfig })
+      checkNumCalls({ create: 1 })
+    })
   })
 })

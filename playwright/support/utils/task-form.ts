@@ -25,8 +25,46 @@ export type TaskFormData = PickDeep<
   'name' | 'schedule.hideUntil' | 'schedule.dueAt' | RankField
 >
 
-export function getTaskForm(tier = 0): Locator {
-  return getPage().locator(`${TaskForm.FORM}[data-tier="${tier}"]`)
+type FillTaskFormArgs = {
+  settings?: FieldConfig
+  hasIncompleteSubtasks?: boolean
+}
+
+type TaskFormLocator = Locator & {
+  fillTaskForm(task: TaskFormData, args?: FillTaskFormArgs): Promise<void>
+  clickSubmitBtnCreate(args?: SubmitBtnArgs): Promise<void>
+  clickSubmitBtnUpdate(args?: SubmitBtnArgs): Promise<void>
+  assignSubtask(task: CreatedTask): Promise<void>
+  checkTaskFormSubtasks(
+    subtasks: Pick<Task, 'name' | 'status'>[],
+  ): Promise<void>
+  setTaskFormSubtaskSettings(
+    settings?: Partial<TaskSubtaskSettings>,
+  ): Promise<void>
+  checkTaskFormSubtaskSettings(
+    settings?: Partial<TaskSubtaskSettings>,
+  ): Promise<void>
+  openMoreSection(): Promise<void>
+}
+
+export function getTaskForm(tier = 0): TaskFormLocator {
+  const form = getPage().locator(
+    `${TaskForm.FORM}[data-tier="${tier}"]`,
+  ) as TaskFormLocator
+
+  form.fillTaskForm = (task, args) => fillTaskForm(form, task, args)
+  form.clickSubmitBtnCreate = (args) => clickSubmitBtnCreate(form, args)
+  form.clickSubmitBtnUpdate = (args) => clickSubmitBtnUpdate(form, args)
+  form.assignSubtask = (task) => assignSubtask(form, task)
+  form.checkTaskFormSubtasks = (subtasks) =>
+    checkTaskFormSubtasks(form, subtasks)
+  form.setTaskFormSubtaskSettings = (settings) =>
+    setTaskFormSubtaskSettings(form, settings)
+  form.checkTaskFormSubtaskSettings = (settings) =>
+    checkTaskFormSubtaskSettings(form, settings)
+  form.openMoreSection = () => openMoreSection(form)
+
+  return form
 }
 
 export async function fillTaskFormRankFields(
@@ -72,16 +110,13 @@ export async function fillTaskFormRankFields(
   }
 }
 
-export async function fillTaskForm(
+async function fillTaskForm(
   form: Locator,
   task: TaskFormData,
   {
     settings = DEFAULT_FIELD_CONFIG,
     hasIncompleteSubtasks = false,
-  }: {
-    settings?: FieldConfig
-    hasIncompleteSubtasks?: boolean
-  } = {},
+  }: FillTaskFormArgs = {},
 ): Promise<void> {
   await checkTasksDontExistBackend([task])
 
@@ -164,24 +199,21 @@ async function clickSubmitBtn(
   }
 }
 
-export function clickSubmitBtnCreate(
+function clickSubmitBtnCreate(
   form: Locator,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
   return clickSubmitBtn(form, 'Create', args)
 }
 
-export function clickSubmitBtnUpdate(
+function clickSubmitBtnUpdate(
   form: Locator,
   args: SubmitBtnArgs = {},
 ): Promise<void> {
   return clickSubmitBtn(form, 'Save', args)
 }
 
-export async function assignSubtask(
-  form: Locator,
-  task: CreatedTask,
-): Promise<void> {
+async function assignSubtask(form: Locator, task: CreatedTask): Promise<void> {
   await form.locator(TaskForm.ASSIGN_SUBTASK_BTN).click()
   const dialog = getPage().locator(AssignSubtaskDialog.DIALOG)
   await expect(dialog).toBeVisible()
@@ -192,7 +224,7 @@ export async function assignSubtask(
   await dialog.locator(AssignSubtaskDialog.CONFIRM_BTN).click()
 }
 
-export async function checkTaskFormSubtasks(
+async function checkTaskFormSubtasks(
   form: Locator,
   subtasks: Pick<Task, 'name' | 'status'>[],
 ): Promise<void> {
@@ -214,7 +246,7 @@ export async function checkTaskFormSubtasks(
   )
 }
 
-export async function setTaskFormSubtaskSettings(
+async function setTaskFormSubtaskSettings(
   form: Locator,
   {
     autoHideCompleted,
@@ -233,7 +265,7 @@ export async function setTaskFormSubtaskSettings(
   }
 }
 
-export async function checkTaskFormSubtaskSettings(
+async function checkTaskFormSubtaskSettings(
   form: Locator,
   {
     autoHideCompleted,
@@ -253,7 +285,7 @@ export async function checkTaskFormSubtaskSettings(
   }
 }
 
-export async function openMoreSection(form: Locator): Promise<void> {
+async function openMoreSection(form: Locator): Promise<void> {
   await form.locator(TaskForm.MORE_SECTION).scrollIntoViewIfNeeded()
   await form.locator(TaskForm.MORE_SECTION).click()
 }

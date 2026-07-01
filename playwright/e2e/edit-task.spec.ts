@@ -5,9 +5,6 @@ import { test } from '@test/support/fixtures'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import {
   checkDate,
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
   getTaskForm,
   selectDate,
 } from '@test/support/utils/task-form'
@@ -32,8 +29,8 @@ test.describe('Edit Task', () => {
     await test.step('Create task', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const taskForm = getTaskForm(0)
-      await fillTaskForm(taskForm, task)
-      await clickSubmitBtnCreate(taskForm, { newTasks: [task] })
+      await taskForm.fillTaskForm(task)
+      await taskForm.clickSubmitBtnCreate({ newTasks: [task] })
     })
 
     await test.step('Open edit form, verify Date Created shows today', async () => {
@@ -55,7 +52,7 @@ test.describe('Edit Task', () => {
 
     await test.step('Save and verify update count', async () => {
       const taskForm = getTaskForm(0)
-      await clickSubmitBtnUpdate(taskForm, { updatedTasks: [task] })
+      await taskForm.clickSubmitBtnUpdate({ updatedTasks: [task] })
       checkNumCalls({ create: 1, update: 1 })
     })
 

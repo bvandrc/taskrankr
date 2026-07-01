@@ -5,15 +5,7 @@ import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage } from '@test/support/utils/navigation'
-import {
-  checkTaskFormSubtaskSettings,
-  checkTaskFormSubtasks,
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
-  getTaskForm,
-  setTaskFormSubtaskSettings,
-} from '@test/support/utils/task-form'
+import { getTaskForm, type TaskFormData } from '@test/support/utils/task-form'
 import {
   changeStatusViaStatusChangeDialog,
   checkCompletedPage,
@@ -27,22 +19,18 @@ test.describe('Completed Subtasks', () => {
   })
 
   async function createRootWithUncompletedSubtask(
-    rootTask: Parameters<typeof fillTaskForm>[1] & {
-      status: CreatedTask['status']
-    },
-    subtask: Parameters<typeof fillTaskForm>[1] & {
-      status: CreatedTask['status']
-    },
+    rootTask: TaskFormData,
+    subtask: TaskFormData,
   ) {
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     const rootTaskForm = getTaskForm(0)
-    await fillTaskForm(rootTaskForm, rootTask)
+    await rootTaskForm.fillTaskForm(rootTask)
     await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
     const subtaskForm = getTaskForm(1)
-    await fillTaskForm(subtaskForm, subtask)
-    await clickSubmitBtnCreate(subtaskForm)
-    await setTaskFormSubtaskSettings(rootTaskForm, { autoHideCompleted: false })
-    await clickSubmitBtnCreate(rootTaskForm, {
+    await subtaskForm.fillTaskForm(subtask)
+    await subtaskForm.clickSubmitBtnCreate()
+    await rootTaskForm.setTaskFormSubtaskSettings({ autoHideCompleted: false })
+    await rootTaskForm.clickSubmitBtnCreate({
       newTasks: [rootTask, subtask] as CreatedTask[],
     })
   }
@@ -61,19 +49,19 @@ test.describe('Completed Subtasks', () => {
     await test.step('Create root task with subtask pre-marked as completed', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const rootTaskForm = getTaskForm(0)
-      await fillTaskForm(rootTaskForm, rootTask)
+      await rootTaskForm.fillTaskForm(rootTask)
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const subtaskForm = getTaskForm(1)
-      await fillTaskForm(subtaskForm, subtask)
+      await subtaskForm.fillTaskForm(subtask)
       await subtaskForm
         .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
         .click()
-      await clickSubmitBtnCreate(subtaskForm)
-      await setTaskFormSubtaskSettings(rootTaskForm, {
+      await subtaskForm.clickSubmitBtnCreate()
+      await rootTaskForm.setTaskFormSubtaskSettings({
         autoHideCompleted: false,
       })
-      await checkTaskFormSubtasks(rootTaskForm, [completedSubtask])
-      await clickSubmitBtnCreate(rootTaskForm, {
+      await rootTaskForm.checkTaskFormSubtasks([completedSubtask])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, completedSubtask],
       })
       checkNumCalls({ create: 2, update: 0 })
@@ -112,7 +100,7 @@ test.describe('Completed Subtasks', () => {
       await subtaskForm
         .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
         .click()
-      await clickSubmitBtnUpdate(subtaskForm, {
+      await subtaskForm.clickSubmitBtnUpdate({
         updatedTasks: [completedSubtask],
       })
       checkNumCalls({ create: 2, update: 1 })
@@ -177,16 +165,16 @@ test.describe('Completed Subtasks', () => {
       await test.step('Create root task (autocomplete=on) with one subtask', async () => {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         const rootTaskForm = getTaskForm(0)
-        await fillTaskForm(rootTaskForm, rootTask)
+        await rootTaskForm.fillTaskForm(rootTask)
         await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
         const subtaskForm = getTaskForm(1)
-        await fillTaskForm(subtaskForm, subtask)
-        await clickSubmitBtnCreate(subtaskForm)
-        await setTaskFormSubtaskSettings(rootTaskForm, {
+        await subtaskForm.fillTaskForm(subtask)
+        await subtaskForm.clickSubmitBtnCreate()
+        await rootTaskForm.setTaskFormSubtaskSettings({
           autoHideCompleted: false,
           inheritCompletionState: true,
         })
-        await clickSubmitBtnCreate(rootTaskForm, {
+        await rootTaskForm.clickSubmitBtnCreate({
           newTasks: [rootTask, subtask],
         })
         checkNumCalls({ create: 2, update: 0 })
@@ -222,18 +210,18 @@ test.describe('Completed Subtasks', () => {
       await test.step('Create task with completed subtask', async () => {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         const rootTaskForm = getTaskForm(0)
-        await fillTaskForm(rootTaskForm, rootTask)
+        await rootTaskForm.fillTaskForm(rootTask)
         await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
         const subtaskForm = getTaskForm(1)
-        await fillTaskForm(subtaskForm, subtask)
+        await subtaskForm.fillTaskForm(subtask)
         await subtaskForm
           .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
           .click()
-        await clickSubmitBtnCreate(subtaskForm)
-        await setTaskFormSubtaskSettings(rootTaskForm, {
+        await subtaskForm.clickSubmitBtnCreate()
+        await rootTaskForm.setTaskFormSubtaskSettings({
           autoHideCompleted: false,
         })
-        await clickSubmitBtnCreate(rootTaskForm, {
+        await rootTaskForm.clickSubmitBtnCreate({
           newTasks: [rootTask, completedSubtask],
         })
         await expandAndCheckTree({
@@ -245,10 +233,10 @@ test.describe('Completed Subtasks', () => {
       await test.step('Enable inheritCompletionState — parent auto-completes immediately', async () => {
         await openTaskEditForm(rootTask)
         const rootTaskForm = getTaskForm(0)
-        await setTaskFormSubtaskSettings(rootTaskForm, {
+        await rootTaskForm.setTaskFormSubtaskSettings({
           inheritCompletionState: true,
         })
-        await clickSubmitBtnUpdate(rootTaskForm, {
+        await rootTaskForm.clickSubmitBtnUpdate({
           updatedTasks: [completedRootTask],
         })
         checkNumCalls({ create: 2, update: 1 })
@@ -282,16 +270,16 @@ test.describe('Completed Subtasks', () => {
       await test.step('Create root task with subtask, set autocomplete=on', async () => {
         await page.locator(Selectors.CREATE_TASK_BTN).click()
         const rootTaskForm = getTaskForm(0)
-        await fillTaskForm(rootTaskForm, rootTask)
+        await rootTaskForm.fillTaskForm(rootTask)
         await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
         const subtaskForm = getTaskForm(1)
-        await fillTaskForm(subtaskForm, subtask)
-        await clickSubmitBtnCreate(subtaskForm)
-        await setTaskFormSubtaskSettings(rootTaskForm, {
+        await subtaskForm.fillTaskForm(subtask)
+        await subtaskForm.clickSubmitBtnCreate()
+        await rootTaskForm.setTaskFormSubtaskSettings({
           autoHideCompleted: false,
           inheritCompletionState: true,
         })
-        await clickSubmitBtnCreate(rootTaskForm, {
+        await rootTaskForm.clickSubmitBtnCreate({
           newTasks: [rootTask, subtask],
         })
         checkNumCalls({ create: 2, update: 0 })
@@ -304,13 +292,13 @@ test.describe('Completed Subtasks', () => {
         const subtaskForm = getTaskForm(1)
         await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
         const subtask2Form = getTaskForm(2)
-        await fillTaskForm(subtask2Form, subtask2)
-        await clickSubmitBtnCreate(subtask2Form)
-        await setTaskFormSubtaskSettings(subtaskForm, {
+        await subtask2Form.fillTaskForm(subtask2)
+        await subtask2Form.clickSubmitBtnCreate()
+        await subtaskForm.setTaskFormSubtaskSettings({
           autoHideCompleted: false,
           inheritCompletionState: true,
         })
-        await clickSubmitBtnUpdate(subtaskForm, { updatedTasks: [subtask] })
+        await subtaskForm.clickSubmitBtnUpdate({ updatedTasks: [subtask] })
         checkNumCalls({ create: 3, update: 1 })
         await expandAndCheckTree({
           ...rootTask,
@@ -354,14 +342,14 @@ test.describe('Completed Subtasks', () => {
         const rootTaskForm = getTaskForm(0)
         await test.step('Create root task with one uncompleted subtask, enable auto-hide', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(rootTaskForm, rootTask)
+          await rootTaskForm.fillTaskForm(rootTask)
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtaskForm = getTaskForm(1)
-          await fillTaskForm(subtaskForm, subtask) // task that will not be marked as completed, to verify that only completed subtasks are hidden
-          await clickSubmitBtnCreate(subtaskForm)
+          await subtaskForm.fillTaskForm(subtask) // task that will not be marked as completed, to verify that only completed subtasks are hidden
+          await subtaskForm.clickSubmitBtnCreate()
 
           // default is autoHideCompleted: true
-          await checkTaskFormSubtaskSettings(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtaskSettings({
             autoHideCompleted: true,
           })
         })
@@ -369,19 +357,19 @@ test.describe('Completed Subtasks', () => {
         await test.step('Add a second subtask, mark it completed in the form', async () => {
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtask2Form = getTaskForm(1)
-          await fillTaskForm(subtask2Form, subtask2)
+          await subtask2Form.fillTaskForm(subtask2)
           await subtask2Form
             .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
             .click()
-          await clickSubmitBtnCreate(subtask2Form)
+          await subtask2Form.clickSubmitBtnCreate()
         })
 
         await test.step('Submit root task — completed subtask hidden in tree', async () => {
-          await checkTaskFormSubtaskSettings(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtaskSettings({
             autoHideCompleted: true,
           })
-          await checkTaskFormSubtasks(rootTaskForm, [subtask])
-          await clickSubmitBtnCreate(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtasks([subtask])
+          await rootTaskForm.clickSubmitBtnCreate({
             newTasks: [rootTask, subtask, completedSubtask2],
           })
           checkNumCalls({ create: 3, update: 0 })
@@ -404,12 +392,12 @@ test.describe('Completed Subtasks', () => {
         const rootTaskForm = getTaskForm(0)
         await test.step('Create root task with one uncompleted subtask, enable auto-hide', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(rootTaskForm, rootTask)
+          await rootTaskForm.fillTaskForm(rootTask)
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtaskForm = getTaskForm(1)
-          await fillTaskForm(subtaskForm, subtask) // task that will not be marked as completed, to verify that only completed subtasks are hidden
-          await clickSubmitBtnCreate(subtaskForm)
-          await checkTaskFormSubtaskSettings(rootTaskForm, {
+          await subtaskForm.fillTaskForm(subtask) // task that will not be marked as completed, to verify that only completed subtasks are hidden
+          await subtaskForm.clickSubmitBtnCreate()
+          await rootTaskForm.checkTaskFormSubtaskSettings({
             autoHideCompleted: true,
           })
         })
@@ -417,12 +405,12 @@ test.describe('Completed Subtasks', () => {
         await test.step('Add a second subtask', async () => {
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtask2Form = getTaskForm(1)
-          await fillTaskForm(subtask2Form, subtask2)
-          await clickSubmitBtnCreate(subtask2Form)
+          await subtask2Form.fillTaskForm(subtask2)
+          await subtask2Form.clickSubmitBtnCreate()
         })
 
         await test.step('Edit the second subtask, mark it completed', async () => {
-          await checkTaskFormSubtasks(rootTaskForm, [subtask, subtask2])
+          await rootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
           await rootTaskForm
             .locator(Selectors.TaskForm.EDIT_SUBTASK_BTN)
             .last()
@@ -431,15 +419,15 @@ test.describe('Completed Subtasks', () => {
           await subtask2Form
             .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
             .click()
-          await clickSubmitBtnCreate(subtask2Form)
+          await subtask2Form.clickSubmitBtnCreate()
         })
 
         await test.step('Submit root task — completed subtask hidden in tree', async () => {
-          await checkTaskFormSubtaskSettings(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtaskSettings({
             autoHideCompleted: true,
           })
-          await checkTaskFormSubtasks(rootTaskForm, [subtask])
-          await clickSubmitBtnCreate(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtasks([subtask])
+          await rootTaskForm.clickSubmitBtnCreate({
             newTasks: [rootTask, subtask, completedSubtask2],
           })
           checkNumCalls({ create: 3, update: 0 })
@@ -461,27 +449,24 @@ test.describe('Completed Subtasks', () => {
         const rootTaskForm = getTaskForm(0)
         await test.step('Create root task with one open and one completed subtask', async () => {
           await page.locator(Selectors.CREATE_TASK_BTN).click()
-          await fillTaskForm(rootTaskForm, rootTask)
+          await rootTaskForm.fillTaskForm(rootTask)
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtaskForm = getTaskForm(1)
-          await fillTaskForm(subtaskForm, subtask)
-          await clickSubmitBtnCreate(subtaskForm)
+          await subtaskForm.fillTaskForm(subtask)
+          await subtaskForm.clickSubmitBtnCreate()
           await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
           const subtask2Form = getTaskForm(1)
-          await fillTaskForm(subtask2Form, subtask2)
+          await subtask2Form.fillTaskForm(subtask2)
           await subtask2Form
             .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
             .click()
-          await clickSubmitBtnCreate(subtask2Form)
+          await subtask2Form.clickSubmitBtnCreate()
 
-          await setTaskFormSubtaskSettings(rootTaskForm, {
+          await rootTaskForm.setTaskFormSubtaskSettings({
             autoHideCompleted: false,
           })
-          await checkTaskFormSubtasks(rootTaskForm, [
-            subtask,
-            completedSubtask2,
-          ])
-          await clickSubmitBtnCreate(rootTaskForm, {
+          await rootTaskForm.checkTaskFormSubtasks([subtask, completedSubtask2])
+          await rootTaskForm.clickSubmitBtnCreate({
             newTasks: [rootTask, subtask, completedSubtask2],
           })
           await expandAndCheckTree({
@@ -494,15 +479,15 @@ test.describe('Completed Subtasks', () => {
         await test.step('Edit root task, enable auto-hide — completed subtask disappears from form', async () => {
           await openTaskEditForm(rootTask)
           const editedRootTaskForm = getTaskForm(0)
-          await checkTaskFormSubtasks(editedRootTaskForm, [
+          await editedRootTaskForm.checkTaskFormSubtasks([
             subtask,
             completedSubtask2,
           ])
-          await setTaskFormSubtaskSettings(editedRootTaskForm, {
+          await editedRootTaskForm.setTaskFormSubtaskSettings({
             autoHideCompleted: true,
           })
-          await checkTaskFormSubtasks(editedRootTaskForm, [subtask])
-          await clickSubmitBtnUpdate(editedRootTaskForm, {
+          await editedRootTaskForm.checkTaskFormSubtasks([subtask])
+          await editedRootTaskForm.clickSubmitBtnUpdate({
             updatedTasks: [rootTask],
           })
           checkNumCalls({ create: 3, update: 1 })

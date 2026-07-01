@@ -4,14 +4,7 @@ import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage, goToHomePage } from '@test/support/utils/navigation'
-import {
-  checkTaskFormSubtasks,
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
-  getTaskForm,
-  setTaskFormSubtaskSettings,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
@@ -33,17 +26,17 @@ test.describe('Create Subtasks', () => {
     const rootTaskForm = getTaskForm(0)
     await test.step('Open new task form and fill root task', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(rootTaskForm, rootTask)
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
     await test.step('Add subtask and create', async () => {
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const subtaskForm = getTaskForm(1)
-      await fillTaskForm(subtaskForm, subtask)
-      await clickSubmitBtnCreate(subtaskForm)
+      await subtaskForm.fillTaskForm(subtask)
+      await subtaskForm.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(rootTaskForm, [subtask])
-      await clickSubmitBtnCreate(rootTaskForm, {
+      await rootTaskForm.checkTaskFormSubtasks([subtask])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, subtask],
       })
 
@@ -54,17 +47,17 @@ test.describe('Create Subtasks', () => {
     await test.step('Edit root task, add a second subtask', async () => {
       await openTaskEditForm(rootTask)
       const editedRootTaskForm = getTaskForm(0)
-      await checkTaskFormSubtasks(editedRootTaskForm, [subtask])
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask])
       await editedRootTaskForm
         .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
         .click()
 
       const subtask2Form = getTaskForm(1)
-      await fillTaskForm(subtask2Form, subtask2)
-      await clickSubmitBtnCreate(subtask2Form)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(editedRootTaskForm, [subtask, subtask2])
-      await clickSubmitBtnUpdate(editedRootTaskForm, {
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
+      await editedRootTaskForm.clickSubmitBtnUpdate({
         updatedTasks: [rootTask],
         newTasks: [subtask2],
       })
@@ -89,23 +82,23 @@ test.describe('Create Subtasks', () => {
     const rootTaskForm = getTaskForm(0)
     await test.step('Open new task form and fill root task', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(rootTaskForm, rootTask)
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
     await test.step('Add two subtasks and create', async () => {
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const subtaskForm = getTaskForm(1)
-      await fillTaskForm(subtaskForm, subtask)
-      await clickSubmitBtnCreate(subtaskForm)
+      await subtaskForm.fillTaskForm(subtask)
+      await subtaskForm.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(rootTaskForm, [subtask])
+      await rootTaskForm.checkTaskFormSubtasks([subtask])
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const subtask2Form = getTaskForm(1)
-      await fillTaskForm(subtask2Form, subtask2)
-      await clickSubmitBtnCreate(subtask2Form)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(rootTaskForm, [subtask, subtask2])
-      await clickSubmitBtnCreate(rootTaskForm, {
+      await rootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, subtask, subtask2],
       })
 
@@ -119,20 +112,20 @@ test.describe('Create Subtasks', () => {
     await test.step('Edit root task, add a third subtask', async () => {
       await openTaskEditForm(rootTask)
       const editedRootTaskForm = getTaskForm(0)
-      await checkTaskFormSubtasks(editedRootTaskForm, [subtask, subtask2])
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
       await editedRootTaskForm
         .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
         .click()
       const subtask3Form = getTaskForm(1)
-      await fillTaskForm(subtask3Form, subtask3)
-      await clickSubmitBtnCreate(subtask3Form)
+      await subtask3Form.fillTaskForm(subtask3)
+      await subtask3Form.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(editedRootTaskForm, [
+      await editedRootTaskForm.checkTaskFormSubtasks([
         subtask,
         subtask2,
         subtask3,
       ])
-      await clickSubmitBtnUpdate(editedRootTaskForm, {
+      await editedRootTaskForm.clickSubmitBtnUpdate({
         updatedTasks: [rootTask],
         newTasks: [subtask3],
       })
@@ -157,33 +150,33 @@ test.describe('Create Subtasks', () => {
     const rootTaskForm = getTaskForm(0)
     await test.step('Open new task form and fill root task', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
-      await fillTaskForm(rootTaskForm, rootTask)
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
     await test.step('Add subtask with two nested children', async () => {
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
 
       const subtaskForm = getTaskForm(1)
-      await fillTaskForm(subtaskForm, subtask)
+      await subtaskForm.fillTaskForm(subtask)
       await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
 
       const subtask2Form = getTaskForm(2)
-      await fillTaskForm(subtask2Form, subtask2)
-      await clickSubmitBtnCreate(subtask2Form)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(subtaskForm, [subtask2])
+      await subtaskForm.checkTaskFormSubtasks([subtask2])
       await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const subtask3Form = getTaskForm(2)
-      await fillTaskForm(subtask3Form, subtask3)
-      await clickSubmitBtnCreate(subtask3Form)
+      await subtask3Form.fillTaskForm(subtask3)
+      await subtask3Form.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(subtaskForm, [subtask2, subtask3])
-      await clickSubmitBtnCreate(subtaskForm)
+      await subtaskForm.checkTaskFormSubtasks([subtask2, subtask3])
+      await subtaskForm.clickSubmitBtnCreate()
     })
 
     await test.step('Submit root task and verify nested tree', async () => {
-      await checkTaskFormSubtasks(rootTaskForm, [subtask, subtask2, subtask3])
-      await clickSubmitBtnCreate(rootTaskForm, {
+      await rootTaskForm.checkTaskFormSubtasks([subtask, subtask2, subtask3])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, subtask, subtask2, subtask3],
       })
 
@@ -211,11 +204,11 @@ test.describe('Create Subtasks', () => {
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const completedRootTaskForm = getTaskForm(0)
-      await fillTaskForm(completedRootTaskForm, rootTask)
+      await completedRootTaskForm.fillTaskForm(rootTask)
       await completedRootTaskForm
         .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
         .click()
-      await clickSubmitBtnCreate(completedRootTaskForm, {
+      await completedRootTaskForm.clickSubmitBtnCreate({
         newTasks: [completedRootTask],
       })
 
@@ -230,13 +223,13 @@ test.describe('Create Subtasks', () => {
           .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
           .click()
         const subtaskForm = getTaskForm(1)
-        await fillTaskForm(subtaskForm, subtask)
-        await clickSubmitBtnCreate(subtaskForm)
+        await subtaskForm.fillTaskForm(subtask)
+        await subtaskForm.clickSubmitBtnCreate()
       })
 
       const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
       await test.step('Click Save - dialog warns that the parent will be re-opened', async () => {
-        await clickSubmitBtnUpdate(editedCompletedRootTaskForm, {
+        await editedCompletedRootTaskForm.clickSubmitBtnUpdate({
           newTasks: [subtask],
           updatedTasks: [openRootTask],
           confirmDialog: Selectors.SaveOpenSubtasksConfirmDialog.DIALOG,
@@ -268,11 +261,11 @@ test.describe('Create Subtasks', () => {
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const completedRootTaskForm = getTaskForm(0)
-      await fillTaskForm(completedRootTaskForm, rootTask)
+      await completedRootTaskForm.fillTaskForm(rootTask)
       await completedRootTaskForm
         .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
         .click()
-      await clickSubmitBtnCreate(completedRootTaskForm, {
+      await completedRootTaskForm.clickSubmitBtnCreate({
         newTasks: [completedRootTask],
       })
 
@@ -285,16 +278,16 @@ test.describe('Create Subtasks', () => {
           .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
           .click()
         const subtaskForm = getTaskForm(1)
-        await fillTaskForm(subtaskForm, subtask)
+        await subtaskForm.fillTaskForm(subtask)
         await subtaskForm
           .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
           .click()
-        await clickSubmitBtnCreate(subtaskForm)
+        await subtaskForm.clickSubmitBtnCreate()
 
-        await setTaskFormSubtaskSettings(editedCompletedRootTaskForm, {
+        await editedCompletedRootTaskForm.setTaskFormSubtaskSettings({
           autoHideCompleted: false,
         })
-        await clickSubmitBtnUpdate(editedCompletedRootTaskForm, {
+        await editedCompletedRootTaskForm.clickSubmitBtnUpdate({
           updatedTasks: [completedRootTask],
           newTasks: [completedSubtask],
         })

@@ -5,11 +5,7 @@ import { test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
-import {
-  clickSubmitBtnCreate,
-  fillTaskForm,
-  getTaskForm,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
 test.describe('Task Creation', () => {
@@ -22,8 +18,8 @@ test.describe('Task Creation', () => {
 
     await getPage().locator(Selectors.CREATE_TASK_BTN).click()
     const taskForm = getTaskForm(0)
-    await fillTaskForm(taskForm, task)
-    await clickSubmitBtnCreate(taskForm, { newTasks: [task] })
+    await taskForm.fillTaskForm(task)
+    await taskForm.clickSubmitBtnCreate({ newTasks: [task] })
 
     await expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
@@ -54,8 +50,8 @@ test.describe('Task Creation', () => {
     await test.step('Create task using new field config, verify in tree', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const newTaskForm = getTaskForm(0)
-      await fillTaskForm(newTaskForm, newTask, { settings: fieldConfig })
-      await clickSubmitBtnCreate(newTaskForm, { newTasks: [newTask] })
+      await newTaskForm.fillTaskForm(newTask, { settings: fieldConfig })
+      await newTaskForm.clickSubmitBtnCreate({ newTasks: [newTask] })
       await expandAndCheckTree(newTask, { settings: fieldConfig })
       checkNumCalls({ create: 1 })
     })

@@ -4,13 +4,7 @@ import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
-import {
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
-  getTaskForm,
-  openMoreSection,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
@@ -39,8 +33,8 @@ test.describe('Scheduling', () => {
     await test.step('Create task with due date', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const taskWithDueDateForm = getTaskForm(0)
-      await fillTaskForm(taskWithDueDateForm, taskWithDueDate)
-      await clickSubmitBtnCreate(taskWithDueDateForm, {
+      await taskWithDueDateForm.fillTaskForm(taskWithDueDate)
+      await taskWithDueDateForm.clickSubmitBtnCreate({
         newTasks: [taskWithDueDate],
       })
       checkNumCalls({ create: 1, update: 0 })
@@ -53,9 +47,9 @@ test.describe('Scheduling', () => {
     await test.step('Edit task again, clear the due date', async () => {
       await openTaskEditForm(taskWithDueDate)
       const taskWithDueDateForm = getTaskForm(0)
-      await openMoreSection(taskWithDueDateForm)
+      await taskWithDueDateForm.openMoreSection()
       await page.locator(Selectors.TaskForm.Schedule.CLEAR_DUE_AT_BTN).click()
-      await clickSubmitBtnUpdate(taskWithDueDateForm, {
+      await taskWithDueDateForm.clickSubmitBtnUpdate({
         updatedTasks: [baseTask],
       })
       checkNumCalls({ create: 1, update: 1 })
@@ -85,8 +79,8 @@ test.describe('Scheduling', () => {
     await test.step('Create task with hideUntil = tomorrow', async () => {
       await getPage().locator(Selectors.CREATE_TASK_BTN).click()
       const hiddenTaskForm = getTaskForm(0)
-      await fillTaskForm(hiddenTaskForm, hiddenTask)
-      await clickSubmitBtnCreate(hiddenTaskForm, { newTasks: [hiddenTask] })
+      await hiddenTaskForm.fillTaskForm(hiddenTask)
+      await hiddenTaskForm.clickSubmitBtnCreate({ newTasks: [hiddenTask] })
     })
 
     await test.step('Task should not be visible in the home page list', async () => {

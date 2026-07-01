@@ -3,14 +3,7 @@ import { Priority, TaskStatus } from '~/shared/schema'
 import { Selectors } from '@test/support/constants'
 import { test } from '@test/support/fixtures'
 import { checkNumCalls } from '@test/support/utils/intercepts'
-import {
-  assignSubtask,
-  checkTaskFormSubtasks,
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
-  getTaskForm,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
@@ -39,29 +32,29 @@ test.describe('Assign Subtasks', () => {
     await test.step('Create dummy orphan tasks (to test order)', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const orphanTaskForm = getTaskForm(0)
-      await fillTaskForm(orphanTaskForm, orphanTask)
-      await clickSubmitBtnCreate(orphanTaskForm, { newTasks: [orphanTask] })
+      await orphanTaskForm.fillTaskForm(orphanTask)
+      await orphanTaskForm.clickSubmitBtnCreate({ newTasks: [orphanTask] })
 
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const orphanTask2Form = getTaskForm(0)
-      await fillTaskForm(orphanTask2Form, orphanTask2)
-      await clickSubmitBtnCreate(orphanTask2Form, { newTasks: [orphanTask2] })
+      await orphanTask2Form.fillTaskForm(orphanTask2)
+      await orphanTask2Form.clickSubmitBtnCreate({ newTasks: [orphanTask2] })
     })
 
     await test.step('Create root task, create new subtask, assign sibling orphanTask', async () => {
       await page.locator(Selectors.CREATE_TASK_BTN).click()
       const rootTaskForm = getTaskForm(0)
-      await fillTaskForm(rootTaskForm, rootTask)
-      await assignSubtask(rootTaskForm, orphanTask)
+      await rootTaskForm.fillTaskForm(rootTask)
+      await rootTaskForm.assignSubtask(orphanTask)
 
-      await checkTaskFormSubtasks(rootTaskForm, [orphanTask])
+      await rootTaskForm.checkTaskFormSubtasks([orphanTask])
       await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
       const newSubtaskForm = getTaskForm(1)
-      await fillTaskForm(newSubtaskForm, newSubtask)
-      await clickSubmitBtnCreate(newSubtaskForm)
+      await newSubtaskForm.fillTaskForm(newSubtask)
+      await newSubtaskForm.clickSubmitBtnCreate()
 
-      await checkTaskFormSubtasks(rootTaskForm, [orphanTask, newSubtask])
-      await clickSubmitBtnCreate(rootTaskForm, {
+      await rootTaskForm.checkTaskFormSubtasks([orphanTask, newSubtask])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, newSubtask],
         updatedTasks: [orphanTask],
       })
@@ -76,15 +69,15 @@ test.describe('Assign Subtasks', () => {
     await test.step('Edit root task, assign second orphan', async () => {
       await openTaskEditForm(rootTask)
       const rootTaskForm = getTaskForm(0)
-      await checkTaskFormSubtasks(rootTaskForm, [orphanTask, newSubtask])
-      await assignSubtask(rootTaskForm, orphanTask2)
-      await checkTaskFormSubtasks(rootTaskForm, [
+      await rootTaskForm.checkTaskFormSubtasks([orphanTask, newSubtask])
+      await rootTaskForm.assignSubtask(orphanTask2)
+      await rootTaskForm.checkTaskFormSubtasks([
         // all at same level, so we don't care about order really.
         orphanTask,
         orphanTask2,
         newSubtask,
       ])
-      await clickSubmitBtnUpdate(rootTaskForm, {
+      await rootTaskForm.clickSubmitBtnUpdate({
         updatedTasks: [rootTask, orphanTask2],
       })
 

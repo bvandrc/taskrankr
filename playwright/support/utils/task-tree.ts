@@ -89,9 +89,6 @@ async function checkTitleAndSubtasks(
     if (!settings[field].visible) {
       await expect(badge).not.toBeAttached()
     } else if (expVal == null) {
-      // Visible field with no value renders an empty, transparent placeholder
-      // badge (kept for column layout). opacity:0 still counts as "visible" to
-      // Playwright, so assert transparency rather than not-visible.
       await expect(badge).toHaveText('')
       await expect(badge).toHaveCSS('opacity', '0')
     } else {

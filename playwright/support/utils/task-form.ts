@@ -13,11 +13,7 @@ import {
 } from '~/shared/schema'
 import { Selectors } from '../constants'
 import { getIsLoggedIn, getPage } from '../test-globals'
-import {
-  checkTasksDontExistBackend,
-  checkTasksExistBackend,
-  getSettings,
-} from './api'
+import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
 import { expectWithFlag, getCheckedState, toggleState } from './index'
 import type { CreatedTask } from './intercepts'
 import { waitForCreateTask, waitForUpdateTask } from './intercepts'
@@ -47,23 +43,13 @@ export class TaskFormLocator {
   async fillTaskForm(
     task: TaskFormData,
     {
-      settings,
+      settings = DEFAULT_FIELD_CONFIG,
       hasIncompleteSubtasks = false,
     }: {
       settings?: FieldConfig
       hasIncompleteSubtasks?: boolean
     } = {},
   ) {
-    // Re-get the live field config rather than assuming DEFAULT_FIELD_CONFIG:
-    // authed tests share one user's settings, so a parallel test that changes
-    // the config would otherwise make these submit-disabled assertions flaky.
-    // A caller that explicitly cares about the config passes `settings`.
-    const effectiveSettings =
-      settings ??
-      (getIsLoggedIn()
-        ? (await getSettings()).fieldConfig
-        : DEFAULT_FIELD_CONFIG)
-
     await checkTasksDontExistBackend([task])
 
     await expect(this.locator(TaskForm.SUBMIT_BTN)).toBeDisabled()
@@ -72,7 +58,7 @@ export class TaskFormLocator {
     await this.locator(TaskForm.NAME_INPUT).fill(task.name)
     await expect(this.locator(TaskForm.ADD_SUBTASK_BTN)).not.toBeDisabled()
 
-    await this.fillTaskFormRankFields(task, effectiveSettings)
+    await this.fillTaskFormRankFields(task, settings)
 
     const completedCheckbox = this.locator(TaskForm.MARK_COMPLETED_CHECKBOX)
     await expectWithFlag(

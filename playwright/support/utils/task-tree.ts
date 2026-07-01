@@ -48,13 +48,17 @@ async function getTaskCard(
   scope: Locator | Page,
   task: TaskTreeNode,
 ): Promise<Locator> {
-  const title = getTaskCardTitle(scope, task)
-  await expect(title).toHaveCount(1)
-  await title.scrollIntoViewIfNeeded()
-  await expect(title).toBeVisible()
-  return title.locator(
-    'xpath=ancestor::*[starts-with(@data-testid, "task-card-")][1]',
-  )
+  const card = scope.locator(TaskCard.CARD).filter({
+    has: scope
+      .locator(
+        `:scope > div:first-child ${TaskCard.THIS_TASK_INFO} ${TaskCard.TITLE}`,
+      )
+      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) }),
+  })
+  await expect(card).toHaveCount(1)
+  await card.scrollIntoViewIfNeeded()
+  await expect(card).toBeVisible()
+  return card
 }
 
 async function checkTitleAndSubtasks(

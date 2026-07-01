@@ -19,8 +19,7 @@ export const ApiPaths = {
   UPDATE_SETTINGS: contract.settings.update.path,
 }
 
-export const DefaultTask = {
-  name: 'E2E Test Task',
+export const DefaultTaskFields = {
   priority: Priority.HIGH,
   ease: Ease.MEDIUM,
   enjoyment: Enjoyment.LOW,

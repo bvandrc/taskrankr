@@ -1,0 +1,51 @@
+import { expect } from '@playwright/test'
+import type { Entries } from 'type-fest'
+
+import type { FieldConfig, UserSettings } from '~/shared/schema'
+import { Selectors } from '../constants'
+import { getIsLoggedIn, getPage, getRequestTracker } from '../test-globals'
+import { getSettings } from './api'
+import { getCheckedState, toggleState } from './index'
+
+const { Menu, Settings } = Selectors
+
+async function maybeWaitForSettingsUpdate() {
+  if (!getIsLoggedIn()) return
+  const tracker = getRequestTracker()
+  const expected = tracker.updateSettings + 1
+  await expect(() => {
+    expect(tracker.updateSettings).toBeGreaterThanOrEqual(expected)
+  }).toPass({ timeout: 5000 })
+}
+
+async function setFieldConfig(targetConfig: FieldConfig) {
+  for (const [field, { visible, required }] of Object.entries(
+    targetConfig,
+  ) as Entries<FieldConfig>) {
+    const visibleSel = Settings.FieldConfig.visibleCheckbox(field)
+    const requiredSel = Settings.FieldConfig.requiredCheckbox(field)
+
+    if ((await getCheckedState(visibleSel)) !== visible) {
+      await toggleState(visibleSel, visible)
+      await maybeWaitForSettingsUpdate()
+    }
+
+    if ((await getCheckedState(requiredSel)) !== required) {
+      await toggleState(requiredSel, required)
+      await maybeWaitForSettingsUpdate()
+    }
+  }
+}
+
+export async function setSettings(settings: Pick<UserSettings, 'fieldConfig'>) {
+  const page = getPage()
+  await page.locator(Selectors.MENU_BTN).click()
+  await page.locator(Menu.SETTINGS).click()
+
+  await setFieldConfig(settings.fieldConfig)
+
+  if (getIsLoggedIn()) {
+    const current = await getSettings()
+    expect(current).toMatchObject(settings)
+  }
+}

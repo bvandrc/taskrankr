@@ -102,7 +102,7 @@ export const Selectors = {
   },
   DatePicker: {
     MONTH_YEAR: '[data-radix-popper-content-wrapper] [role="status"]',
-    PREV_MONTH_BTN: `[aria-label="Go to the Previous Month"]`,
-    NEXT_MONTH_BTN: `[aria-label="Go to the Next Month"]`,
+    PREV_MONTH_BTN: '[aria-label="Go to the Previous Month"]',
+    NEXT_MONTH_BTN: '[aria-label="Go to the Next Month"]',
   },
 } as const

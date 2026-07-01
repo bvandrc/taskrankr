@@ -14,7 +14,6 @@
   "search.exclude": {
     "**/build": true,
     "**/dist": true,
-    "**/cypress/downloads": true,
-    "**/cypress/results": true
+    "**/playwright/results": true
   }
 }

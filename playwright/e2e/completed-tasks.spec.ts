@@ -1,0 +1,100 @@
+import { Routes } from '~/client/lib/constants'
+import { TaskStatus } from '~/shared/schema'
+import { Selectors } from '@test/support/constants'
+import { test } from '@test/support/fixtures'
+import { getPage } from '@test/support/test-globals'
+import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { getTaskForm } from '@test/support/utils/task-form'
+import {
+  changeStatusViaStatusChangeDialog,
+  checkCompletedPage,
+  openTaskEditForm,
+} from '@test/support/utils/task-tree'
+
+test.describe('Completed Tasks', () => {
+  test.beforeEach(async ({ page, isLoggedIn }) => {
+    await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
+  })
+
+  test('complete task via New Task Form — not in main tree, is on completed page', async ({
+    buildTask,
+  }) => {
+    const task = buildTask('Test Task', TaskStatus.PINNED)
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
+
+    await test.step('Create task already marked as completed', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      const taskForm = getTaskForm(0)
+      await taskForm.fillTaskForm(task)
+      await taskForm.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      await taskForm.clickSubmitBtnCreate({
+        newTasks: [completedTask],
+      })
+      checkNumCalls({ create: 1, update: 0 })
+    })
+
+    await checkCompletedPage([completedTask])
+  })
+
+  test('complete task via Edit Form — not in main tree, is on completed page', async ({
+    buildTask,
+  }) => {
+    const task = buildTask('Test Task', TaskStatus.PINNED)
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
+
+    await test.step('Create task', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      const taskForm = getTaskForm(0)
+      await taskForm.fillTaskForm(task)
+      await taskForm.clickSubmitBtnCreate({
+        newTasks: [{ ...task, status: TaskStatus.PINNED }],
+      })
+      checkNumCalls({ create: 1, update: 0 })
+    })
+
+    await test.step('Edit task, mark as completed', async () => {
+      await openTaskEditForm(task)
+      const taskForm = getTaskForm(0)
+      await taskForm.locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX).click()
+      await taskForm.clickSubmitBtnUpdate({
+        updatedTasks: [completedTask],
+      })
+      checkNumCalls({ create: 1, update: 1 })
+    })
+
+    await checkCompletedPage([completedTask])
+  })
+
+  test('complete task via Change Status Dialog — not in main tree, is on completed page', async ({
+    buildTask,
+  }) => {
+    const task = buildTask('Test Task', TaskStatus.PINNED)
+    const completedTask = {
+      ...task,
+      status: TaskStatus.COMPLETED,
+    } as const satisfies CreatedTask
+
+    await test.step('Create task', async () => {
+      await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+      const taskForm = getTaskForm(0)
+      await taskForm.fillTaskForm(task)
+      await taskForm.clickSubmitBtnCreate({
+        newTasks: [{ ...task, status: TaskStatus.PINNED }],
+      })
+      checkNumCalls({ create: 1, update: 0 })
+    })
+
+    await test.step('Complete task via status change dialog', async () => {
+      await changeStatusViaStatusChangeDialog(task, TaskStatus.COMPLETED)
+      checkNumCalls({ create: 1, update: 1 })
+    })
+
+    await checkCompletedPage([completedTask])
+  })
+})

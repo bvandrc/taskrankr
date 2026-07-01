@@ -3,15 +3,15 @@
   "compilerOptions": {
     "target": "ES2020",
     "lib": ["ES2020", "DOM"],
-    "types": ["node", "cypress"],
+    "types": ["node"],
     "esModuleInterop": true,
     "moduleResolution": "bundler",
     "strict": true,
     "paths": {
-      "@cypress/support/*": ["./support/*"],
+      "@test/support/*": ["./support/*"],
       "~/client*": ["../client/src/*"],
       "~/shared/*": ["../shared/*"],
-      "@/*": ["../client/src/*"] // from root tsconfig aliases, but don't use this one in cypress code
+      "@/*": ["../client/src/*"] // from root tsconfig aliases, but don't use this one in playwright code
     }
   },
   "include": ["**/*.ts"],

@@ -8,10 +8,10 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Build**: `npm run build` (runs `script/build.ts`)
 - **Start (production)**: `npm run prod:start`
 - **Start (local build test)**: `npm run local:start` — serves the built bundle locally with test routes enabled; use this to run E2E against the compiled app
-- **Typecheck**: `npm run ts:check` (or `npm run check` for ts + cypress ts + lint)
+- **Typecheck**: `npm run ts:check` (or `npm run check` for ts + playwright ts + lint)
 - **Lint / Format**: `npm run lint` / `npm run format` (Biome)
 - **DB Push / Generate / Migrate**: `npm run db:push` / `npm run db:generate -- --name <desc>` / `npm run db:migrate` — always pass `--name` with a descriptive slug when generating (e.g. `add_task_schedule`)
-- **E2E**: `npm run cy:run:user`, `npm run cy:run:guest`, `npm run cy:open:user`, `npm run cy:open:guest`
+- **E2E**: `npm run pw:run:user`, `npm run pw:run:guest`, `npm run pw:open:user`, `npm run pw:open:guest`
 - **Required Env Vars**: Replit Auth environment variables are managed by Replit.
 
 ## Stack
@@ -27,7 +27,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **Drag & Drop**: `@dnd-kit`
 - **State Management**: Custom React Context providers (offline-first, background sync)
 - **API**: `ts-rest` (client and server)
-- **Testing**: Cypress (E2E)
+- **Testing**: Playwright (E2E)
 
 ## Where things live
 
@@ -43,7 +43,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **React Providers**: `client/src/providers/` (See State Management section)
 - **Global Constants**: `client/src/lib/constants.ts`
 - **Local Storage Utilities**: `client/src/lib/storage.ts`
-- **E2E Tests**: `cypress/`
+- **E2E Tests**: `playwright/`
 - **DB Migrations**: `migrations/`
 - **Changelog**: `CHANGELOG.json`
 
@@ -81,8 +81,7 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 
 ## Gotchas
 
-- **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `cypress/support/constants/selectors.ts` before using them in Cypress tests.
-- **Cypress Test Files**: New E2E test files must be manually added to `cypress.config.ts`.
+- **Selector Consistency**: Always define new CSS selectors (`data-testid`) in `playwright/support/constants/selectors.ts` before using them in Playwright tests.
 - **Font Imports**: Do not re-add the massive multi-font `<link>` tag; only Inter and Outfit are approved fonts.
 - **Post-install app crashes (duplicate React / Invalid hook call)**: After installing a new npm package, the dev server can land in a dirty state mid-install, producing alarming browser errors. Always restart the workflow first before debugging — a clean restart may resolve it with no code changes needed.
 - **Vite duplicate-React / Invalid hook call**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Any change to `vite.config.ts` (even adding a `define` entry) invalidates Vite's dep-optimisation hash; the first load after the change triggers a re-bundle that races with module loading and can land two React instances simultaneously. `workbox-window` has the same problem mid-session (only discovered when the SW first runs). Do not remove these options, and avoid touching `vite.config.ts` when a client-side change suffices. If a new package triggers the symptom, add it to `optimizeDeps.include`.
@@ -97,5 +96,5 @@ A multi-user, offline-first task manager featuring hierarchical tasks, a status 
 - **shadcn/ui**: [shadcn/ui documentation](https://ui.shadcn.com/)
 - **ts-rest**: [ts-rest documentation](https://ts-rest.com/docs/introduction)
 - **Vite PWA Plugin**: [vite-plugin-pwa documentation](https://vite-pwa-org.netlify.app/guide/)
-- **Cypress**: [Cypress documentation](https://docs.cypress.io/)
+- **Playwright**: [Playwright documentation](https://playwright.dev/docs/intro)
 - **Shared Task Utilities**: `shared/utils/task-utils.ts` and `client/src/lib/task-tree-utils.ts`

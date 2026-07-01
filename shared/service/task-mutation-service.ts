@@ -402,10 +402,7 @@ export class TaskMutationService {
     }
   }
 
-  private async walkAutoRevertParent(
-    parentId: number,
-    buffer: MutationBuffer,
-  ): Promise<void> {
+  private async walkAutoRevertParent(parentId: number, buffer: MutationBuffer) {
     let currentParentId: number | null = parentId
     while (currentParentId !== null) {
       const parentRaw = await this.io.getTask(currentParentId)

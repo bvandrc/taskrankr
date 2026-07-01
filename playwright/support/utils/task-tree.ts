@@ -61,7 +61,7 @@ async function checkTitleAndSubtasks(
   task: TaskTreeNode,
   tier: number,
   settings: FieldConfig,
-): Promise<void> {
+) {
   const title = getTaskCardTitle(scope, task)
   if (tier > 0 && task.status === TaskStatus.COMPLETED) {
     await expect(title).toHaveClass(/line-through/)
@@ -123,22 +123,18 @@ async function checkTitleAndSubtasks(
 export async function expandAndCheckTree(
   task: TaskTreeNode,
   { settings = DEFAULT_FIELD_CONFIG }: { settings?: FieldConfig } = {},
-): Promise<void> {
+) {
   await checkTitleAndSubtasks(getPage(), task, 0, settings)
 }
 
-export async function openTaskEditForm(
-  task: Pick<Task, 'name'>,
-): Promise<void> {
+export async function openTaskEditForm(task: Pick<Task, 'name'>) {
   const page = getPage()
   await expect(page.locator(Selectors.TaskForm.FORM)).not.toBeAttached()
   await getTaskCardTitle(page, task).click()
   await expect(page.locator(Selectors.TaskForm.FORM)).toBeVisible()
 }
 
-export async function openStatusChangeDialog(
-  task: Pick<Task, 'name'>,
-): Promise<void> {
+export async function openStatusChangeDialog(task: Pick<Task, 'name'>) {
   const page = getPage()
   const title = getTaskCardTitle(page, task)
   await page.clock.install()
@@ -155,7 +151,7 @@ export async function changeStatusViaStatusChangeDialog(
     hasIncompleteSubtasks = false,
     sideEffects = [],
   }: { hasIncompleteSubtasks?: boolean; sideEffects?: CreatedTask[] } = {},
-): Promise<void> {
+) {
   await openStatusChangeDialog(task)
 
   const page = getPage()
@@ -181,9 +177,7 @@ export async function changeStatusViaStatusChangeDialog(
   ).not.toBeAttached()
 }
 
-export async function checkCompletedPage(
-  completedTasks: TaskTreeNode[],
-): Promise<void> {
+export async function checkCompletedPage(completedTasks: TaskTreeNode[]) {
   await checkIsAtHomePage()
   const page = getPage()
   for (const task of flattenTree(completedTasks)) {

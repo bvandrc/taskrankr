@@ -12,7 +12,7 @@ async function maybeWaitForResponses(
   waiter: (count: number) => Promise<void>,
   count: number,
   _expectedStatus: number,
-): Promise<void> {
+) {
   if (getIsLoggedIn() && count > 0) {
     await waiter(count)
     // TODO: need to bring back in status check
@@ -25,23 +25,19 @@ export type CreatedTask = SetOptional<
   'schedule'
 >
 
-export async function waitForCreateAndVerify(
-  tasks: CreatedTask[],
-): Promise<void> {
+export async function waitForCreateAndVerify(tasks: CreatedTask[]) {
   await maybeWaitForResponses(waitForCreate, tasks.length, 201)
   await checkTasksExistBackend(tasks)
 }
 
-export async function waitForUpdateAndVerify(
-  tasks: CreatedTask[],
-): Promise<void> {
+export async function waitForUpdateAndVerify(tasks: CreatedTask[]) {
   await maybeWaitForResponses(waitForUpdate, tasks.length, 200)
   await checkTasksExistBackend(tasks)
 }
 
 export async function checkTasksDontExistAndAssertDontExist(
   tasks: CreatedTask[],
-): Promise<void> {
+) {
   const page = getPage()
   tasks.forEach((task) => {
     // UI check: task name shouldn't appear anywhere

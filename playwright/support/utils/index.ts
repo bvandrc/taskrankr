@@ -9,10 +9,7 @@ export async function getCheckedState(selector: string): Promise<boolean> {
   throw new Error(`Element ${selector} does not have a data-state attribute`)
 }
 
-export async function toggleState(
-  selector: string,
-  newState: boolean,
-): Promise<void> {
+export async function toggleState(selector: string, newState: boolean) {
   const current = await getCheckedState(selector)
   expect(current, `expected current state to be ${!newState}`).toBe(!newState)
   await getPage().locator(selector).click()

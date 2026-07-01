@@ -9,7 +9,7 @@ import { getCheckedState, toggleState } from './index'
 
 const { Menu, Settings } = Selectors
 
-async function maybeWaitForSettingsUpdate(): Promise<void> {
+async function maybeWaitForSettingsUpdate() {
   if (!getIsLoggedIn()) return
   const tracker = getRequestTracker()
   const expected = tracker.updateSettings + 1
@@ -18,7 +18,7 @@ async function maybeWaitForSettingsUpdate(): Promise<void> {
   }).toPass({ timeout: 5000 })
 }
 
-async function setFieldConfig(targetConfig: FieldConfig): Promise<void> {
+async function setFieldConfig(targetConfig: FieldConfig) {
   for (const [field, { visible, required }] of Object.entries(
     targetConfig,
   ) as Entries<FieldConfig>) {
@@ -37,9 +37,7 @@ async function setFieldConfig(targetConfig: FieldConfig): Promise<void> {
   }
 }
 
-export async function setSettings(
-  settings: Pick<UserSettings, 'fieldConfig'>,
-): Promise<void> {
+export async function setSettings(settings: Pick<UserSettings, 'fieldConfig'>) {
   const page = getPage()
   await page.locator(Selectors.MENU_BTN).click()
   await page.locator(Menu.SETTINGS).click()

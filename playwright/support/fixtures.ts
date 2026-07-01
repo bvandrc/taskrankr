@@ -78,7 +78,7 @@ export function waitForNResponses(
   predicate: (r: Response) => boolean,
   n: number,
   timeout = 15_000,
-): Promise<void> {
+) {
   if (n === 0) return Promise.resolve()
   const page = getPage()
   return new Promise<void>((resolve, reject) => {

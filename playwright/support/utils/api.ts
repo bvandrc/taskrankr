@@ -25,9 +25,7 @@ export async function getApiTasks(): Promise<Task[]> {
   return res.json()
 }
 
-export async function checkTasksExistBackend(
-  tasks: CreatedTask[],
-): Promise<void> {
+export async function checkTasksExistBackend(tasks: CreatedTask[]) {
   await expect(async () => {
     const localTasks = await getLocalStateTasks()
     const expectedNames = tasks.map((t) => t.name)
@@ -61,9 +59,7 @@ export async function checkTasksExistBackend(
   }
 }
 
-export async function checkTasksDontExistBackend(
-  tasks: Pick<Task, 'name'>[],
-): Promise<void> {
+export async function checkTasksDontExistBackend(tasks: Pick<Task, 'name'>[]) {
   await expect(async () => {
     const localTasks = await getLocalStateTasks()
     const localNames = new Set(localTasks.map((t) => t.name))

@@ -15,6 +15,7 @@ import { Selectors } from '../constants'
 import { waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksExistBackend } from './api'
+import { expectWithFlag } from './index'
 import type { CreatedTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
@@ -63,11 +64,10 @@ async function checkTitleAndSubtasks(
   settings: FieldConfig,
 ) {
   const title = getTaskCardTitle(scope, task)
-  if (tier > 0 && task.status === TaskStatus.COMPLETED) {
-    await expect(title).toHaveClass(/line-through/)
-  } else {
-    await expect(title).not.toHaveClass(/line-through/)
-  }
+  await expectWithFlag(
+    title,
+    tier > 0 && task.status === TaskStatus.COMPLETED,
+  ).toHaveClass(/line-through/)
 
   let card = await getTaskCard(scope, task)
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()

@@ -15,7 +15,7 @@ import { Selectors } from '../constants'
 import { waitForCreate, waitForUpdate } from '../fixtures'
 import { getIsLoggedIn, getPage } from '../test-globals'
 import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
-import { getCheckedState, toggleState } from './index'
+import { expectWithFlag, getCheckedState, toggleState } from './index'
 import type { CreatedTask } from './intercepts'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
@@ -61,11 +61,10 @@ export class TaskFormLocator {
     await this.fillTaskFormRankFields(task, settings)
 
     const completedCheckbox = this.locator(TaskForm.MARK_COMPLETED_CHECKBOX)
-    if (hasIncompleteSubtasks) {
-      await expect(completedCheckbox).toBeDisabled()
-    } else {
-      await expect(completedCheckbox).not.toBeDisabled()
-    }
+    await expectWithFlag(
+      completedCheckbox,
+      hasIncompleteSubtasks,
+    ).toBeDisabled()
 
     const { schedule } = task
     if (schedule) {
@@ -160,11 +159,7 @@ export class TaskFormLocator {
     )
 
     const submitBtn = this.locator(TaskForm.SUBMIT_BTN)
-    if (requiredFields.length > 0) {
-      await expect(submitBtn).toBeDisabled()
-    } else {
-      await expect(submitBtn).not.toBeDisabled()
-    }
+    await expectWithFlag(submitBtn, requiredFields.length > 0).toBeDisabled()
 
     const filled = new Set<RankField>()
     for (const field of RankFields) {
@@ -181,12 +176,10 @@ export class TaskFormLocator {
             .click()
           filled.add(field)
         }
-        const allRequiredFilled = requiredFields.every((f) => filled.has(f))
-        if (allRequiredFilled) {
-          await expect(submitBtn).not.toBeDisabled()
-        } else {
-          await expect(submitBtn).toBeDisabled()
-        }
+        await expectWithFlag(
+          submitBtn,
+          !requiredFields.every((f) => filled.has(f)),
+        ).toBeDisabled()
       } else {
         await expect(rankSelect).not.toBeAttached()
       }

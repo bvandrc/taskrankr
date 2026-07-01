@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test'
+import { expect, type Locator } from '@playwright/test'
 
 import { getPage } from '../test-globals'
 
@@ -18,3 +18,6 @@ export async function toggleState(selector: string, newState: boolean) {
     newState ? 'checked' : 'unchecked',
   )
 }
+
+export const expectWithFlag = (item: Locator, flag: boolean) =>
+  flag ? expect(item) : expect(item).not

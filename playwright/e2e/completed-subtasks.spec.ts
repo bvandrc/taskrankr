@@ -288,6 +288,7 @@ test.describe('Completed Subtasks', () => {
 
       await test.step('Edit subtask to enable autocomplete and add subtask2 as its child', async () => {
         await openTaskEditForm(subtask)
+        // TODO: would be nice if we could base `data-tier` by the level of dialog it is, not by the level in tree
         const subtaskForm = getTaskForm(1)
         await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
         const subtask2Form = getTaskForm(2)

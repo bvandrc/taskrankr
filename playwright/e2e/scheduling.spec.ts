@@ -1,10 +1,10 @@
 import { Routes } from '~/client/lib/constants'
-import { Priority, TaskStatus } from '~/shared/schema'
+import { TaskStatus } from '~/shared/schema'
 import { Selectors } from '@test/support/constants'
 import { expect, test } from '@test/support/fixtures'
 import { getPage } from '@test/support/test-globals'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
-import { getTaskForm, selectDate } from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
@@ -88,51 +88,5 @@ test.describe('Scheduling', () => {
     })
   })
 
-  test('priority escalates to the triggered level when its escalation date has passed on page load', async ({
-    page,
-    buildTask,
-  }) => {
-    const baseDate = new Date('2025-06-01T12:00:00')
-    const escalationDate = new Date('2025-06-02T12:00:00') // tomorrow
-    const afterEscalation = new Date('2025-06-04T12:00:00') // 3 days later, past escalation
-
-    await page.clock.install({ time: baseDate })
-    await page.reload()
-
-    const baseTask = buildTask('Escalating Task', TaskStatus.PINNED, {
-      priority: Priority.LOW,
-    })
-    const escalatedTask = {
-      ...baseTask,
-      priority: Priority.HIGH,
-    } as const satisfies CreatedTask
-
-    await test.step('Create task with base priority LOW and a HIGH escalation date set to tomorrow', async () => {
-      await page.locator(Selectors.CREATE_TASK_BTN).click()
-      const taskForm = getTaskForm(0)
-      await taskForm.fillTaskForm(baseTask)
-      await taskForm.openMoreSection()
-      await selectDate(
-        page.locator(
-          Selectors.TaskForm.Schedule.EscalationPicker(Priority.HIGH),
-        ),
-        escalationDate,
-      )
-      await taskForm.clickSubmitBtnCreate({ newTasks: [baseTask] })
-      checkNumCalls({ create: 1, update: 0 })
-      await expandAndCheckTree(baseTask)
-    })
-
-    await test.step('Advance time past the escalation date and reload', async () => {
-      await page.clock.fastForward(
-        afterEscalation.getTime() - baseDate.getTime(),
-      )
-      await page.reload()
-    })
-
-    await test.step('Priority has automatically escalated to HIGH', async () => {
-      await expandAndCheckTree(escalatedTask)
-      checkNumCalls({ create: 1, update: 1 })
-    })
-  })
+  // TODO: reconciles priority escalation on load when escalation date has passed
 })

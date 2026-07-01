@@ -59,7 +59,6 @@ export const Selectors = {
       DUE_AT_PICKER: testId('schedule-dueAt-picker'),
       CLEAR_DUE_AT_BTN: '[aria-label="Clear Due At"]',
       HIDE_UNTIL_PICKER: testId('schedule-hideUntil-picker'),
-      EscalationPicker: (level: string) => testId(`schedule-${level}-picker`),
     },
     // form bns
     SUBMIT_BTN: testId('submit-button'),

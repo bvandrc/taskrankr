@@ -30,13 +30,9 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-// `scope` constrains the search to a parent card's subtree. Pinned/in-progress
-// subtasks render both hoisted at the top *and* nested under their parent, so a
-// page-wide lookup of a subtask title matches twice; scoping to the parent card
-// resolves the single nested instance.
-export function getTaskCardTitle(
+function getTaskCardTitle(
+  scope: Locator | Page,
   task: Pick<Task, 'name'>,
-  scope: Locator | Page = getPage(),
 ): Locator {
   return (
     scope
@@ -48,37 +44,32 @@ export function getTaskCardTitle(
 }
 
 async function getTaskCard(
+  scope: Locator | Page,
   task: TaskTreeNode,
-  scope?: Locator | Page,
 ): Promise<Locator> {
-  const title = getTaskCardTitle(task, scope)
+  const title = getTaskCardTitle(scope, task)
   await expect(title).toHaveCount(1)
   await title.scrollIntoViewIfNeeded()
   await expect(title).toBeVisible()
-  // The task's own card is the title's nearest enclosing `task-card-`. A
-  // `filter({ has: title })` over all cards can't express this: `title` is
-  // itself scoped under `task-card-`, so it only matches an ancestor card with
-  // a nested card (or none at all, for a leaf root task).
   return title.locator(
     'xpath=ancestor::*[starts-with(@data-testid, "task-card-")][1]',
   )
 }
 
 async function checkTitleAndSubtasks(
+  scope: Locator | Page,
   task: TaskTreeNode,
   tier: number,
   settings: FieldConfig,
-  scope?: Locator | Page,
 ): Promise<void> {
-  const _page = getPage()
-  const title = getTaskCardTitle(task, scope)
+  const title = getTaskCardTitle(scope, task)
   if (tier > 0 && task.status === TaskStatus.COMPLETED) {
     await expect(title).toHaveClass(/line-through/)
   } else {
     await expect(title).not.toHaveClass(/line-through/)
   }
 
-  let card = await getTaskCard(task, scope)
+  let card = await getTaskCard(scope, task)
   const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
   await expect(taskInfo).toHaveAttribute('data-status', task.status)
 
@@ -121,11 +112,11 @@ async function checkTitleAndSubtasks(
     await expandBtn.click()
     await expect(card.locator(TaskCard.COLLAPSE_BTN).first()).toBeVisible()
     // Re-get card after expand (may re-render)
-    card = await getTaskCard(task, scope)
+    card = await getTaskCard(scope, task)
   }
 
   for (const subtask of task.subtasks) {
-    await checkTitleAndSubtasks(subtask, tier + 1, settings, card)
+    await checkTitleAndSubtasks(card, subtask, tier + 1, settings)
   }
 }
 
@@ -133,7 +124,7 @@ export async function expandAndCheckTree(
   task: TaskTreeNode,
   { settings = DEFAULT_FIELD_CONFIG }: { settings?: FieldConfig } = {},
 ): Promise<void> {
-  await checkTitleAndSubtasks(task, 0, settings)
+  await checkTitleAndSubtasks(getPage(), task, 0, settings)
 }
 
 export async function openTaskEditForm(
@@ -141,7 +132,7 @@ export async function openTaskEditForm(
 ): Promise<void> {
   const page = getPage()
   await expect(page.locator(Selectors.TaskForm.FORM)).not.toBeAttached()
-  await getTaskCardTitle(task).click()
+  await getTaskCardTitle(page, task).click()
   await expect(page.locator(Selectors.TaskForm.FORM)).toBeVisible()
 }
 
@@ -149,7 +140,7 @@ export async function openStatusChangeDialog(
   task: Pick<Task, 'name'>,
 ): Promise<void> {
   const page = getPage()
-  const title = getTaskCardTitle(task)
+  const title = getTaskCardTitle(page, task)
   await page.clock.install()
   await title.dispatchEvent('mousedown')
   await page.clock.fastForward(900)
@@ -194,8 +185,9 @@ export async function checkCompletedPage(
   completedTasks: TaskTreeNode[],
 ): Promise<void> {
   await checkIsAtHomePage()
+  const page = getPage()
   for (const task of flattenTree(completedTasks)) {
-    await expect(getTaskCardTitle(task)).not.toBeAttached()
+    await expect(getTaskCardTitle(page, task)).not.toBeAttached()
   }
 
   await goToCompletedPage()

@@ -3,7 +3,7 @@
     "./client/src/**/*",
     "./shared/**/*",
     "./server/**/*",
-    "./cypress*.config.ts"
+    "./playwright.config.ts"
   ],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {

@@ -1,21 +1,27 @@
+import { expect } from '@playwright/test'
+
 import { Routes } from '~/client/lib/constants'
 import { Selectors } from '../constants'
+import { getPage } from '../test-globals'
 
-export const checkIsAtHomePage = () => {
-  cy.get(Selectors.Pages.COMPLETED).should('not.exist')
-  cy.get(Selectors.Pages.HOME).should('be.visible')
-  cy.url().should('not.include', Routes.COMPLETED)
+export async function checkIsAtHomePage() {
+  const page = getPage()
+  await expect(page.locator(Selectors.Pages.COMPLETED)).not.toBeAttached()
+  await expect(page.locator(Selectors.Pages.HOME)).toBeVisible()
+  await expect(page).not.toHaveURL(new RegExp(Routes.COMPLETED))
 }
 
-export const goToHomePage = () => {
-  cy.get(Selectors.MENU_BTN).click()
-  cy.get(Selectors.Menu.HOME).click()
-  checkIsAtHomePage()
+export async function goToHomePage() {
+  const page = getPage()
+  await page.locator(Selectors.MENU_BTN).click()
+  await page.locator(Selectors.Menu.HOME).click()
+  await checkIsAtHomePage()
 }
 
-export const goToCompletedPage = () => {
-  cy.get(Selectors.MENU_BTN).click()
-  cy.get(Selectors.Menu.COMPLETED).click()
-  cy.get(Selectors.Pages.COMPLETED).should('be.visible')
-  cy.get(Selectors.Pages.HOME).should('not.exist')
+export async function goToCompletedPage() {
+  const page = getPage()
+  await page.locator(Selectors.MENU_BTN).click()
+  await page.locator(Selectors.Menu.COMPLETED).click()
+  await expect(page.locator(Selectors.Pages.COMPLETED)).toBeVisible()
+  await expect(page.locator(Selectors.Pages.HOME)).not.toBeAttached()
 }

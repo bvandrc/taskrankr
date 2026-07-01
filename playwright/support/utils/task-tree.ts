@@ -1,19 +1,27 @@
-﻿import { format } from 'date-fns'
+import { expect, type Locator, type Page } from '@playwright/test'
+import { format } from 'date-fns'
+import { escapeRegExp } from 'es-toolkit'
 import type { PickDeep } from 'type-fest'
 
 import {
   DEFAULT_FIELD_CONFIG,
+  type FieldConfig,
   type RankField,
   RankFields,
   type Task,
   TaskStatus,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import type { SettingsOptions } from '.'
-import { type CreatedTask, waitForUpdate } from './intercepts'
+import { getIsLoggedIn, getPage } from '../test-globals'
+import { checkTasksExistBackend } from './api'
+import { expectWithFlag } from './index'
+import type { CreatedTask } from './intercepts'
+import { waitForUpdateTask } from './intercepts'
 import { checkIsAtHomePage, goToCompletedPage } from './navigation'
 
 const { TaskCard } = Selectors
+const TOP_LEVEL_CARD_TITLE_SEL =
+  `:scope > div:first-child ${TaskCard.THIS_TASK_INFO} ${TaskCard.TITLE}` as const
 
 type TaskTreeNode = PickDeep<
   CreatedTask,
@@ -25,115 +33,119 @@ type TaskTreeNode = PickDeep<
 const flattenTree = (nodes: TaskTreeNode[]): TaskTreeNode[] =>
   nodes.flatMap((n) => [n, ...flattenTree(n.subtasks ?? [])])
 
-export async function getTaskCardTitle(task: Pick<Task, 'name'>) {
-  return cy
-    .contains(
-      `${TaskCard.CARD} ${TaskCard.TITLE}`,
-      new RegExp(`^${task.name}$`),
-    )
-    .should('have.length', 1)
-    .scrollIntoView()
-    .should('be.visible')
+const getTaskCardLocator = (
+  scope: Locator | Page,
+  task: Pick<Task, 'name'>,
+): Locator => {
+  return scope.locator(TaskCard.CARD).filter({
+    // `has` must be page-rooted, not `scope`-rooted: inside a filter its `:scope`
+    // binds to the candidate card. Rooting it at `scope` (the parent card for
+    // subtasks) points `:scope` at the parent instead, so it matches nothing.
+    has: getPage()
+      .locator(TOP_LEVEL_CARD_TITLE_SEL)
+      // Escape: task names carry a `[wN-xxxxx]` suffix that is otherwise parsed
+      // as a regex character class (and `N-x` as an invalid range).
+      .filter({ hasText: new RegExp(`^${escapeRegExp(task.name)}$`) }),
+  })
 }
 
-// biome-ignore lint/suspicious/useAwait: <explanation>
+async function getTaskCard(
+  scope: Locator | Page,
+  task: Pick<Task, 'name'>,
+): Promise<Locator> {
+  const card = getTaskCardLocator(scope, task)
+  await expect(card).toHaveCount(1)
+  await card.scrollIntoViewIfNeeded()
+  await expect(card).toBeVisible()
+  return card
+}
+
 async function checkTitleAndSubtasks(
+  scope: Locator | Page,
   task: TaskTreeNode,
   tier: number,
-  { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
+  settings: FieldConfig,
 ) {
-  async function getTaskCard() {
-    return await getTaskCardTitle(task)
-      .should(
-        tier > 0 && task.status === TaskStatus.COMPLETED
-          ? 'have.class'
-          : 'not.have.class',
-        'line-through',
-      )
-      .closest(TaskCard.CARD)
-      .then(($card) => {
-        cy.wrap($card)
-          .find(TaskCard.THIS_TASK_INFO)
-          .first()
-          .should('have.attr', 'data-status', task.status)
-          .within(() => {
-            if (task.schedule?.dueAt) {
-              cy.get(TaskCard.DUE_BADGE)
-                .should('be.visible')
-                .and('have.text', `Due ${format(task.schedule.dueAt, 'MMM d')}`)
-            } else {
-              cy.get(TaskCard.DUE_BADGE).should('not.exist')
-            }
+  let card = await getTaskCard(scope, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
+  await expectWithFlag(
+    title,
+    tier > 0 && task.status === TaskStatus.COMPLETED,
+  ).toHaveClass(/line-through/)
 
-            for (const field of RankFields) {
-              const badge = cy.get(TaskCard.RankFieldBadge(field))
-              const expVal = task[field]
-              if (!settings[field].visible) {
-                badge.should('not.exist')
-              } else if (expVal == null) {
-                badge.should('have.text', '').should('not.be.visible')
-              } else {
-                badge.should('have.text', expVal)
-              }
-            }
-          })
-        return cy.wrap($card)
-      })
+  const taskInfo = card.locator(TaskCard.THIS_TASK_INFO).first()
+  await expect(taskInfo).toHaveAttribute('data-status', task.status)
+
+  const dueAt = task.schedule?.dueAt
+  if (dueAt) {
+    await expect(taskInfo.locator(TaskCard.DUE_BADGE)).toBeVisible()
+    await expect(taskInfo.locator(TaskCard.DUE_BADGE)).toHaveText(
+      `Due ${format(dueAt, 'MMM d')}`,
+    )
+  } else {
+    await expect(taskInfo.locator(TaskCard.DUE_BADGE)).not.toBeAttached()
   }
 
-  const taskCard = getTaskCard()
+  for (const field of RankFields) {
+    const badge = taskInfo.locator(TaskCard.RankFieldBadge(field))
+    const expVal = task[field]
+    if (!settings[field].visible) {
+      await expect(badge).not.toBeAttached()
+    } else if (expVal == null) {
+      await expect(badge).toHaveText('')
+      await expect(badge).toHaveCSS('opacity', '0')
+    } else {
+      await expect(badge).toHaveText(expVal)
+    }
+  }
 
   if (!task.subtasks?.length) {
-    taskCard
-      .find(`${TaskCard.COLLAPSE_BTN},${TaskCard.EXPAND_BTN}`)
-      .should('not.exist')
+    await expect(
+      card.locator(`${TaskCard.COLLAPSE_BTN}, ${TaskCard.EXPAND_BTN}`).first(),
+    ).not.toBeAttached()
     return
   }
 
-  taskCard
-    .then(($card) => {
-      const expandBtn = $card.find(TaskCard.EXPAND_BTN).first()
-      if (expandBtn.length > 0) {
-        // STEP: expanding collapsed card...
-        cy.wrap(expandBtn).click()
-        cy.wrap($card).find(TaskCard.COLLAPSE_BTN).should('exist')
-        cy.wrap($card).find(TaskCard.CARD).should('exist')
-        cy.wait(50) // flakes without this. probably due to animation. If problem occurs on subtasks, try basing time on # of subtasks
-        // STEP: ...done expanding collapsed card...
+  // Expand if collapsed
+  const expandBtn = card.locator(TaskCard.EXPAND_BTN).first()
+  if (await expandBtn.isVisible()) {
+    await expandBtn.click()
+    await expect(card.locator(TaskCard.COLLAPSE_BTN).first()).toBeVisible()
+    // Re-get card after expand (may re-render)
+    card = await getTaskCard(scope, task)
+  }
 
-        // re-renders on expand, reduce flake by re-getting
-        return getTaskCard()
-      }
-
-      return cy.wrap($card)
-    })
-    .within(async () => {
-      for (const subtask of task?.subtasks ?? []) {
-        await checkTitleAndSubtasks(subtask, tier + 1, { settings })
-      }
-    })
+  for (const subtask of task.subtasks) {
+    // TODO: check # of subtasks is correct(currently, adding an extra to this fn doesn't cause fail)
+    await checkTitleAndSubtasks(card, subtask, tier + 1, settings)
+  }
 }
 
 export async function expandAndCheckTree(
   task: TaskTreeNode,
-  { settings = DEFAULT_FIELD_CONFIG }: SettingsOptions = {},
+  { settings = DEFAULT_FIELD_CONFIG }: { settings?: FieldConfig } = {},
 ) {
-  return checkTitleAndSubtasks(task, 0, { settings })
+  await checkTitleAndSubtasks(getPage(), task, 0, settings)
 }
 
 export async function openTaskEditForm(task: Pick<Task, 'name'>) {
-  cy.get(Selectors.TaskForm.FORM).should('not.exist')
-  await (await getTaskCardTitle(task)).click()
-  cy.get(Selectors.TaskForm.FORM).should('be.visible')
+  const page = getPage()
+  await expect(page.locator(Selectors.TaskForm.FORM)).not.toBeAttached()
+  const card = await getTaskCard(page, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
+  await title.click()
+  await expect(page.locator(Selectors.TaskForm.FORM)).toBeVisible()
 }
 
 export async function openStatusChangeDialog(task: Pick<Task, 'name'>) {
-  const title = await getTaskCardTitle(task)
-  cy.clock()
-  title.trigger('mousedown')
-  cy.tick(900)
-  cy.get(Selectors.ChangeStatusDialog.DIALOG).should('be.visible')
-  cy.clock().invoke('restore')
+  const page = getPage()
+  const card = await getTaskCard(page, task)
+  const title = card.locator(TOP_LEVEL_CARD_TITLE_SEL)
+  await page.clock.install()
+  await title.dispatchEvent('mousedown')
+  await page.clock.fastForward(900)
+  await expect(page.locator(Selectors.ChangeStatusDialog.DIALOG)).toBeVisible()
+  await page.clock.resume()
 }
 
 export async function changeStatusViaStatusChangeDialog(
@@ -146,26 +158,39 @@ export async function changeStatusViaStatusChangeDialog(
 ) {
   await openStatusChangeDialog(task)
 
+  const page = getPage()
+  const completeBtn = page.locator(Selectors.ChangeStatusDialog.COMPLETE_BTN)
   if (hasIncompleteSubtasks) {
-    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN).should('be.disabled')
-  } else {
-    cy.get(Selectors.ChangeStatusDialog.COMPLETE_BTN)
-      .should('be.enabled')
-      .click()
+    await expect(completeBtn).toBeDisabled()
+    return
   }
-  waitForUpdate([{ ...task, status: newStatus }, ...sideEffects])
-  cy.get(Selectors.ChangeStatusDialog.DIALOG).should('not.exist')
+
+  const allUpdated = [
+    { ...task, status: newStatus },
+    ...sideEffects,
+  ] satisfies CreatedTask[]
+  const updateWaiter = getIsLoggedIn()
+    ? waitForUpdateTask(allUpdated.length)
+    : null
+
+  await expect(completeBtn).not.toBeDisabled()
+  await completeBtn.click()
+
+  if (updateWaiter) await updateWaiter
+  await checkTasksExistBackend(allUpdated)
+  await expect(
+    page.locator(Selectors.ChangeStatusDialog.DIALOG),
+  ).not.toBeAttached()
 }
 
 export async function checkCompletedPage(completedTasks: TaskTreeNode[]) {
-  // STEP: Check task is not in main tree
-  checkIsAtHomePage()
-  flattenTree(completedTasks).forEach((task) => {
-    cy.contains(task.name).should('not.exist')
-  })
+  await checkIsAtHomePage()
+  const page = getPage()
+  for (const task of flattenTree(completedTasks)) {
+    await expect(getTaskCardLocator(page, task)).not.toBeAttached()
+  }
 
-  // STEP: Check task is in completed page
-  goToCompletedPage()
+  await goToCompletedPage()
   for (const task of completedTasks) {
     await expandAndCheckTree(task)
   }

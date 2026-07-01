@@ -1,15 +1,23 @@
-export * from './api'
-export * from './navigation'
-export * from './test-runner'
+import { expect, type Locator } from '@playwright/test'
 
-import type { FieldConfig } from '~/shared/schema'
+import { getPage } from '../test-globals'
 
-export const getElementArrayText = ($elements: JQuery<HTMLElement>) =>
-  $elements.toArray().map(($el) => $el.textContent)
-
-export type SettingsOptions = {
-  /**
-   * @default DEFAULT_FIELD_CONFIG
-   */
-  settings?: FieldConfig
+export async function getCheckedState(selector: string): Promise<boolean> {
+  const state = await getPage().locator(selector).getAttribute('data-state')
+  if (state === 'checked') return true
+  if (state === 'unchecked') return false
+  throw new Error(`Element ${selector} does not have a data-state attribute`)
 }
+
+export async function toggleState(selector: string, newState: boolean) {
+  const current = await getCheckedState(selector)
+  expect(current, `expected current state to be ${!newState}`).toBe(!newState)
+  await getPage().locator(selector).click()
+  await expect(getPage().locator(selector)).toHaveAttribute(
+    'data-state',
+    newState ? 'checked' : 'unchecked',
+  )
+}
+
+export const expectWithFlag = (item: Locator, flag: boolean) =>
+  flag ? expect(item) : expect(item).not

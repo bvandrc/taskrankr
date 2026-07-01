@@ -1,37 +1,34 @@
-﻿import { Routes } from '~/client/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { type FieldConfig, TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
-import { isLoggedIn } from '@test/support/utils'
-import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
+import { Selectors } from '@test/support/constants'
+import { test } from '@test/support/fixtures'
+import { getPage } from '@test/support/test-globals'
+import { checkNumCalls } from '@test/support/utils/intercepts'
 import { setSettings } from '@test/support/utils/settings'
-import {
-  clickSubmitBtnCreate,
-  fillTaskForm,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import { expandAndCheckTree } from '@test/support/utils/task-tree'
 
 test.describe('Task Creation', () => {
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
+  test.beforeEach(async ({ page, isLoggedIn }) => {
+    await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  const task = {
-    ...DefaultTaskFields,
-    name: taskName('E2E Root Level Task'),
-    status: TaskStatus.PINNED,
-  } as const satisfies CreatedTask
+  test('create a task, check displays in main tree', async ({ buildTask }) => {
+    const task = buildTask('Root Task', TaskStatus.PINNED)
 
-  test('create a task, check displays in main tree', async () => {
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(task)
-    await clickSubmitBtnCreate({ newTasks: [task] })
+    await getPage().locator(Selectors.CREATE_TASK_BTN).click()
+    const taskForm = getTaskForm(0)
+    await taskForm.fillTaskForm(task)
+    await taskForm.clickSubmitBtnCreate({ newTasks: [task] })
 
     await expandAndCheckTree(task)
     checkNumCalls({ create: 1 })
   })
 
-  test('change rank field visibility/required in settings, check form matches the new settings, create task adhering to new settings', async () => {
+  test('change rank field visibility/required in settings, check form matches new settings, create task', async ({
+    page,
+    buildTask,
+  }) => {
     const fieldConfig = {
       priority: { visible: true, required: true },
       ease: { visible: true, required: false },
@@ -39,23 +36,24 @@ test.describe('Task Creation', () => {
       time: { visible: true, required: false },
     } as const satisfies FieldConfig
 
-    const newTask = {
-      ...task,
-      name: taskName('Field Config Test Task'),
+    const newTask = buildTask('Field Config Test Task', TaskStatus.PINNED, {
       ease: null,
       enjoyment: null,
-    } satisfies CreatedTask
+    })
 
-    // STEP 1: Update rank field settings
-    setSettings({ fieldConfig })
-    checkNumCalls({ updateSettings: 3 })
-    cy.get(Selectors.BACK_BTN).click()
+    await test.step('Update rank field settings', async () => {
+      await setSettings({ fieldConfig })
+      checkNumCalls({ updateSettings: 3 })
+      await page.locator(Selectors.BACK_BTN).click()
+    })
 
-    // STEP 2: Create task using new field config, verify in tree
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    await fillTaskForm(newTask, { settings: fieldConfig })
-    await clickSubmitBtnCreate({ newTasks: [newTask] })
-    await expandAndCheckTree(newTask, { settings: fieldConfig })
-    checkNumCalls({ create: 1 })
+    await test.step('Create task using new field config, verify in tree', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      const newTaskForm = getTaskForm(0)
+      await newTaskForm.fillTaskForm(newTask, { settings: fieldConfig })
+      await newTaskForm.clickSubmitBtnCreate({ newTasks: [newTask] })
+      await expandAndCheckTree(newTask, { settings: fieldConfig })
+      checkNumCalls({ create: 1 })
+    })
   })
 })

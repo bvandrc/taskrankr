@@ -37,11 +37,11 @@ In **development mode** (`npm run dev`), the Log In button auto-logs you in as t
 | `npm run format` | Biome format — **run before every commit** |
 | `npm run lint` | Biome lint |
 | `npm run ts:check` | TypeScript check |
-| `npm run check` | ts + cypress ts + lint |
-| `npm run cy:run:user` | Cypress E2E (authenticated user) |
-| `npm run cy:run:guest` | Cypress E2E (guest mode) |
-| `npm run cy:open:user` | Cypress interactive (authenticated) |
-| `npm run cy:open:guest` | Cypress interactive (guest) |
+| `npm run check` | ts + playwright ts + lint |
+| `npm run pw:run:user` | Playwright E2E (authenticated user) |
+| `npm run pw:run:guest` | Playwright E2E (guest mode) |
+| `npm run pw:open:user` | Playwright interactive/UI (authenticated) |
+| `npm run pw:open:guest` | Playwright interactive/UI (guest) |
 
 ## Tech Stack
 
@@ -56,7 +56,7 @@ In **development mode** (`npm run dev`), the Log In button auto-logs you in as t
 - **Validation**: Zod
 - **Build**: Vite (client), esbuild (server via `script/build.ts`)
 - **Lint/Format**: Biome (`biome.jsonc`)
-- **Testing**: Cypress E2E
+- **Testing**: Playwright E2E
 
 ## Directory Layout
 
@@ -78,7 +78,9 @@ shared/
   models/        Domain models (e.g. auth.ts)
   utils/         Shared utilities (e.g. task-utils.ts)
 script/          Build scripts (build.ts)
-cypress/         E2E tests
+playwright/      E2E tests
+  e2e/                             Spec files
+  setup/auth.setup.ts              Auth setup project (storageState)
   support/constants/selectors.ts   All data-testid selectors defined here
 migrations/      Drizzle migration files
 ```
@@ -98,15 +100,15 @@ migrations/      Drizzle migration files
 - **Icons**: Use `Icon` component from `LucideIcon.tsx` only for conditional/dynamic icons — not for single static icons.
 - **Comments/JSDoc**: Describe *what* and *why* from the caller's perspective. Don't restate implementation. Keep to 1–2 lines. No hedge prefixes. Don't repeat what the type signature conveys.
 - **Terminology**: "Rank fields" = the 4 sortable badge fields: priority, ease, enjoyment, time.
-- **Test IDs**: Use `data-testid` as the HTML attribute and as the prop name in component interfaces (not `testId`). Define all selectors in `cypress/support/constants/selectors.ts` before use.
+- **Test IDs**: Use `data-testid` as the HTML attribute and as the prop name in component interfaces (not `testId`). Define all selectors in `playwright/support/constants/selectors.ts` before use.
 - **Icon sizing**: Use `size-X` Tailwind class, not `w-X h-X`.
 - **es-toolkit**: Use `omit`/`pick` from `es-toolkit` to avoid enumerating large object spreads by hand.
 - **Formatting**: Run `npm run format` after making edits and before every commit.
 
 ## Gotchas
 
-- **Cypress selectors**: Always add new `data-testid` values to `cypress/support/constants/selectors.ts` before using them in tests.
-- **Cypress config**: New test files must be manually added to `cypress.config.ts`.
+- **Playwright selectors**: Always add new `data-testid` values to `playwright/support/constants/selectors.ts` before using them in tests.
+- **Playwright projects**: The `user` project depends on the `setup` project, which authenticates and saves `storageState`.
 - **Fonts**: Only Inter and Outfit are approved. Do not re-add the massive multi-font `<link>` tag.
 - **Stale dev server after `npm install`**: Restart the server before debugging "Invalid hook call" errors — a clean restart often fixes it.
 - **Vite dedupe**: `vite.config.ts` sets `resolve.dedupe: ['react', 'react-dom']` and `optimizeDeps.include: ['workbox-window']`. Don't remove these; avoid editing `vite.config.ts` when a client-side change suffices. If a new package causes duplicate-React errors, add it to `optimizeDeps.include`.
@@ -122,4 +124,4 @@ migrations/      Drizzle migration files
 - [shadcn/ui](https://ui.shadcn.com/)
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [vite-plugin-pwa](https://vite-pwa-org.netlify.app/guide/)
-- [Cypress](https://docs.cypress.io/)
+- [Playwright](https://playwright.dev/docs/intro)

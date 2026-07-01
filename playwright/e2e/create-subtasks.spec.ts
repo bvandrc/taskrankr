@@ -1,275 +1,303 @@
-﻿import { Routes } from '~/client/lib/constants'
+import { Routes } from '~/client/lib/constants'
 import { TaskStatus } from '~/shared/schema'
-import { DefaultTaskFields, Selectors } from '@test/support/constants'
-import { isLoggedIn } from '@test/support/utils'
+import { Selectors } from '@test/support/constants'
+import { expect, test } from '@test/support/fixtures'
 import { type CreatedTask, checkNumCalls } from '@test/support/utils/intercepts'
 import { goToCompletedPage, goToHomePage } from '@test/support/utils/navigation'
-import {
-  checkTaskFormSubtasks,
-  clickSubmitBtnCreate,
-  clickSubmitBtnUpdate,
-  fillTaskForm,
-  getTaskForm,
-  setTaskFormSubtaskSettings,
-} from '@test/support/utils/task-form'
+import { getTaskForm } from '@test/support/utils/task-form'
 import {
   expandAndCheckTree,
   openTaskEditForm,
 } from '@test/support/utils/task-tree'
 
-const { TaskForm, SaveOpenSubtasksConfirmDialog } = Selectors
-
 test.describe('Create Subtasks', () => {
-  test.beforeEach(() => {
-    const loggedIn = isLoggedIn()
-    cy.visit(loggedIn ? Routes.HOME : Routes.GUEST)
-
-    // STEP 1: Open new task form and fill root task
-    cy.get(Selectors.CREATE_TASK_BTN).click()
-    getTaskForm(0).within(async () => {
-      await fillTaskForm(rootTask)
-    })
+  test.beforeEach(async ({ page, isLoggedIn }) => {
+    await page.goto(isLoggedIn ? Routes.HOME : Routes.GUEST)
   })
 
-  const rootTask = {
-    ...DefaultTaskFields,
-    name: taskName('E2E Root Level Task'),
-    status: TaskStatus.PINNED,
-  } as const satisfies CreatedTask
+  test('create a subtask, check appears in tree', async ({
+    page,
+    buildTask,
+  }) => {
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
 
-  const subtask = {
-    ...DefaultTaskFields,
-    status: TaskStatus.OPEN,
-    name: taskName('E2E Subtask 1'),
-  } as const satisfies CreatedTask
-
-  const subtask2 = {
-    ...subtask,
-    name: taskName('E2E Subtask 2'),
-  } as const satisfies CreatedTask
-
-  const subtask3 = {
-    ...subtask,
-    name: taskName('E2E Subtask 3'),
-  } as const satisfies CreatedTask
-
-  const completedRootTask = {
-    ...rootTask,
-    status: TaskStatus.COMPLETED,
-  } as const satisfies CreatedTask
-
-  const completedSubtask = {
-    ...subtask,
-    status: TaskStatus.COMPLETED,
-  } as const satisfies CreatedTask
-
-  test('create a subtask, check appears in tree', async () => {
-    // STEP 2: Add subtask and create
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+    const rootTaskForm = getTaskForm(0)
+    await test.step('Open new task form and fill root task', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask)
-      await clickSubmitBtnCreate()
+    await test.step('Add subtask and create', async () => {
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const subtaskForm = getTaskForm(1)
+      await subtaskForm.fillTaskForm(subtask)
+      await subtaskForm.clickSubmitBtnCreate()
+
+      await rootTaskForm.checkTaskFormSubtasks([subtask])
+      await rootTaskForm.clickSubmitBtnCreate({
+        newTasks: [rootTask, subtask],
+      })
+
+      await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
+      checkNumCalls({ create: 2, update: 0 })
     })
 
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask])
-      await clickSubmitBtnCreate({ newTasks: [rootTask, subtask] })
-    })
+    await test.step('Edit root task, add a second subtask', async () => {
+      await openTaskEditForm(rootTask)
+      const editedRootTaskForm = getTaskForm(0)
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask])
+      await editedRootTaskForm
+        .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
+        .click()
 
-    await expandAndCheckTree({ ...rootTask, subtasks: [subtask] })
-    checkNumCalls({ create: 2, update: 0 })
+      const subtask2Form = getTaskForm(1)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
 
-    // STEP 3: Edit root task, add a second subtask
-    await openTaskEditForm(rootTask)
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask])
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
-
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask2)
-      await clickSubmitBtnCreate()
-    })
-
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask, subtask2])
-      await clickSubmitBtnUpdate({
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
+      await editedRootTaskForm.clickSubmitBtnUpdate({
         updatedTasks: [rootTask],
         newTasks: [subtask2],
       })
-    })
 
-    await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
-    checkNumCalls({ create: 3, update: 1 })
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [subtask, subtask2],
+      })
+      checkNumCalls({ create: 3, update: 1 })
+    })
   })
 
-  test('create multiple subtasks, check appear in tree', async () => {
-    // STEP 2: Add two subtasks and create
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+  test('create multiple subtasks, check appear in tree', async ({
+    page,
+    buildTask,
+  }) => {
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
+    const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
+
+    const rootTaskForm = getTaskForm(0)
+    await test.step('Open new task form and fill root task', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask)
-      await clickSubmitBtnCreate()
+    await test.step('Add two subtasks and create', async () => {
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const subtaskForm = getTaskForm(1)
+      await subtaskForm.fillTaskForm(subtask)
+      await subtaskForm.clickSubmitBtnCreate()
+
+      await rootTaskForm.checkTaskFormSubtasks([subtask])
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const subtask2Form = getTaskForm(1)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
+
+      await rootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
+      await rootTaskForm.clickSubmitBtnCreate({
+        newTasks: [rootTask, subtask, subtask2],
+      })
+
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [subtask, subtask2],
+      })
+      checkNumCalls({ create: 3, update: 0 })
     })
 
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask])
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
+    await test.step('Edit root task, add a third subtask', async () => {
+      await openTaskEditForm(rootTask)
+      const editedRootTaskForm = getTaskForm(0)
+      await editedRootTaskForm.checkTaskFormSubtasks([subtask, subtask2])
+      await editedRootTaskForm
+        .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
+        .click()
+      const subtask3Form = getTaskForm(1)
+      await subtask3Form.fillTaskForm(subtask3)
+      await subtask3Form.clickSubmitBtnCreate()
 
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask2)
-      await clickSubmitBtnCreate()
-    })
-
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask, subtask2])
-      await clickSubmitBtnCreate({ newTasks: [rootTask, subtask, subtask2] })
-    })
-
-    await expandAndCheckTree({ ...rootTask, subtasks: [subtask, subtask2] })
-    checkNumCalls({ create: 3, update: 0 })
-
-    // STEP 3: Edit root task, add a third subtask
-    await openTaskEditForm(rootTask)
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask, subtask2])
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
-
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask3)
-      await clickSubmitBtnCreate()
-    })
-
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask, subtask2, subtask3])
-      await clickSubmitBtnUpdate({
+      await editedRootTaskForm.checkTaskFormSubtasks([
+        subtask,
+        subtask2,
+        subtask3,
+      ])
+      await editedRootTaskForm.clickSubmitBtnUpdate({
         updatedTasks: [rootTask],
         newTasks: [subtask3],
       })
-    })
 
-    await expandAndCheckTree({
-      ...rootTask,
-      subtasks: [subtask, subtask2, subtask3],
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [subtask, subtask2, subtask3],
+      })
+      checkNumCalls({ create: 4, update: 1 })
     })
-    checkNumCalls({ create: 4, update: 1 })
   })
 
-  test('create nested subtasks, ensure appear in tree', async () => {
-    // STEP 2: Add subtask with two nested children
-    getTaskForm(0).within(() => {
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+  test('create nested subtasks, ensure appear in tree', async ({
+    page,
+    buildTask,
+  }) => {
+    const rootTask = buildTask('Root Task', TaskStatus.PINNED)
+    const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
+    const subtask2 = buildTask('Subtask 2', TaskStatus.OPEN)
+    const subtask3 = buildTask('Subtask 3', TaskStatus.OPEN)
+
+    const rootTaskForm = getTaskForm(0)
+    await test.step('Open new task form and fill root task', async () => {
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      await rootTaskForm.fillTaskForm(rootTask)
     })
 
-    getTaskForm(1).within(async () => {
-      await fillTaskForm(subtask)
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+    await test.step('Add subtask with two nested children', async () => {
+      await rootTaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+
+      const subtaskForm = getTaskForm(1)
+      await subtaskForm.fillTaskForm(subtask)
+      await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+
+      const subtask2Form = getTaskForm(2)
+      await subtask2Form.fillTaskForm(subtask2)
+      await subtask2Form.clickSubmitBtnCreate()
+
+      await subtaskForm.checkTaskFormSubtasks([subtask2])
+      await subtaskForm.locator(Selectors.TaskForm.ADD_SUBTASK_BTN).click()
+      const subtask3Form = getTaskForm(2)
+      await subtask3Form.fillTaskForm(subtask3)
+      await subtask3Form.clickSubmitBtnCreate()
+
+      await subtaskForm.checkTaskFormSubtasks([subtask2, subtask3])
+      await subtaskForm.clickSubmitBtnCreate()
     })
 
-    getTaskForm(2).within(async () => {
-      await fillTaskForm(subtask2)
-      await clickSubmitBtnCreate()
-    })
-
-    getTaskForm(1).within(async () => {
-      await checkTaskFormSubtasks([subtask2])
-      cy.get(TaskForm.ADD_SUBTASK_BTN).click()
-    })
-
-    getTaskForm(2).within(async () => {
-      await fillTaskForm(subtask3)
-      await clickSubmitBtnCreate()
-    })
-
-    getTaskForm(1).within(async () => {
-      await checkTaskFormSubtasks([subtask2, subtask3])
-      await clickSubmitBtnCreate()
-    })
-
-    // STEP 3: Submit root task and verify nested tree
-    getTaskForm(0).within(async () => {
-      await checkTaskFormSubtasks([subtask, subtask2, subtask3])
-      await clickSubmitBtnCreate({
+    await test.step('Submit root task and verify nested tree', async () => {
+      await rootTaskForm.checkTaskFormSubtasks([subtask, subtask2, subtask3])
+      await rootTaskForm.clickSubmitBtnCreate({
         newTasks: [rootTask, subtask, subtask2, subtask3],
       })
-    })
 
-    await expandAndCheckTree({
-      ...rootTask,
-      subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
+      await expandAndCheckTree({
+        ...rootTask,
+        subtasks: [{ ...subtask, subtasks: [subtask2, subtask3] }],
+      })
+      checkNumCalls({ create: 4, update: 0 })
     })
-    checkNumCalls({ create: 4, update: 0 })
 
     // TODO: test EDIT
   })
 
-  context('Adding subtasks to a completed task', () => {
-    test.beforeEach(async () => {
-      cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-      await clickSubmitBtnCreate({ newTasks: [completedRootTask] })
+  test.describe('Adding subtasks to a completed task', () => {
+    test('adding open subtask - save dialog appears, parent re-opens on home page', async ({
+      page,
+      buildTask,
+    }) => {
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
 
-      // STEP: Navigate to completed page and open the edit form
-      goToCompletedPage()
-      await openTaskEditForm(completedRootTask)
-    })
-
-    test('adding open subtask — save dialog appears, parent re-opens on home page', async () => {
-      // STEP: Add an open subtask
-      getTaskForm(0).within(() => {
-        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      const completedRootTaskForm = getTaskForm(0)
+      await completedRootTaskForm.fillTaskForm(rootTask)
+      await completedRootTaskForm
+        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+        .click()
+      await completedRootTaskForm.clickSubmitBtnCreate({
+        newTasks: [completedRootTask],
       })
-      getTaskForm(1).within(async () => {
-        await fillTaskForm(subtask)
-        await clickSubmitBtnCreate()
+
+      await test.step('Navigate to completed page and open the edit form', async () => {
+        await goToCompletedPage()
+        await openTaskEditForm(completedRootTask)
+      })
+
+      const editedCompletedRootTaskForm = getTaskForm(0)
+      await test.step('Add an open subtask', async () => {
+        await editedCompletedRootTaskForm
+          .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
+          .click()
+        const subtaskForm = getTaskForm(1)
+        await subtaskForm.fillTaskForm(subtask)
+        await subtaskForm.clickSubmitBtnCreate()
       })
 
       const openRootTask = { ...completedRootTask, status: TaskStatus.OPEN }
-
-      // STEP: Click Save — dialog warns that the parent will be re-opened
-      getTaskForm(0).within(async () => {
-        await clickSubmitBtnUpdate({
+      await test.step('Click Save - dialog warns that the parent will be re-opened', async () => {
+        await editedCompletedRootTaskForm.clickSubmitBtnUpdate({
           newTasks: [subtask],
           updatedTasks: [openRootTask],
-          confirmDialog: SaveOpenSubtasksConfirmDialog.DIALOG,
+          confirmDialog: Selectors.SaveOpenSubtasksConfirmDialog.DIALOG,
         })
       })
 
-      // STEP: Parent task is now visible on home page with the new open subtask, no longer on completed page
-      cy.contains(rootTask.name).should('not.exist')
-      cy.contains(subtask.name).should('not.exist')
-      goToHomePage()
-      await expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
+      await test.step('Parent task is now visible on home page with the new open subtask, no longer on completed page', async () => {
+        await expect(page.getByText(rootTask.name)).not.toBeAttached()
+        await expect(page.getByText(subtask.name)).not.toBeAttached()
+        await goToHomePage()
+        await expandAndCheckTree({ ...openRootTask, subtasks: [subtask] })
+      })
     })
 
-    test('adding completed subtask — no dialog, parent stays on completed page with new subtask', async () => {
-      // STEP: Add a completed subtask
-      getTaskForm(0).within(() => {
-        cy.get(TaskForm.ADD_SUBTASK_BTN).click()
+    test('adding completed subtask - no dialog, parent stays on completed page', async ({
+      page,
+      buildTask,
+    }) => {
+      const rootTask = buildTask('Root Task', TaskStatus.PINNED)
+      const completedRootTask = {
+        ...rootTask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
+      const subtask = buildTask('Subtask 1', TaskStatus.OPEN)
+      const completedSubtask = {
+        ...subtask,
+        status: TaskStatus.COMPLETED,
+      } as const satisfies CreatedTask
+
+      await page.locator(Selectors.CREATE_TASK_BTN).click()
+      const completedRootTaskForm = getTaskForm(0)
+      await completedRootTaskForm.fillTaskForm(rootTask)
+      await completedRootTaskForm
+        .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+        .click()
+      await completedRootTaskForm.clickSubmitBtnCreate({
+        newTasks: [completedRootTask],
       })
-      getTaskForm(1).within(async () => {
-        await fillTaskForm(completedSubtask)
-        cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).click()
-        await clickSubmitBtnCreate()
-      })
-      getTaskForm(0).within(async () => {
-        setTaskFormSubtaskSettings({ autoHideCompleted: false })
-        await clickSubmitBtnUpdate({
+
+      await goToCompletedPage()
+      await openTaskEditForm(completedRootTask)
+
+      const editedCompletedRootTaskForm = getTaskForm(0)
+      await test.step('Add a completed subtask', async () => {
+        await editedCompletedRootTaskForm
+          .locator(Selectors.TaskForm.ADD_SUBTASK_BTN)
+          .click()
+        const subtaskForm = getTaskForm(1)
+        await subtaskForm.fillTaskForm(subtask)
+        await subtaskForm
+          .locator(Selectors.TaskForm.MARK_COMPLETED_CHECKBOX)
+          .click()
+        await subtaskForm.clickSubmitBtnCreate()
+
+        await editedCompletedRootTaskForm.setTaskFormSubtaskSettings({
+          autoHideCompleted: false,
+        })
+        await editedCompletedRootTaskForm.clickSubmitBtnUpdate({
           updatedTasks: [completedRootTask],
           newTasks: [completedSubtask],
         })
       })
 
-      // STEP: Completed page still shows parent task with its new completed subtask
-      await expandAndCheckTree({
-        ...completedRootTask,
-        subtasks: [completedSubtask],
+      await test.step('Completed page still shows parent task with its new completed subtask', async () => {
+        await expandAndCheckTree({
+          ...completedRootTask,
+          subtasks: [completedSubtask],
+        })
       })
     })
   })

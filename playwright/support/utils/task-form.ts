@@ -1,4 +1,6 @@
-﻿import type { PickDeep } from 'type-fest'
+import { expect, type Locator } from '@playwright/test'
+import { format, parse } from 'date-fns'
+import type { PickDeep } from 'type-fest'
 
 import {
   DEFAULT_FIELD_CONFIG,
@@ -10,96 +12,18 @@ import {
   type TaskSubtaskSettings,
 } from '~/shared/schema'
 import { Selectors } from '../constants'
-import { getElementArrayText, type SettingsOptions } from '.'
-import { checkTasksDontExistBackend } from './api'
-import { type CreatedTask, waitForCreate, waitForUpdate } from './intercepts'
+import { getIsLoggedIn, getPage } from '../test-globals'
+import { checkTasksDontExistBackend, checkTasksExistBackend } from './api'
+import { expectWithFlag, getCheckedState, toggleState } from './index'
+import type { CreatedTask } from './intercepts'
+import { waitForCreateTask, waitForUpdateTask } from './intercepts'
 
 const { TaskForm, AssignSubtaskDialog } = Selectors
 
-type TaskFormData = PickDeep<
+export type TaskFormData = PickDeep<
   CreatedTask,
   'name' | 'schedule.hideUntil' | 'schedule.dueAt' | RankField
 >
-
-export const getTaskForm = (tier = 0) =>
-  cy.get(`${TaskForm.FORM}[data-tier="${tier}"]`).should('be.visible')
-
-export function fillTaskFormRankFields(
-  task: TaskFormData,
-  settings: FieldConfig,
-) {
-  const requiredFields = RankFields.filter(
-    (field) => settings[field].visible && settings[field].required,
-  )
-
-  cy.get(TaskForm.SUBMIT_BTN) //
-    .should(requiredFields.length ? 'be.disabled' : 'not.be.disabled')
-
-  const filled = new Set<RankField>()
-  for (const field of RankFields) {
-    const RankSelect = TaskForm.rankSelect(field)
-    const value = task[field]
-    const config = settings[field]
-    if (config.visible) {
-      cy.get(RankSelect).should('be.visible')
-      if (value !== null) {
-        cy.wrap(RankSelect).click()
-        cy.escapeWithin()
-          .find('[role="listbox"]')
-          .contains(new RegExp(`^${value}$`))
-          .click()
-        filled.add(field)
-      }
-      const allRequiredFilled = requiredFields.every((f) => filled.has(f))
-      cy.get(TaskForm.SUBMIT_BTN) //
-        .should(allRequiredFilled ? 'not.be.disabled' : 'be.disabled')
-    } else {
-      cy.get(RankSelect).should('not.exist')
-    }
-  }
-}
-
-/**
- * Fills form.
- */
-export async function fillTaskForm(
-  task: TaskFormData,
-  {
-    settings = DEFAULT_FIELD_CONFIG,
-    hasIncompleteSubtasks = false,
-  }: SettingsOptions & {
-    /**
-     * @default false
-     */
-    hasIncompleteSubtasks?: boolean
-  } = {},
-) {
-  // STEP: **filling task form... (task: ${task.name})**
-  checkTasksDontExistBackend([task])
-
-  cy.get(TaskForm.SUBMIT_BTN).should('be.disabled')
-
-  cy.get(TaskForm.ADD_SUBTASK_BTN).should('be.disabled')
-  cy.get(TaskForm.NAME_INPUT).type(task.name)
-  cy.get(TaskForm.ADD_SUBTASK_BTN).should('be.enabled')
-
-  await fillTaskFormRankFields(task, settings)
-
-  cy.get(TaskForm.MARK_COMPLETED_CHECKBOX).should(
-    hasIncompleteSubtasks ? 'be.disabled' : 'be.enabled',
-  )
-
-  const { schedule } = task
-  if (schedule) {
-    await openMoreSection()
-    if (schedule.hideUntil)
-      cy.get(TaskForm.Schedule.HIDE_UNTIL_PICKER).selectDate(schedule.hideUntil)
-    if (schedule.dueAt)
-      cy.get(TaskForm.Schedule.DUE_AT_PICKER).selectDate(schedule.dueAt)
-  }
-
-  // STEP: **...task form filled (task: ${task.name})**
-}
 
 type SubmitBtnArgs = {
   newTasks?: CreatedTask[]
@@ -107,114 +31,253 @@ type SubmitBtnArgs = {
   confirmDialog?: string
 }
 
-function clickSubmitBtn(
-  submitBtnText: string,
-  { newTasks, updatedTasks, confirmDialog }: SubmitBtnArgs = {},
-) {
-  if (newTasks) {
-    checkTasksDontExistBackend(newTasks)
+export class TaskFormLocator {
+  constructor(private readonly self: Locator) {}
+
+  locator(
+    ...args: Parameters<Locator['locator']>
+  ): ReturnType<Locator['locator']> {
+    return this.self.locator(...args)
   }
-  cy.get(TaskForm.SUBMIT_BTN)
-    .should('have.text', submitBtnText)
-    .should('not.be.disabled')
-    .click()
-    .then(($btn) => {
-      if (confirmDialog) {
-        cy.escapeWithin().within(() => {
-          cy.get(confirmDialog).should('be.visible')
-          cy.get(Selectors.ConfirmDialog.CONFIRM_BTN).click()
-        })
+
+  async fillTaskForm(
+    task: TaskFormData,
+    {
+      settings = DEFAULT_FIELD_CONFIG,
+      hasIncompleteSubtasks = false,
+    }: {
+      settings?: FieldConfig
+      hasIncompleteSubtasks?: boolean
+    } = {},
+  ) {
+    await checkTasksDontExistBackend([task])
+
+    await expect(this.locator(TaskForm.SUBMIT_BTN)).toBeDisabled()
+    await expect(this.locator(TaskForm.ADD_SUBTASK_BTN)).toBeDisabled()
+
+    await this.locator(TaskForm.NAME_INPUT).fill(task.name)
+    await expect(this.locator(TaskForm.ADD_SUBTASK_BTN)).not.toBeDisabled()
+
+    await this.fillTaskFormRankFields(task, settings)
+
+    const completedCheckbox = this.locator(TaskForm.MARK_COMPLETED_CHECKBOX)
+    await expectWithFlag(
+      completedCheckbox,
+      hasIncompleteSubtasks,
+    ).toBeDisabled()
+
+    const { schedule } = task
+    if (schedule) {
+      await this.openMoreSection()
+      if (schedule.hideUntil)
+        await selectDate(
+          this.locator(TaskForm.Schedule.HIDE_UNTIL_PICKER),
+          schedule.hideUntil,
+        )
+      if (schedule.dueAt)
+        await selectDate(
+          this.locator(TaskForm.Schedule.DUE_AT_PICKER),
+          schedule.dueAt,
+        )
+    }
+  }
+
+  async assignSubtask(task: CreatedTask) {
+    await this.locator(TaskForm.ASSIGN_SUBTASK_BTN).click()
+    const dialog = getPage().locator(AssignSubtaskDialog.DIALOG)
+    await expect(dialog).toBeVisible()
+    await dialog
+      .locator(AssignSubtaskDialog.TASK_OPTION)
+      .filter({ hasText: task.name })
+      .click()
+    await dialog.locator(AssignSubtaskDialog.CONFIRM_BTN).click()
+  }
+
+  async checkTaskFormSubtasks(subtasks: Pick<Task, 'name' | 'status'>[]) {
+    await this.locator(TaskForm.SUBTASKS_CARD).scrollIntoViewIfNeeded()
+    const rows = this.locator(TaskForm.SUBTASK_ROW)
+    await expect(rows).toHaveCount(subtasks.length)
+
+    const nameEls = rows.locator(TaskForm.SUBTASK_NAME)
+    const names = await nameEls.allTextContents()
+    expect(names).toEqual(subtasks.map((s) => s.name))
+
+    const completedNames = await rows
+      .locator(`${TaskForm.SUBTASK_NAME}.line-through`)
+      .allTextContents()
+    expect(completedNames).toEqual(
+      subtasks
+        .filter((s) => s.status === TaskStatus.COMPLETED)
+        .map((s) => s.name),
+    )
+  }
+
+  async setTaskFormSubtaskSettings({
+    autoHideCompleted,
+    inheritCompletionState,
+  }: Partial<TaskSubtaskSettings> = {}) {
+    await this.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
+    if (autoHideCompleted !== undefined) {
+      await toggleState(
+        TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
+        autoHideCompleted,
+      )
+    }
+    if (inheritCompletionState !== undefined) {
+      await toggleState(TaskForm.AUTOCOMPLETE_SWITCH, inheritCompletionState)
+    }
+  }
+
+  async checkTaskFormSubtaskSettings({
+    autoHideCompleted,
+    inheritCompletionState,
+  }: Partial<TaskSubtaskSettings> = {}) {
+    await this.locator(TaskForm.SUBTASK_SETTINGS_BTN).click()
+    if (autoHideCompleted !== undefined) {
+      const state = await getCheckedState(
+        TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH,
+      )
+      expect(state).toBe(autoHideCompleted)
+    }
+    if (inheritCompletionState !== undefined) {
+      const state = await getCheckedState(TaskForm.AUTOCOMPLETE_SWITCH)
+      expect(state).toBe(inheritCompletionState)
+    }
+  }
+
+  async openMoreSection() {
+    await this.locator(TaskForm.MORE_SECTION).scrollIntoViewIfNeeded()
+    await this.locator(TaskForm.MORE_SECTION).click()
+  }
+
+  private async fillTaskFormRankFields(
+    task: TaskFormData,
+    settings: FieldConfig,
+  ) {
+    const requiredFields = RankFields.filter(
+      (field) => settings[field].visible && settings[field].required,
+    )
+
+    const submitBtn = this.locator(TaskForm.SUBMIT_BTN)
+    await expectWithFlag(submitBtn, requiredFields.length > 0).toBeDisabled()
+
+    const filled = new Set<RankField>()
+    for (const field of RankFields) {
+      const rankSelect = this.locator(TaskForm.rankSelect(field))
+      const value = task[field]
+      const config = settings[field]
+      if (config.visible) {
+        await expect(rankSelect).toBeVisible()
+        if (value != null) {
+          await rankSelect.click()
+          await getPage()
+            .locator('[role="listbox"]')
+            .getByText(new RegExp(`^${value}$`))
+            .click()
+          filled.add(field)
+        }
+        await expectWithFlag(
+          submitBtn,
+          !requiredFields.every((f) => filled.has(f)),
+        ).toBeDisabled()
+      } else {
+        await expect(rankSelect).not.toBeAttached()
       }
-      newTasks && waitForCreate(newTasks)
-      updatedTasks && waitForUpdate(updatedTasks)
-      // this form should disapper after submit
-      cy.wrap($btn).should('not.exist')
-    })
-  // API calls should only be created when root task form is submitted
-  if (newTasks || updatedTasks) {
-    cy.escapeWithin().find(Selectors.TaskForm.FORM).should('not.exist')
+    }
+  }
+
+  private async clickSubmitBtn(
+    submitBtnText: string,
+    { newTasks = [], updatedTasks = [], confirmDialog }: SubmitBtnArgs = {},
+  ) {
+    const page = getPage()
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+
+    if (newTasks.length > 0) {
+      await checkTasksDontExistBackend(newTasks)
+    }
+
+    // Set up waiters BEFORE clicking to capture all responses
+    const isLoggedIn = getIsLoggedIn()
+    const createWaiter =
+      isLoggedIn && newTasks.length > 0
+        ? waitForCreateTask(newTasks.length)
+        : null
+    const updateWaiter =
+      isLoggedIn && updatedTasks.length > 0
+        ? waitForUpdateTask(updatedTasks.length)
+        : null
+
+    const submitBtn = this.locator(TaskForm.SUBMIT_BTN)
+    await expect(submitBtn).toHaveText(submitBtnText)
+    await expect(submitBtn).not.toBeDisabled()
+    await submitBtn.click()
+
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+
+    if (confirmDialog) {
+      await expect(page.locator(confirmDialog)).toBeVisible()
+      await page.locator(Selectors.ConfirmDialog.CONFIRM_BTN).click()
+    }
+
+    if (createWaiter) await createWaiter
+    if (updateWaiter) await updateWaiter
+
+    expect(page.locator(Selectors.Toasts.ERROR)).not.toBeVisible()
+
+    if (newTasks.length > 0 || updatedTasks.length > 0) {
+      await checkTasksExistBackend([...newTasks, ...updatedTasks])
+      // Form should disappear after root-level submit
+      await expect(page.locator(TaskForm.FORM)).not.toBeAttached()
+    }
+  }
+
+  clickSubmitBtnCreate(args: SubmitBtnArgs = {}) {
+    return this.clickSubmitBtn('Create', args)
+  }
+
+  clickSubmitBtnUpdate(args: SubmitBtnArgs = {}) {
+    return this.clickSubmitBtn('Save', args)
   }
 }
 
-export const clickSubmitBtnCreate = (args: SubmitBtnArgs = {}) =>
-  clickSubmitBtn('Create', args)
+export const getTaskForm = (tier = 0) =>
+  new TaskFormLocator(
+    getPage().locator(`${TaskForm.FORM}[data-tier="${tier}"]`),
+  )
 
-export const clickSubmitBtnUpdate = (args: SubmitBtnArgs = {}) =>
-  clickSubmitBtn('Save', args)
-
-export function assignSubtask(
-  /**
-   * the orphan task to assign as subtask.
-   */
-  task: CreatedTask,
-) {
-  cy.get(TaskForm.ASSIGN_SUBTASK_BTN).click()
-  cy.escapeWithin()
-    .find(AssignSubtaskDialog.DIALOG)
-    .should('be.visible')
-    .within(() => {
-      cy.contains(AssignSubtaskDialog.TASK_OPTION, task.name).click()
-      cy.get(AssignSubtaskDialog.CONFIRM_BTN).click()
-    })
+export async function checkDate(datePicker: Locator, date: Date) {
+  await datePicker.scrollIntoViewIfNeeded()
+  await expect(datePicker).toContainText(format(date, 'PPP'))
 }
 
-export function checkTaskFormSubtasks(
-  subtasks: Pick<Task, 'name' | 'status'>[],
-) {
-  // TODO: test how they are nested
-  cy.get(TaskForm.SUBTASKS_CARD).scrollIntoView()
-  cy.get(TaskForm.SUBTASK_ROW)
-    .should('have.length', subtasks.length)
-    .find(TaskForm.SUBTASK_NAME)
-    .should(($names) =>
-      expect(getElementArrayText($names)).to.deep.equal(
-        subtasks.map((subtask) => subtask.name),
-        'Task form should list all subtasks',
-      ),
-    )
-    .should(($names) =>
-      expect(getElementArrayText($names.filter('.line-through'))).to.deep.equal(
-        subtasks
-          .filter((subtask) => subtask.status === TaskStatus.COMPLETED)
-          .map((subtask) => subtask.name),
-        'Completed subtasks should be crossed out',
-      ),
-    )
-}
+export async function selectDate(datePicker: Locator, date: Date) {
+  const page = getPage()
+  await datePicker.click()
 
-export function setTaskFormSubtaskSettings({
-  autoHideCompleted,
-  inheritCompletionState,
-}: Partial<TaskSubtaskSettings> = {}) {
-  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-  if (autoHideCompleted !== undefined) {
-    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH).toggleState(
-      autoHideCompleted,
-    )
+  const captionText = await page
+    .locator(Selectors.DatePicker.MONTH_YEAR)
+    .textContent()
+  if (!captionText) {
+    throw new Error('Date picker caption text not found')
   }
-  if (inheritCompletionState !== undefined) {
-    cy.get(TaskForm.AUTOCOMPLETE_SWITCH).toggleState(inheritCompletionState)
-  }
-}
+  const displayed = parse(captionText.trim(), 'MMMM yyyy', new Date())
+  const monthDiff =
+    (date.getFullYear() - displayed.getFullYear()) * 12 +
+    (date.getMonth() - displayed.getMonth())
 
-export function checkTaskFormSubtaskSettings({
-  autoHideCompleted,
-  inheritCompletionState,
-}: Partial<TaskSubtaskSettings> = {}) {
-  cy.get(TaskForm.SUBTASK_SETTINGS_BTN).click()
-  if (autoHideCompleted !== undefined) {
-    cy.get(TaskForm.AUTOHIDE_COMPLETED_SUBTASKS_SWITCH)
-      .getCheckedState()
-      .should('eq', autoHideCompleted)
+  if (monthDiff > 0) {
+    for (let i = 0; i < monthDiff; i++) {
+      await page.locator(Selectors.DatePicker.NEXT_MONTH_BTN).click()
+    }
+  } else if (monthDiff < 0) {
+    for (let i = 0; i < Math.abs(monthDiff); i++) {
+      await page.locator(Selectors.DatePicker.PREV_MONTH_BTN).click()
+    }
   }
-  if (inheritCompletionState !== undefined) {
-    cy.get(TaskForm.AUTOCOMPLETE_SWITCH)
-      .getCheckedState()
-      .should('eq', inheritCompletionState)
-  }
-}
 
-// biome-ignore lint/suspicious/useAwait: <explanation>
-export async function openMoreSection() {
-  cy.get(TaskForm.MORE_SECTION).scrollIntoView().click()
+  await page
+    .locator(`[data-day="${format(date, 'yyyy-MM-dd')}"] button`)
+    .click()
+  await checkDate(datePicker, date)
 }

@@ -1,78 +1,91 @@
-import { cloneDeepWith } from 'es-toolkit'
-import type { Jsonify, PartialDeep, SetRequired } from 'type-fest'
+import { expect } from '@playwright/test'
+import { cloneDeepWith, uniq } from 'es-toolkit'
+import type { Jsonify, PartialDeep } from 'type-fest'
 
-import { TestPaths } from '~/shared/constants'
 import type { Task, UserSettings } from '~/shared/schema'
 import { ApiPaths } from '../constants'
-import { isLoggedIn } from './test-runner'
+import { getApiContext, getIsLoggedIn, getPage } from '../test-globals'
+import type { CreatedTask } from './intercepts'
 
 const normalizeTask = <T extends PartialDeep<Task>>(task: T): Jsonify<T> =>
   cloneDeepWith(task, (v) =>
     v instanceof Date ? v.toISOString() : undefined,
   ) as Jsonify<T>
 
-const getLocalStateTasks = (): Cypress.Chainable<Task[]> =>
-  cy.window().then<Task[]>((win) => {
-    const storageMode = isLoggedIn() ? 'auth' : 'guest'
-    const localStateTasksKey = `taskrankr-${storageMode}-tasks`
-    const storedTasks = win.localStorage.getItem(localStateTasksKey)
+export function getLocalStateTasks(): Promise<Task[]> {
+  const key = `taskrankr-${getIsLoggedIn() ? 'auth' : 'guest'}-tasks`
+  return getPage().evaluate((storageKey) => {
+    const raw = localStorage.getItem(storageKey)
+    return raw ? (JSON.parse(raw) as Task[]) : []
+  }, key)
+}
 
-    if (!storedTasks) return []
+export async function getApiTasks(): Promise<Task[]> {
+  const res = await getApiContext().get(ApiPaths.GET_TASKS)
+  return res.json()
+}
 
-    return JSON.parse(storedTasks)
-  })
+export async function checkTasksExistBackend(tasks: CreatedTask[]) {
+  await expect(async () => {
+    const localTasks = await getLocalStateTasks()
+    const expectedNames = tasks.map((t) => t.name)
+    expect(
+      localTasks.map((t) => t.name),
+      'local state contains task names',
+    ).toEqual(expect.arrayContaining(expectedNames))
 
-export const getApiTasks = () =>
-  isLoggedIn()
-    ? cy.authRequest<Task[]>('GET', ApiPaths.GET_TASKS).its('body')
-    : cy.request<Task[]>('GET', TestPaths.TEST_TASKS).its('body')
+    // Double check no cross-contamination of tasks between tests.
+    const names = localTasks.map((t) => t.name)
+    expect(names, 'no duplicate tasks in local state').toHaveLength(
+      uniq(names).length,
+    )
 
-function checkTasksBackend(
-  checkTasks: (givenTasks: Task[], message: string) => void,
-  checkBackend?: boolean,
-): void {
-  getLocalStateTasks().should((givenTasks) =>
-    checkTasks(givenTasks, 'local state'),
-  )
-  if (checkBackend) {
-    cy.getApiTasks().then((givenTasks) => checkTasks(givenTasks, 'backend'))
+    for (const expectedTask of tasks) {
+      const task = localTasks.find((t) => t.name === expectedTask.name)
+      expect(task, `Task "${expectedTask.name}" in local state`).toBeDefined()
+      if (task) expect(task).toMatchObject(normalizeTask(expectedTask))
+    }
+  }).toPass({ timeout: 8000 })
+
+  if (getIsLoggedIn()) {
+    await expect(async () => {
+      const apiTasks = await getApiTasks()
+      for (const expectedTask of tasks) {
+        const task = apiTasks.find((t) => t.name === expectedTask.name)
+        expect(task, `Task "${expectedTask.name}" in backend`).toBeDefined()
+        if (task) expect(task).toMatchObject(normalizeTask(expectedTask))
+      }
+    }).toPass({ timeout: 8000 })
   }
 }
 
-export const checkTasksExistBackend = (
-  tasks: SetRequired<Partial<Task>, 'name' | 'status'>[],
-) =>
-  checkTasksBackend((givenTasks, message) => {
-    const expectedTaskNames = tasks.map((t) => t.name)
-    expect(
-      givenTasks.map((t) => t.name),
-      `task names in ${message}`,
-    ).to.include.members(expectedTaskNames)
-    expect(givenTasks, 'no duplicate tasks').to.have.length(
-      Cypress._.uniqBy(givenTasks, (t) => t.name).length,
-    )
-    for (const expectedTask of tasks) {
-      const givenTask = givenTasks.find((t) => t.name === expectedTask.name)
-      const normalized = normalizeTask(expectedTask)
+export async function checkTasksDontExistBackend(tasks: Pick<Task, 'name'>[]) {
+  await expect(async () => {
+    const localTasks = await getLocalStateTasks()
+    const localNames = new Set(localTasks.map((t) => t.name))
+    for (const task of tasks) {
       expect(
-        givenTask,
-        `Task "${expectedTask.name}" exists in ${message} with correct props`,
-      ).to.deep.include(normalized)
+        localNames.has(task.name),
+        `Task "${task.name}" should not exist in local state`,
+      ).toBe(false)
     }
-  }, isLoggedIn())
+  }).toPass({ timeout: 5000 })
 
-export const checkTasksDontExistBackend = (tasks: Pick<Task, 'name'>[]) =>
-  checkTasksBackend((givenTasks, message) => {
-    const expectedTaskNames = tasks.map((t) => t.name)
-    // best way to check that array doesn't include any members
-    expect(
-      givenTasks.reduce((running: Record<string, Task>, curr) => {
-        running[curr.name] = curr
-        return running
-      }, {}),
-      `tasks do not exist in ${message}`,
-    ).to.not.include.any.keys(expectedTaskNames)
-  }, true)
+  if (getIsLoggedIn()) {
+    await expect(async () => {
+      const apiTasks = await getApiTasks()
+      const apiNames = new Set(apiTasks.map((t) => t.name))
+      for (const task of tasks) {
+        expect(
+          apiNames.has(task.name),
+          `Task "${task.name}" should not exist in backend`,
+        ).toBe(false)
+      }
+    }).toPass({ timeout: 5000 })
+  }
+}
 
-export const getSettings = () =>
-  cy.authRequest<UserSettings>('GET', ApiPaths.GET_SETTINGS).its('body')
+export async function getSettings(): Promise<UserSettings> {
+  const res = await getApiContext().get(ApiPaths.GET_SETTINGS)
+  return res.json()
+}
